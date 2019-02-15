@@ -1,0 +1,12 @@
+api:
+  entities:
+    Oro\Bundle\CatalogBundle\Entity\Category:
+      fields:
+        akeneo_code:
+          exclude: true
+        channel:
+          exclude: true
+    Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeFamily:
+      fields:
+        channel:
+          exclude: true

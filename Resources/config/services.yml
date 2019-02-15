@@ -1,0 +1,90 @@
+services:
+  oro_akeneo.settings.sync_products.provider:
+    class: Oro\Bundle\AkeneoBundle\Settings\DataProvider\SyncProductsDataProvider
+
+  oro_akeneo.encoder.crypter:
+    class: Oro\Bundle\AkeneoBundle\Encoder\Crypter
+    arguments:
+      - "@oro_security.encoder.mcrypt"
+
+  oro_akeneo.connection.client_factory:
+    class: Oro\Bundle\AkeneoBundle\Client\AkeneoClientFactory
+    arguments:
+      - "@oro_entity.doctrine_helper"
+      - "@oro_akeneo.encoder.crypter"
+
+  oro_akeneo.security.acl.voter.channel:
+    class: Oro\Bundle\AkeneoBundle\Acl\Voter\CategoryVoter
+    arguments:
+      - "@oro_entity.doctrine_helper"
+    calls:
+      - [setClassName, ['%oro_catalog.entity.category.class%']]
+  #        tags:
+  #            - { name: security.voter}
+
+  oro_akeneo.event_subscriber.field_config:
+    class: Oro\Bundle\AkeneoBundle\EventSubscriber\FieldConfigSubscriber
+    tags:
+      - { name: kernel.event_subscriber }
+
+  oro_akeneo.placeholder.schema_update_filter:
+    class: Oro\Bundle\AkeneoBundle\Placeholder\SchemaUpdateFilter
+    arguments:
+      - "@oro_entity_config.config_manager"
+      - "@oro_entity_config.helper.entity_config_provider_helper"
+
+  oro_akeneo.form.extension.channel_type:
+    class: Oro\Bundle\AkeneoBundle\Form\Extension\ChannelTypeExtension
+    tags:
+      - { name: form.type_extension, extended_type: Oro\Bundle\IntegrationBundle\Form\Type\ChannelType }
+
+  oro_akeneo.form.extension.product_type:
+    class: Oro\Bundle\AkeneoBundle\Form\Extension\ProductTypeExtension
+    arguments:
+      - "@oro_entity_config.config_manager"
+      - "@oro_entity.helper.field_helper"
+    tags:
+      - { name: form.type_extension, extended_type: Oro\Bundle\ProductBundle\Form\Type\ProductType }
+
+  oro_akeneo.enum_synchronizer:
+    class: Oro\Bundle\AkeneoBundle\Tools\EnumSynchronizer
+    parent: oro_entity_extend.enum_synchronizer
+
+  oro_akeneo.integration.search_builder:
+    class: Oro\Bundle\AkeneoBundle\Integration\AkeneoSearchBuilder
+
+  oro_akeneo.validator.json_validator:
+    class: Oro\Bundle\AkeneoBundle\Validator\JsonValidator
+    tags:
+      - { name: validator.constraint_validator, alias: oro_akeneo.json_validator }
+
+  oro_akeneo.event_subscriber.doctrine:
+    class: 'Oro\Bundle\AkeneoBundle\EventSubscriber\DoctrineSubscriber'
+    calls:
+      - [setContainer, [@service_container]]
+    tags:
+      - { name: doctrine.event_subscriber }
+
+  oro_akeneo.strategy.import.helper:
+    class: 'Oro\Bundle\AkeneoBundle\ImportExport\Strategy\ImportStrategyHelper'
+    parent: oro_importexport.strategy.import.helper
+    decorates: oro_importexport.strategy.import.helper
+
+  oro_akeneo.integration.sync_processor:
+    class: 'Oro\Bundle\AkeneoBundle\Integration\SyncProcessor'
+    arguments:
+      - '@oro_message_queue.job.processor'
+      - '@oro_integration.sync.processor'
+    tags:
+      - { name: oro_integration.sync_processor, integration: oro_akeneo }
+
+  oro_akeneo.async.export_contacts_status_update_processor:
+    class: 'Oro\Bundle\AkeneoBundle\Async\ImportProductProcessor'
+    arguments:
+      - '@oro_entity.doctrine_helper'
+      - '@oro_message_queue.job.runner'
+      - '@security.token_storage'
+      - '@logger'
+      - '@oro_integration.processor_registry'
+    tags:
+      - { name: 'oro_message_queue.client.message_processor', topicName: 'oro_akeneo.importexport.product' }

@@ -1,0 +1,4 @@
+assets:
+  css:
+    hangouts:
+      - 'bundles/oroakeneo/css/less/style.less'

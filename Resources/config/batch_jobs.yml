@@ -1,0 +1,101 @@
+connector:
+  name: oro_importexport
+  jobs:
+    akeneo_category_import:
+      title: "Category import from Akeneo"
+      type:  import
+      steps:
+        import:
+          title: import
+          class: Oro\Bundle\AkeneoBundle\ImportExport\Step\ItemStep
+          services:
+            reader: oro_akeneo.integration.connector.category
+            processor: oro_akeneo.importexport.processor.category
+            writer: oro_akeneo.importexport.writer.cumulative.category
+        remove:
+          title: import
+          class: Oro\Bundle\AkeneoBundle\ImportExport\Step\ItemStep
+          services:
+            reader: oro_akeneo.importexport.reader.category
+            processor: oro_akeneo.importexport.processor.category_remove
+            writer: oro_akeneo.importexport.writer.cumulative.category_remove
+        parent:
+          title: import
+          class: Oro\Bundle\AkeneoBundle\ImportExport\Step\ItemStep
+          services:
+            reader: oro_akeneo.importexport.reader.category_parent
+            processor: oro_akeneo.importexport.processor.category_parent
+            writer: oro_akeneo.importexport.writer.cumulative.category_parent
+
+    akeneo_attribute_family_import:
+      title: "Attribute family import from Akeneo"
+      type:  import
+      steps:
+        import:
+          title: import
+          class: Oro\Bundle\AkeneoBundle\ImportExport\Step\ItemStep
+          services:
+            reader: oro_akeneo.integration.connector.attribute_family
+            processor: oro_akeneo.importexport.processor.attribute_family
+            writer: oro_akeneo.importexport.writer.cumulative.persistent_batch_writer
+        status:
+          title: import
+          class: Oro\Bundle\AkeneoBundle\ImportExport\Step\ItemStep
+          services:
+            reader: oro_akeneo.importexport.reader.attribute_family
+            processor: oro_akeneo.importexport.processor.attribute_family_status
+            writer: oro_akeneo.importexport.writer.cumulative.persistent_batch_writer
+
+    akeneo_attribute_import:
+      title: "Attribute import from Akeneo"
+      type:  import
+      steps:
+        import:
+          title: import
+          class: Oro\Bundle\AkeneoBundle\ImportExport\Step\ItemStep
+          services:
+            reader: oro_akeneo.integration.connector.attribute
+            processor: oro_akeneo.importexport.processor.attribute
+            writer: oro_akeneo.importexport.writer.cumulative.attribute
+
+    akeneo_product_import:
+      title: "Product import from Akeneo"
+      type:  import
+      steps:
+        api:
+          title: import
+          class: Oro\Bundle\BatchBundle\Step\ItemStep
+          services:
+            reader: oro_akeneo.integration.connector.product
+            processor: oro_akeneo.importexport.processor.async
+            writer: oro_akeneo.importexport.writer.async_product
+          parameters:
+            batch_size: 25
+        import:
+          title: import
+          class: Oro\Bundle\AkeneoBundle\ImportExport\Step\ItemStep
+          services:
+            reader: oro_akeneo.importexport.reader.product
+            processor: oro_akeneo.importexport.processor.product
+            writer: oro_akeneo.importexport.writer.cumulative.persistent_batch_writer
+        import_images:
+          title: import
+          class: Oro\Bundle\AkeneoBundle\ImportExport\Step\ItemStep
+          services:
+            reader: oro_akeneo.importexport.reader.product_image
+            processor: oro_akeneo.importexport.processor.product_image
+            writer: oro_akeneo.importexport.writer.cumulative.product_image
+        import_prices:
+          title: import
+          class: Oro\Bundle\BatchBundle\Step\ItemStep
+          services:
+            reader: oro_akeneo.importexport.reader.price
+            processor: oro_akeneo.importexport.processor.import.product_price
+            writer: oro_pricing.importexport.writer.product_price
+        import_variants:
+          title: import
+          class: Oro\Bundle\AkeneoBundle\ImportExport\Step\ItemStep
+          services:
+            reader: oro_akeneo.importexport.reader.product_variant
+            processor: oro_akeneo.importexport.processor.import.product_variant
+            writer: oro_akeneo.importexport.writer.cumulative.persistent_batch_writer

@@ -1,0 +1,4 @@
+akeneo_integration_shipping:
+  resource:     "@OroAkeneoBundle/Controller/ValidateConnectionController.php"
+  type:         annotation
+  prefix:       /akeneo-validate

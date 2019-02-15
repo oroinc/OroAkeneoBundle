@@ -1,0 +1,19 @@
+services:
+  oro.akeneo.form.type.settings:
+    class: Oro\Bundle\AkeneoBundle\Form\Type\AkeneoSettingsType
+    arguments:
+      - '@translator.default'
+      - '@oro_akeneo.settings.sync_products.provider'
+      - '@oro_akeneo.integration.transport'
+      - '@oro_akeneo.encoder.crypter'
+    calls:
+      - [setLogger, ["@oro_integration.logger.strategy"]]
+    tags:
+      - { name: form.type }
+
+  oro.akeneo.form.type.locales:
+    class: Oro\Bundle\AkeneoBundle\Form\Type\AkeneoLocaleType
+    calls:
+      - [setLogger, ["@oro_integration.logger.strategy"]]
+    tags:
+      - { name: form.type }

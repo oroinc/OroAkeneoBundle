@@ -1,0 +1,2 @@
+bundles:
+  - OroAkeneoBundle:Form:fields.html.twig

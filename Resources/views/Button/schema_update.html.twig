@@ -1,0 +1,21 @@
+{% import 'OroEntityConfigBundle::macros.html.twig' as entityConfig %}
+
+{% if is_granted('oro_entityconfig_manage') %}
+    {% set button_config = [{
+        name: 'oro.entity_extend.entity_config.extend.field.layout_action.update_schema',
+        route: 'oro_entityextend_update',
+        entity_id: true,
+        aCss: 'btn-danger entity-extend-apply',
+        void: true,
+        page_component_module: 'oroentityextend/js/schema-update-action-component',
+        page_component_options: {
+            redirectRoute: 'oro_integration_index',
+            route: 'oro_entityextend_update'
+        },
+        args: {
+            id: data.entity_id
+        }
+    }] %}
+
+    {{ entityConfig.displayLayoutActions(button_config) }}
+{% endif %}

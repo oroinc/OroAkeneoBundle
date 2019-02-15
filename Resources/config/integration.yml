@@ -1,0 +1,18 @@
+services:
+  oro_akeneo.integration.channel:
+    class: Oro\Bundle\AkeneoBundle\Integration\AkeneoChannel
+    public: true
+    tags:
+      - { name: oro_integration.channel, type: oro_akeneo }
+
+  oro_akeneo.integration.transport:
+    class: Oro\Bundle\AkeneoBundle\Integration\AkeneoTransport
+    arguments:
+      - '@oro_akeneo.connection.client_factory'
+      - '@oro_currency.config.currency'
+      - '@oro_akeneo.integration.search_builder'
+      - '@knp_gaufrette.filesystem_map'
+      - '@logger'
+    public: true
+    tags:
+      - { name: oro_integration.transport, channel_type: oro_akeneo, type: oro_akeneo }

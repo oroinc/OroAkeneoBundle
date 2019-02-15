@@ -1,0 +1,183 @@
+{% form_theme form _self %}
+{% block _oro_integration_channel_form_transport_akeneoLocales_entry_widget %}
+    <div>
+        <div class="akeneo-locale-item clearfix">
+            <div class="akeneo-float-left locale-field akeneo-box">
+                {{ form_widget(form.code) }}
+            </div>
+            <div class="akeneo-float-left locale-field land-box">
+                {{ form_widget(form.locale) }}
+            </div>
+            <div class="">
+                <button class="removeRow btn btn-action btn-link remove-locale-item" type="button"><span
+                            class="fa-close"></span></button>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block oro_akeneo_settings_widget %}
+    {% import 'OroUIBundle::macros.html.twig' as UI %}
+
+<div data-page-component-module="oroakeneo/js/app/components/akeneo-transport-settings-component"
+     data-page-component-options="{{ {
+         'urlSelector': 'input[name="%s"]'|format(form.url.vars.full_name),
+         'clientIdSelector': 'input[name="%s"]'|format(form.clientId.vars.full_name),
+         'secretSelector': 'input[name="%s"]'|format(form.secret.vars.full_name),
+         'usernameSelector': 'input[name="%s"]'|format(form.username.vars.full_name),
+         'passwordSelector': 'input[name="%s"]'|format(form.password.vars.full_name),
+         'btnId': 'akeneo_sync',
+         'syncRoute':'oro_akeneo_country_shipping_services',
+         'akeneoChannelsSelector':'select[name="%s"]'|format(form.akeneoActiveChannel.vars.full_name),
+         'akeneoCurrenciesSelector':'select[name="%s"]'|format(form.akeneoActiveCurrencies.vars.full_name),
+         'channelId': form.vars.value.channel.id|default(0),
+         'akeneoCurrenciesSelector':'select[name="%s"]'|format(form.akeneoActiveCurrencies.vars.full_name),
+         'backendUrl': path('oro_akeneo_validate_connection', {'channelId': form.vars.value.channel.id|default(0) })
+     }|json_encode }}"
+>
+
+    <div id="check_akeneo_required_fields">
+        <div class="control-group control-group-choice">
+            <div class="control-label wrap">
+                {{ UI.tooltip('oro.akeneo.integration.settings.url.tooltip'|trans, {}, 'right') }}
+                {{ form_label(form.url) }}
+            </div>
+            <div class="controls">
+                {{ form_widget(form.url) }}
+            </div>
+        </div>
+
+        {{ form_row(form.clientId) }}
+        {{ form_row(form.secret) }}
+
+        <div class="control-group control-group-choice">
+            <div class="control-label wrap">
+                {{ UI.tooltip('oro.akeneo.integration.settings.username.tooltip'|trans, {}, 'right') }}
+                {{ form_label(form.username) }}
+            </div>
+            <div class="controls">
+                {{ form_widget(form.username) }}
+            </div>
+        </div>
+
+        <div class="control-group control-group-choice">
+            <div class="control-label wrap">
+                {{ UI.tooltip('oro.akeneo.integration.settings.password.tooltip'|trans, {}, 'right') }}
+                {{ form_label(form.password) }}
+            </div>
+            <div class="controls">
+                {{ form_widget(form.password) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="control-group control-group-text">
+        <div class="controls">
+            <button id="akeneo_sync" type="button"
+                    class="btn btn-primary"
+            >
+                {{ 'oro.akeneo.connection_validation.button.text'|trans }}
+            </button>
+            <div class="connection-status alert"></div>
+        </div>
+    </div>
+
+    <div class="control-group control-group-choice">
+        <div class="control-label wrap">
+            {{ UI.tooltip('oro.akeneo.integration.popup.channel', {}, 'right') }}
+            {{ form_label(form.akeneoActiveChannel) }}
+        </div>
+        <div class="controls">
+            <a href="#" class="no-hash sync-channels-list-link" id="sync-channels-list-link" data-synctype="channels">
+                <i class="fa-refresh"></i>{{ 'oro.akeneo.integration.refresh.channels'|trans }}
+            </a>
+            <div class="clear-fix"></div>
+        </div>
+        <div class="controls">
+            {{ form_widget(form.akeneoActiveChannel) }}
+        </div>
+    </div>
+
+    {{ form_row(form.syncProducts) }}
+
+    <div class="control-group control-group-choice">
+        <div class="control-label wrap">
+            {{ UI.tooltip('oro.akeneo.integration.popup.currencies', {}, 'right') }}
+            {{ form_label(form.akeneoActiveCurrencies) }}
+        </div>
+        <div class="controls">
+            <a href="#" class="no-hash sync-currencies-list-link" id="sync-currencies-list-link"
+               data-synctype="currencies">
+                <i class="fa-refresh"></i>{{ 'oro.akeneo.integration.refresh.currencies'|trans }}
+            </a>
+            <div class="clear-fix"></div>
+        </div>
+        <div class="controls">
+            {{ form_widget(form.akeneoActiveCurrencies) }}
+        </div>
+    </div>
+
+    <div class="control-group control-group-choice">
+        <div class="control-label wrap">
+            {{ UI.tooltip('oro.akeneo.integration.popup.locales', {}, 'right') }}
+            <label>{{ 'oro.akeneo.integration.settings.locales.label'|trans }}</label>
+        </div>
+        <div class="controls">
+            <a href="#" class="no-hash sync-locales-list-link synctype_data" id="sync-locales-list-link"
+               data-synctype="locales">
+                <i class="fa-refresh"></i>{{ 'oro.akeneo.integration.refresh.locales'|trans }}
+            </a>
+            <div class="clear-fix"></div>
+        </div>
+    </div>
+
+    <div class="oro-item-collection" id="akeneoLocalesBox"
+         data-prototype="{{ form_widget(form.akeneoLocales.vars.prototype)|e('html_attr') }}">
+        <div id="akeneoLocalesBoxItems">
+            {% for akeneoLocale in form.akeneoLocales %}
+                <div class="akeneo-locale-item clearfix">
+                    <div class="akeneo-float-left locale-field akeneo-box">
+                        {{ form_widget(akeneoLocale.code, {'attr': {'class': 'akeneo-locale-input'} }) }}
+                    </div>
+                    <div class="akeneo-float-left locale-field land-box">
+                        {{ form_widget(akeneoLocale.locale, {'attr': {'class': 'akeneo-locale-input'} }) }}
+                    </div>
+                    <div class="">
+                        <button class="removeRow btn btn-action btn-link remove-locale-item" type="button"><span
+                                    class="fa-close"></span></button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div id="akeneoLocalesControl">
+            <a class="btn add-locale-item" href="javascript: void(0);"><i
+                        class="fa-plus"></i>{{ 'oro.akeneo.integration.settings.locales.add'|trans }}</a>
+        </div>
+    </div>
+    <div id="akeneoLocalesList">
+        {{ form_row(form.akeneoLocalesList) }}
+    </div>
+    <div class="orolocales-status alert alert-error">
+        {{ 'oro.akeneo.integration.settings.orolocales.error'|trans }}
+    </div>
+    <div class="locales-status alert alert-warning">
+        {{ 'oro.akeneo.integration.settings.locales.error'|trans }}
+    </div>
+    <div id="akeneo-locales-exceeded" class="alert alert-success">
+        {{ 'oro.akeneo.integration.settings.locales.success'|trans }}
+    </div>
+
+    {{ form_row(form.rootCategory) }}
+    {{ form_row(form.priceList) }}
+
+    <div class="control-group control-group-choice">
+        <div class="control-label wrap">
+            {{ UI.tooltip('oro.akeneo.integration.settings.akeneo_product_filter.tooltip'|trans, {}, 'right') }}
+            {{ form_label(form.productFilter) }}
+        </div>
+        <div class="controls {% if (form_errors(form.productFilter)|length > 0) %} validation-error {% endif %}">
+            {{ form_widget(form.productFilter) }}
+            {{ form_errors(form.productFilter) }}
+        </div>
+    </div>
+{% endblock %}

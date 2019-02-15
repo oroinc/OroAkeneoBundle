@@ -1,0 +1,17 @@
+Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings:
+  properties:
+    url:
+      - NotBlank: ~
+      - Url: ~
+    clientId:
+      - NotBlank: ~
+    secret:
+      - NotBlank: ~
+    username:
+      - NotBlank: ~
+    password:
+      - NotBlank: ~
+    akeneoActiveChannel:
+      - NotBlank: ~
+
+
