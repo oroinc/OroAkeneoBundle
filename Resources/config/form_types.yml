@@ -13,6 +13,8 @@ services:
 
   oro.akeneo.form.type.locales:
     class: Oro\Bundle\AkeneoBundle\Form\Type\AkeneoLocaleType
+    arguments:
+      - '@oro_locale.manager.localization'
     calls:
       - [setLogger, ["@oro_integration.logger.strategy"]]
     tags:

@@ -85,7 +85,7 @@ class AttributeDataConverter extends EntityFieldDataConverter
 
             foreach ($transport->getAkeneoLocales() as $akeneoLocale) {
                 foreach ($this->getLocalizations($akeneoLocale->getLocale()) as $localization) {
-                    if ($defaultLocalization->getLanguageCode() === $localization) {
+                    if ($defaultLocalization->getLanguageCode() === $localization->getLanguageCode()) {
                         continue;
                     }
 

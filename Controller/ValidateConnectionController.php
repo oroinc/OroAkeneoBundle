@@ -5,6 +5,7 @@ namespace Oro\Bundle\AkeneoBundle\Controller;
 use Akeneo\Pim\ApiClient\Exception\ExceptionInterface;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\IntegrationBundle\Entity\Channel;
+use Oro\Bundle\IntegrationBundle\Form\Type\ChannelType;
 use Oro\Bundle\SecurityBundle\Annotation\Acl;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
@@ -44,10 +45,7 @@ class ValidateConnectionController extends Controller
             $channel = new Channel();
         }
 
-        $form = $this->createForm(
-            $this->get('oro_integration.form.type.channel'),
-            $channel
-        );
+        $form = $this->createForm(ChannelType::class, $channel);
         $form->handleRequest($request);
 
         /** @var AkeneoSettings $akeneoSettings */

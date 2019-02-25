@@ -56,7 +56,7 @@ class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter imp
 
         foreach ($this->getTransport()->getAkeneoLocales() as $akeneoLocale) {
             foreach ($this->getLocalizations($akeneoLocale->getLocale()) as $localization) {
-                if (!$localization || $defaultLocalization->getLanguageCode() === $localization) {
+                if (!$localization || $defaultLocalization->getLanguageCode() === $localization->getLanguageCode()) {
                     continue;
                 }
 

@@ -3,7 +3,8 @@
 namespace Oro\Bundle\AkeneoBundle\Form\Type;
 
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoLocale;
-use Oro\Bundle\LocaleBundle\Form\Type\LanguageType;
+use Oro\Bundle\FormBundle\Form\Type\OroChoiceType;
+use Oro\Bundle\LocaleBundle\Manager\LocalizationManager;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Form\AbstractType;
@@ -28,6 +29,16 @@ class AkeneoLocaleType extends AbstractType implements LoggerAwareInterface
      * @var array
      */
     public $codes = [];
+
+    /**
+     * @var LocalizationManager
+     */
+    private $localizationManager;
+
+    public function __construct(LocalizationManager $localizationManager)
+    {
+        $this->localizationManager = $localizationManager;
+    }
 
     /**
      * @param FormBuilderInterface $builder
@@ -56,17 +67,29 @@ class AkeneoLocaleType extends AbstractType implements LoggerAwareInterface
             )
             ->add(
                 'locale',
-                LanguageType::class,
+                OroChoiceType::class,
                 [
                     'required' => true,
                     'label' => false,
                     'constraints' => [
                         new NotBlank(),
                     ],
+                    'choices' => $this->getChoices(),
                 ]
             );
         $builder->addEventListener(FormEvents::PRE_SET_DATA, [$this, 'onPreSetData']);
         $builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'onPreSubmit']);
+    }
+
+    private function getChoices()
+    {
+        $choices = [];
+        $localizations = $this->localizationManager->getLocalizations();
+        foreach ($localizations as $localization) {
+            $choices[$localization->getName()] = $localization->getLanguageCode();
+        }
+
+        return $choices;
     }
 
     /**

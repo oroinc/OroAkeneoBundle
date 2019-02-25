@@ -85,7 +85,7 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
         $akeneoLocales = $this->getTransport()->getAkeneoLocales();
         foreach ($akeneoLocales as $akeneoLocale) {
             foreach ($this->getLocalizations($akeneoLocale->getLocale()) as $localization) {
-                if (!$localization || $defaultLocalization->getLanguageCode() === $localization) {
+                if (!$localization || $defaultLocalization->getLanguageCode() === $localization->getLanguageCode()) {
                     continue;
                 }
 

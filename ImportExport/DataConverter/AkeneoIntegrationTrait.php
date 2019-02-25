@@ -86,7 +86,7 @@ trait AkeneoIntegrationTrait
     /**
      * @param string $code
      *
-     * @return array
+     * @return Localization[]
      */
     private function getLocalizations(string $code)
     {

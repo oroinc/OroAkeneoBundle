@@ -5,7 +5,7 @@ services:
   oro_akeneo.encoder.crypter:
     class: Oro\Bundle\AkeneoBundle\Encoder\Crypter
     arguments:
-      - "@oro_security.encoder.mcrypt"
+      - "@oro_security.encoder.default"
 
   oro_akeneo.connection.client_factory:
     class: Oro\Bundle\AkeneoBundle\Client\AkeneoClientFactory
@@ -61,7 +61,7 @@ services:
   oro_akeneo.event_subscriber.doctrine:
     class: 'Oro\Bundle\AkeneoBundle\EventSubscriber\DoctrineSubscriber'
     calls:
-      - [setContainer, [@service_container]]
+      - [setContainer, ['@service_container']]
     tags:
       - { name: doctrine.event_subscriber }
 
