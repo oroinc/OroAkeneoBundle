@@ -10,6 +10,8 @@ use Oro\Bundle\LocaleBundle\Form\Type\LocalizedFallbackValueCollectionType;
 use Oro\Bundle\ProductBundle\Entity\Product;
 use Oro\Bundle\ProductBundle\Form\Type\ProductType;
 use Symfony\Component\Form\AbstractTypeExtension;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\Valid;
 
@@ -73,11 +75,13 @@ class ProductTypeExtension extends AbstractTypeExtension
             $builder
                 ->add(
                     $field['name'],
-                    LocalizedFallbackValueCollectionType::NAME,
+                    LocalizedFallbackValueCollectionType::class,
                     [
                         'required' => false,
                         'field' => 'string' === $importExportConfig->get('fallback_field') ? 'string' : 'text',
-                        'type' => 'string' === $importExportConfig->get('fallback_field') ? 'text' : 'textarea',
+                        'entry_type' => 'string' === $importExportConfig->get('fallback_field')
+                            ? TextType::class
+                            : TextareaType::class,
                         'constraints' => new Valid(),
                     ]
                 );

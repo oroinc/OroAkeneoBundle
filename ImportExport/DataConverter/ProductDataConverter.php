@@ -13,7 +13,6 @@ use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
 use Oro\Bundle\EntityExtendBundle\Extend\RelationType;
 use Oro\Bundle\ImportExportBundle\Context\ContextAwareInterface;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
-use Oro\Bundle\IntegrationBundle\Entity\Channel;
 use Oro\Bundle\LocaleBundle\Entity\Localization;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\Formatter\DateTimeFormatter;
@@ -94,7 +93,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         $this->processValues($importedRecord);
         $this->setSlugs($importedRecord);
         $this->setCategory($importedRecord);
-        $this->setFamilyvariant($importedRecord);
+        $this->setFamilyVariant($importedRecord);
 
         $importedRecord = parent::convertToImportFormat($importedRecord, $skipNullValues);
 
