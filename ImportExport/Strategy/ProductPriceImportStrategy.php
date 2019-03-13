@@ -6,8 +6,13 @@ use Oro\Bundle\IntegrationBundle\Entity\Channel;
 use Oro\Bundle\IntegrationBundle\Entity\Transport;
 use Oro\Bundle\PricingBundle\ImportExport\Strategy\ProductPriceImportStrategy as BaseStrategy;
 
+/**
+ * Strategy to import product prices.
+ */
 class ProductPriceImportStrategy extends BaseStrategy
 {
+    use ImportStrategyAwareHelperTrait;
+
     /**
      * {@inheritdoc}
      */

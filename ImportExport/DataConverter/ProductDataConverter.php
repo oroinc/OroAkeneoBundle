@@ -20,6 +20,8 @@ use Oro\Bundle\ProductBundle\Entity\Product;
 use Oro\Bundle\ProductBundle\ImportExport\DataConverter\ProductDataConverter as BaseProductDataConverter;
 
 /**
+ * Converts data for imported row.
+ *
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class ProductDataConverter extends BaseProductDataConverter implements ContextAwareInterface, ClosableInterface

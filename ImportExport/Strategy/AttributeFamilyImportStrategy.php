@@ -19,10 +19,14 @@ use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStr
 use Oro\Bundle\ProductBundle\Entity\Product;
 
 /**
+ * Strategy to import attribute families.
+ *
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
 {
+    use ImportStrategyAwareHelperTrait;
+
     /**
      * @var DefaultOwnerHelper
      */

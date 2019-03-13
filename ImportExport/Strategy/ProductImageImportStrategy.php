@@ -7,8 +7,13 @@ use Oro\Bundle\ImportExportBundle\Strategy\Import\ConfigurableAddOrReplaceStrate
 use Oro\Bundle\ProductBundle\Entity\ProductImage;
 use Oro\Bundle\ProductBundle\Entity\ProductImageType;
 
+/**
+ * Strategy to import product images.
+ */
 class ProductImageImportStrategy extends ConfigurableAddOrReplaceStrategy implements ClosableInterface
 {
+    use ImportStrategyAwareHelperTrait;
+
     /**
      * @var array
      */
