@@ -2,11 +2,9 @@
 
 namespace Oro\Bundle\AkeneoBundle\Integration\Connector;
 
-use Oro\Bundle\AkeneoBundle\Integration\AkeneoTransport;
 use Oro\Bundle\AkeneoBundle\Placeholder\SchemaUpdateFilter;
 use Oro\Bundle\EntityBundle\Helper\FieldHelper;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
-use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
 use Oro\Bundle\IntegrationBundle\Entity\Channel;
 use Oro\Bundle\IntegrationBundle\Provider\AbstractConnector;
 use Oro\Bundle\IntegrationBundle\Provider\AllowedConnectorInterface;
@@ -14,7 +12,7 @@ use Oro\Bundle\IntegrationBundle\Provider\ConnectorInterface;
 use Oro\Bundle\ProductBundle\Entity\Product;
 
 /**
- * @property AkeneoTransport $transport
+ * Integration product connector.
  */
 class ProductConnector extends AbstractConnector implements ConnectorInterface, AllowedConnectorInterface
 {
@@ -72,11 +70,10 @@ class ProductConnector extends AbstractConnector implements ConnectorInterface, 
     /**
      * {@inheritdoc}
      */
-    public function isAllowed(Channel $integration, array $processedConnectorsStatuses)
+    public function isAllowed(Channel $integration, array $processedConnectorsStatuses): bool
     {
         $fields = $this->fieldHelper->getFields(Product::class, true);
         $importExportProvider = $this->configManager->getProvider('importexport');
-        $extendProvider = $this->configManager->getProvider('extend');
         $hasAkeneoFields = false;
 
         foreach ($fields as $field) {
@@ -91,11 +88,7 @@ class ProductConnector extends AbstractConnector implements ConnectorInterface, 
             }
 
             $hasAkeneoFields = true;
-            $extendConfig = $extendProvider->getConfig(Product::class, $field['name']);
-
-            if (!in_array($extendConfig->get('state'), [ExtendScope::STATE_ACTIVE, ExtendScope::STATE_DELETE])) {
-                return false;
-            }
+            break;
         }
 
         return $hasAkeneoFields && !$this->needToUpdateSchema($integration);
