@@ -3,8 +3,6 @@
 namespace Oro\Bundle\AkeneoBundle\Integration\Connector;
 
 use Oro\Bundle\AkeneoBundle\Placeholder\SchemaUpdateFilter;
-use Oro\Bundle\EntityBundle\Helper\FieldHelper;
-use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\IntegrationBundle\Entity\Channel;
 use Oro\Bundle\IntegrationBundle\Provider\AbstractConnector;
 use Oro\Bundle\IntegrationBundle\Provider\AllowedConnectorInterface;
@@ -19,16 +17,6 @@ class ProductConnector extends AbstractConnector implements ConnectorInterface, 
     const IMPORT_JOB_NAME = 'akeneo_product_import';
     const PAGE_SIZE = 100;
     const TYPE = 'product';
-
-    /**
-     * @var ConfigManager
-     */
-    protected $configManager;
-
-    /**
-     * @var FieldHelper
-     */
-    protected $fieldHelper;
 
     /**
      * @var SchemaUpdateFilter
@@ -72,42 +60,7 @@ class ProductConnector extends AbstractConnector implements ConnectorInterface, 
      */
     public function isAllowed(Channel $integration, array $processedConnectorsStatuses): bool
     {
-        $fields = $this->fieldHelper->getFields(Product::class, true);
-        $importExportProvider = $this->configManager->getProvider('importexport');
-        $hasAkeneoFields = false;
-
-        foreach ($fields as $field) {
-            if (false === $this->configManager->hasConfig(Product::class, $field['name'])) {
-                continue;
-            }
-
-            $importExportConfig = $importExportProvider->getConfig(Product::class, $field['name']);
-
-            if ('akeneo' !== $importExportConfig->get('source')) {
-                continue;
-            }
-
-            $hasAkeneoFields = true;
-            break;
-        }
-
-        return $hasAkeneoFields && !$this->needToUpdateSchema($integration);
-    }
-
-    /**
-     * @param ConfigManager $configManager
-     */
-    public function setConfigManager(ConfigManager $configManager): void
-    {
-        $this->configManager = $configManager;
-    }
-
-    /**
-     * @param FieldHelper $fieldHelper
-     */
-    public function setFieldHelper(FieldHelper $fieldHelper): void
-    {
-        $this->fieldHelper = $fieldHelper;
+        return !$this->needToUpdateSchema($integration);
     }
 
     /**
