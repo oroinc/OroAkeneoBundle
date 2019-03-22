@@ -175,8 +175,7 @@ services:
       - "@oro_integration.logger.strategy"
       - "@oro_integration.provider.connector_context_mediator"
     calls:
-      - [setFieldHelper, ['@oro_entity.helper.field_helper']]
-      - [setConfigManager, ["@oro_entity_config.config_manager"]]
+      - [setSchemaUpdateFilter, ['@oro_akeneo.placeholder.schema_update_filter']]
     tags:
       - { name: oro_integration.connector, type: product, channel_type: oro_akeneo }
 
