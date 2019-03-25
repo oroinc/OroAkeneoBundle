@@ -11,8 +11,13 @@ use Oro\Bundle\EntityConfigBundle\ImportExport\Strategy\EntityFieldImportStrateg
 use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
 use Oro\Bundle\EntityExtendBundle\Extend\RelationType;
 
+/**
+ * Strategy to import attributes.
+ */
 class AttributeImportStrategy extends EntityFieldImportStrategy
 {
+    use ImportStrategyAwareHelperTrait;
+
     /**
      * @var FieldHelper
      */
@@ -113,10 +118,9 @@ class AttributeImportStrategy extends EntityFieldImportStrategy
             }
 
             // Field should be skipped
-            if ($entity->getType() === $field['type'] || (
-                    RelationType::MANY_TO_MANY === $entity->getType() &&
-                    RelationType::TO_MANY === $field['type']
-                )) {
+            if ($entity->getType() === $field['type'] ||
+                (RelationType::MANY_TO_MANY === $entity->getType() && RelationType::TO_MANY === $field['type'])
+            ) {
                 return null;
             }
 

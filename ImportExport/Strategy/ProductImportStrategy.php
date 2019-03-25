@@ -11,8 +11,13 @@ use Oro\Bundle\LocaleBundle\ImportExport\Normalizer\LocalizationCodeFormatter;
 use Oro\Bundle\ProductBundle\Entity\Product;
 use Oro\Bundle\ProductBundle\ImportExport\Strategy\ProductStrategy;
 
+/**
+ * Strategy to import products.
+ */
 class ProductImportStrategy extends ProductStrategy
 {
+    use ImportStrategyAwareHelperTrait;
+
     /**
      * @var array
      */

@@ -2,10 +2,7 @@
 
 namespace Oro\Bundle\AkeneoBundle\Integration\Connector;
 
-use Oro\Bundle\AkeneoBundle\Integration\AkeneoTransport;
-use Oro\Bundle\EntityBundle\Helper\FieldHelper;
-use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
-use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
+use Oro\Bundle\AkeneoBundle\Placeholder\SchemaUpdateFilter;
 use Oro\Bundle\IntegrationBundle\Entity\Channel;
 use Oro\Bundle\IntegrationBundle\Provider\AbstractConnector;
 use Oro\Bundle\IntegrationBundle\Provider\AllowedConnectorInterface;
@@ -13,7 +10,7 @@ use Oro\Bundle\IntegrationBundle\Provider\ConnectorInterface;
 use Oro\Bundle\ProductBundle\Entity\Product;
 
 /**
- * @property AkeneoTransport $transport
+ * Integration product connector.
  */
 class ProductConnector extends AbstractConnector implements ConnectorInterface, AllowedConnectorInterface
 {
@@ -22,14 +19,9 @@ class ProductConnector extends AbstractConnector implements ConnectorInterface, 
     const TYPE = 'product';
 
     /**
-     * @var ConfigManager
+     * @var SchemaUpdateFilter
      */
-    protected $configManager;
-
-    /**
-     * @var FieldHelper
-     */
-    protected $fieldHelper;
+    protected $schemaUpdateFilter;
 
     /**
      * {@inheritdoc}
@@ -66,49 +58,17 @@ class ProductConnector extends AbstractConnector implements ConnectorInterface, 
     /**
      * {@inheritdoc}
      */
-    public function isAllowed(Channel $integration, array $processedConnectorsStatuses)
+    public function isAllowed(Channel $integration, array $processedConnectorsStatuses): bool
     {
-        $fields = $this->fieldHelper->getFields(Product::class, true);
-        $importExportProvider = $this->configManager->getProvider('importexport');
-        $extendProvider = $this->configManager->getProvider('extend');
-        $hasAkeneoFields = false;
-
-        foreach ($fields as $field) {
-            if (false === $this->configManager->hasConfig(Product::class, $field['name'])) {
-                continue;
-            }
-
-            $importExportConfig = $importExportProvider->getConfig(Product::class, $field['name']);
-
-            if ('akeneo' !== $importExportConfig->get('source')) {
-                continue;
-            }
-
-            $hasAkeneoFields = true;
-            $extendConfig = $extendProvider->getConfig(Product::class, $field['name']);
-
-            if (!in_array($extendConfig->get('state'), [ExtendScope::STATE_ACTIVE, ExtendScope::STATE_DELETE])) {
-                return false;
-            }
-        }
-
-        return $hasAkeneoFields;
+        return !$this->needToUpdateSchema($integration);
     }
 
     /**
-     * @param ConfigManager $configManager
+     * @param SchemaUpdateFilter $schemaUpdateFilter
      */
-    public function setConfigManager(ConfigManager $configManager): void
+    public function setSchemaUpdateFilter(SchemaUpdateFilter $schemaUpdateFilter): void
     {
-        $this->configManager = $configManager;
-    }
-
-    /**
-     * @param FieldHelper $fieldHelper
-     */
-    public function setFieldHelper(FieldHelper $fieldHelper): void
-    {
-        $this->fieldHelper = $fieldHelper;
+        $this->schemaUpdateFilter = $schemaUpdateFilter;
     }
 
     /**
@@ -139,5 +99,16 @@ class ProductConnector extends AbstractConnector implements ConnectorInterface, 
         $iterator->append($this->transport->getProductModels(self::PAGE_SIZE));
 
         return $iterator;
+    }
+
+    /**
+     * Checks if schema is changed and need to update it.
+     *
+     * @param Channel $integration
+     * @return bool
+     */
+    private function needToUpdateSchema(Channel $integration): bool
+    {
+        return $this->schemaUpdateFilter->isApplicable($integration, Product::class);
     }
 }

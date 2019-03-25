@@ -6,12 +6,6 @@
 		user-select: none !important;
 	}
 }
-#akeneoLocalesControl {
-	margin: 0 0 15px 169px;
-}
-.akeneo-locale-item {
-	margin-left: 169px;
-}
 .locale-field {
 	width: 139px;
 }
@@ -26,9 +20,8 @@
 }
 .orolocales-status {
 	display: none;
-	margin-left: 169px;
+	margin-top: 10px;
 	width: 280px;
-	display: none;
 }
 .control-group-choice {
 	.controls {
@@ -36,16 +29,30 @@
 	}
 }
 .locales-status.alert-warning {
-	margin-left: 169px;
+	margin-top: 10px;
 	width: 280px;
 	display: none;
 }
 #akeneo-locales-exceeded {
-	margin-left: 169px;
+	margin-top: 10px;
 	width: 280px;
 	display: none;
 }
 .akeneo-locale-input {
 	width: 139px !important;
 	user-select: none !important;
+}
+
+.akeneo-settings {
+	.check-connection-btn {
+		margin-top: 10px;
+	}
+
+	.fa-offset-end {
+		margin-right: 5px;
+	}
+
+	.refresh {
+		padding-bottom: 5px;
+	}
 }
