@@ -9,8 +9,13 @@ use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\ImportExport\Normalizer\LocalizationCodeFormatter;
 use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStrategy;
 
+/**
+ * Strategy to import categories.
+ */
 class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy
 {
+    use ImportStrategyAwareHelperTrait;
+
     protected function beforeProcessEntity($entity)
     {
         if ($entity instanceof Category) {

@@ -7,6 +7,9 @@ use Doctrine\Common\Util\ClassUtils;
 use Oro\Bundle\ImportExportBundle\Exception\InvalidArgumentException;
 use Oro\Bundle\ImportExportBundle\Strategy\Import\ImportStrategyHelper as BaseImportStrategyHelper;
 
+/**
+ * Overrides base importEntity method to increase performance.
+ */
 class ImportStrategyHelper extends BaseImportStrategyHelper
 {
     /**
@@ -35,7 +38,7 @@ class ImportStrategyHelper extends BaseImportStrategyHelper
             }
 
             $importedValue = $this->fieldHelper->getObjectValue($importedEntity, $propertyName);
-            $basicValue = $this->fieldHelper->getObjectValue($importedEntity, $propertyName);
+            $basicValue = $this->fieldHelper->getObjectValue($basicEntity, $propertyName);
 
             if ($importedValue instanceof Collection && $basicValue instanceof Collection) {
                 if ($importedValue->isEmpty()) {
@@ -55,10 +58,11 @@ class ImportStrategyHelper extends BaseImportStrategyHelper
                 $toAdd = [];
                 $toRemove = [];
                 $toReplace = [];
+                $map = [];
 
                 $basicValueEntitiesIds = [];
                 foreach ($basicValue as $basicValueEntityKey => $basicValueEntity) {
-                    $basicValueEntityIds = array_filter($this->fieldHelper->getIdentityValues($basicValueEntity));
+                    $basicValueEntityIds = $this->getIdentityValues($basicValueEntity);
                     if (!$basicValueEntityIds) {
                         $toRemove[$basicValueEntityKey] = $basicValueEntityKey;
 
@@ -67,11 +71,12 @@ class ImportStrategyHelper extends BaseImportStrategyHelper
 
                     $basicValueEntityId = md5(json_encode($basicValueEntityIds));
                     $basicValueEntitiesIds[$basicValueEntityId] = $basicValueEntity;
+                    $map[$basicValueEntityId] = $basicValueEntityKey;
                 }
 
                 $importedValueEntitiesIds = [];
                 foreach ($importedValue as $importedValueEntityKey => $importedValueEntity) {
-                    $importedValueEntityIds = array_filter($this->fieldHelper->getIdentityValues($importedValueEntity));
+                    $importedValueEntityIds = $this->getIdentityValues($importedValueEntity);
                     if (!$importedValueEntityIds) {
                         $toAdd[] = $importedValueEntity;
 
@@ -80,8 +85,8 @@ class ImportStrategyHelper extends BaseImportStrategyHelper
 
                     $importedValueEntityId = md5(json_encode($importedValueEntityIds));
                     $importedValueEntitiesIds[$importedValueEntityId] = $importedValueEntity;
-                    if (array_key_exists($importedValueEntityId, $basicValueEntitiesIds)) {
-                        $toReplace[$importedValueEntityId] = $importedValueEntity;
+                    if (array_key_exists($importedValueEntityId, $map)) {
+                        $toReplace[$map[$importedValueEntityId]] = $importedValueEntity;
 
                         continue;
                     }
@@ -141,5 +146,32 @@ class ImportStrategyHelper extends BaseImportStrategyHelper
             $entityMetadata->getFieldNames(),
             $entityMetadata->getAssociationNames()
         );
+    }
+
+    /**
+     * Gets identity values for entity.
+     *
+     * @param $entity
+     * @return array
+     */
+    private function getIdentityValues($entity): array
+    {
+        $identityValues = [];
+        $identityFields = $this->fieldHelper->getIdentityValues($entity);
+
+        foreach ($identityFields as $identityFieldName => $identityField) {
+            if ($identityField instanceof Collection) {
+                foreach ($identityField as $identityFieldCollectionItem) {
+                    $identityValues[$identityFieldName][] = $this->fieldHelper
+                        ->getIdentityValues($identityFieldCollectionItem);
+                }
+            } elseif (is_object($identityField)) {
+                $identityValues[$identityFieldName] = $this->fieldHelper->getIdentityValues($identityField);
+            } else {
+                $identityValues[$identityFieldName] = $identityField;
+            }
+        }
+
+        return $identityValues;
     }
 }

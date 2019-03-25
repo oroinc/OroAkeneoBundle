@@ -55,6 +55,8 @@ services:
   oro_akeneo.importexport.strategy.category:
     class: '%oro_akeneo.importexport.strategy.category.class%'
     parent: oro_locale.importexport.strategy.localized_fallback_value_aware
+    calls:
+      - [setImportStrategyHelper, ['@oro_akeneo.strategy.import.helper']]
 
   oro_akeneo.importexport.processor.category:
     class: Oro\Bundle\AkeneoBundle\ImportExport\Processor\CategoryImportProcessor
@@ -110,7 +112,8 @@ services:
     parent: oro_entity_config.importexport.strategy.entity_field.add_or_replace
     calls:
       - [setFieldHelper, ['@oro_entity.helper.field_helper']]
-      - [setConfigManager, ["@oro_entity_config.config_manager"]]
+      - [setConfigManager, ['@oro_entity_config.config_manager']]
+      - [setImportStrategyHelper, ['@oro_akeneo.strategy.import.helper']]
 
   oro_akeneo.importexport.processor.attribute:
     class: Oro\Bundle\AkeneoBundle\ImportExport\Processor\AttributeImportProcessor
@@ -148,8 +151,9 @@ services:
     parent: oro_locale.importexport.strategy.localized_fallback_value_aware
     calls:
       - [setAttributeManager, ['@oro_entity_config.manager.attribute_manager']]
-      - [setOwnerHelper, ["@oro_integration.helper.default_owner_helper"]]
-      - [setConfigManager, ["@oro_entity_config.config_manager"]]
+      - [setOwnerHelper, ['@oro_integration.helper.default_owner_helper']]
+      - [setConfigManager, ['@oro_entity_config.config_manager']]
+      - [setImportStrategyHelper, ['@oro_akeneo.strategy.import.helper']]
 
   oro_akeneo.importexport.processor.attribute_family:
     class: Oro\Bundle\AkeneoBundle\ImportExport\Processor\AttributeFamilyImportProcessor
@@ -192,6 +196,8 @@ services:
   oro_akeneo.importexport.strategy.product:
     class: '%oro_akeneo.importexport.strategy.product.class%'
     parent: oro_product.importexport.strategy.product
+    calls:
+      - [setImportStrategyHelper, ['@oro_akeneo.strategy.import.helper']]
 
   oro_akeneo.importexport.processor.product:
     class: Oro\Bundle\AkeneoBundle\ImportExport\Processor\ProductImportProcessor
@@ -219,6 +225,8 @@ services:
   oro_akeneo.importexport.strategy.product_image:
     class: '%oro_akeneo.importexport.strategy.product_image.class%'
     parent: oro_product.importexport.strategy.product_image
+    calls:
+      - [setImportStrategyHelper, ['@oro_akeneo.strategy.import.helper']]
 
   # Converter Price
   oro_akeneo.importexport.data_converter.product_price:
@@ -241,6 +249,8 @@ services:
   oro_akeneo.importexport.strategy.product_price:
     class: '%oro_akeneo.importexport.strategy.product_price.class%'
     parent: oro_pricing.importexport.strategy.product_price.add_or_replace
+    calls:
+      - [setImportStrategyHelper, ['@oro_akeneo.strategy.import.helper']]
 
   oro_akeneo.importexport.writer.product_image:
     class: '\Oro\Bundle\AkeneoBundle\ImportExport\Writer\ProductImageWriter'
