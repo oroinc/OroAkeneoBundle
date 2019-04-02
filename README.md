@@ -19,12 +19,12 @@ With this extension, you will be able to sync the following data from Akeneo to 
 1. Add composer package
 
 ```
-composer require "oro/commerce-akeneo:3.1.*"
+composer require "oro/commerce-akeneo:1.6.*"
 ```
 
-2. Follow [Installation Guide](https://oroinc.com/b2b-ecommerce/doc/3.1/install-upgrade)
+2. Follow [Installation Guide](https://oroinc.com/b2b-ecommerce/doc/1.6/install-upgrade)
 
-3. Configure [Message Queue](https://oroinc.com/b2b-ecommerce/doc/3.1/admin-guide/op-structure/mq)
+3. Configure [Message Queue](https://oroinc.com/b2b-ecommerce/doc/1.6/admin-guide/op-structure/mq)
 
 ** Recommended time limit option values is 30 seconds `--time-limit=+30seconds`
 

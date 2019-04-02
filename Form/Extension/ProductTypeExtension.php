@@ -78,11 +78,11 @@ class ProductTypeExtension extends AbstractTypeExtension
             $builder
                 ->add(
                     $field['name'],
-                    LocalizedFallbackValueCollectionType::class,
+                    LocalizedFallbackValueCollectionType::NAME,
                     [
                         'required' => false,
                         'field' => 'string' === $importExportConfig->get('fallback_field') ? 'string' : 'text',
-                        'entry_type' => 'string' === $importExportConfig->get('fallback_field')
+                        'type' => 'string' === $importExportConfig->get('fallback_field')
                             ? TextType::class
                             : TextareaType::class,
                         'constraints' => new Valid(),
