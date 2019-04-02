@@ -26,6 +26,8 @@ use Oro\Bundle\ProductBundle\ImportExport\DataConverter\ProductDataConverter as 
  */
 class ProductDataConverter extends BaseProductDataConverter implements ContextAwareInterface, ClosableInterface
 {
+    use AkeneoIntegrationTrait;
+
     /**
      * @var ContextInterface
      */
@@ -329,53 +331,6 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         }
 
         return $result;
-    }
-
-    /**
-     * @param string $code
-     *
-     * @return array
-     */
-    private function getLocalizations(string $code)
-    {
-        return $this->registry
-            ->getRepository(Localization::class)
-            ->createQueryBuilder('l')
-            ->select('l')
-            ->leftJoin('l.language', 'la')
-            ->where('la.code = :code')
-            ->setParameter('code', $code)
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * @return Localization
-     */
-    private function getDefaultLocalization()
-    {
-        return $this->registry
-            ->getRepository(Localization::class)
-            ->find($this->configManager->get('oro_locale.default_localization'));
-    }
-
-    /**
-     * @return null|AkeneoSettings
-     */
-    private function getTransport()
-    {
-        if (!$this->context || false === $this->context->hasOption('channel')) {
-            return null;
-        }
-
-        $channelId = $this->context->getOption('channel');
-        $channel = $this->registry->getRepository(Channel::class)->find($channelId);
-
-        if (!$channel) {
-            return null;
-        }
-
-        return $channel->getTransport();
     }
 
     /**
