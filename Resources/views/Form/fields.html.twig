@@ -32,9 +32,11 @@
          'akeneoCurrenciesSelector':'select[name="%s"]'|format(form.akeneoActiveCurrencies.vars.full_name),
          'channelId': form.vars.value.channel.id|default(0),
          'akeneoCurrenciesSelector':'select[name="%s"]'|format(form.akeneoActiveCurrencies.vars.full_name),
-         'backendUrl': path('oro_akeneo_validate_connection', {'channelId': form.vars.value.channel.id|default(0) })
-     }|json_encode }}"
->
+         'backendUrl': path('oro_akeneo_validate_connection', {
+             'channelId': form.vars.value.channel.id|default(0),
+             '_sa_org_id': form.parent.organization.value|default(null)
+         }
+     }|json_encode }}">
 
     <div id="check_akeneo_required_fields">
         <div class="control-group control-group-choice">
