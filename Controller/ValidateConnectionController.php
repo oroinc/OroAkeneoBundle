@@ -13,7 +13,6 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Intl\Intl;
 
 class ValidateConnectionController extends Controller
 {
@@ -102,7 +101,6 @@ class ValidateConnectionController extends Controller
                 'success' => $success,
                 'message' => $this->get('translator')->trans($message),
                 'currencyList' => $currencyConfig->getCurrencies(),
-                'localeList' => array_flip(Intl::getLocaleBundle()->getLocaleNames($request->getLocale())),
             ]
         );
     }
