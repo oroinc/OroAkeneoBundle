@@ -375,9 +375,13 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
      *
      * @return string
      */
-    private function processFileType(array $value): string
+    private function processFileType(array $value): ?string
     {
         $item = array_shift($value);
+        
+        if ($item === null) {
+            return null;
+        }
 
         return $this->getAttachmentPath($item['data']);
     }
