@@ -4,7 +4,7 @@ namespace Oro\Bundle\AkeneoBundle\Form\Type;
 
 use Oro\Bundle\AkeneoBundle\Encoder\Crypter;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
-use Oro\Bundle\AkeneoBundle\Integration\AkeneoTransport;
+use Oro\Bundle\AkeneoBundle\Integration\AkeneoTransportInterface;
 use Oro\Bundle\AkeneoBundle\Settings\DataProvider\SyncProductsDataProviderInterface;
 use Oro\Bundle\AkeneoBundle\Validator\Constraints\JsonConstraint;
 use Oro\Bundle\CatalogBundle\Entity\Category;
@@ -49,7 +49,7 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
      */
     private $syncProductsDataProvider;
     /**
-     * @var AkeneoTransport
+     * @var AkeneoTransportInterface
      */
     private $akeneoTransport;
 
@@ -61,13 +61,13 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
     /**
      * @param TranslatorInterface $translator
      * @param SyncProductsDataProviderInterface $syncProductsDataProvider
-     * @param AkeneoTransport $akeneoTransport
+     * @param AkeneoTransportInterface $akeneoTransport
      * @param Crypter $crypter
      */
     public function __construct(
         TranslatorInterface $translator,
         SyncProductsDataProviderInterface $syncProductsDataProvider,
-        AkeneoTransport $akeneoTransport,
+        AkeneoTransportInterface $akeneoTransport,
         Crypter $crypter
     ) {
         $this->translator = $translator;
