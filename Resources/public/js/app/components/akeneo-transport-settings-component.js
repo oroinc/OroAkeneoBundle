@@ -12,6 +12,7 @@ define(function(require) {
     require('jquery.select2');
     var __ = require('orotranslation/js/translator');
     var tools = require('oroui/js/tools');
+    var systemAccessModeOrganizationProvider = require('oroorganization/js/app/tools/system-access-mode-organization-provider');
 
     AkeneoTransportSettingsComponent = BaseComponent.extend({
         /**
@@ -248,6 +249,12 @@ define(function(require) {
             var status = this.status;
             var synctype = this.synctype;
             var self = this;
+            var formData = $('form[name="oro_integration_channel_form"]').serialize();
+            var organizationId = systemAccessModeOrganizationProvider.getOrganizationId();
+
+            if (organizationId) {
+                formData += '&_sa_org_id=' + organizationId;
+            }
 
             this.loadingMaskView = new LoadingMaskView({container: $('body')});
 
@@ -257,7 +264,7 @@ define(function(require) {
             $.ajax({
                 url: backendUrl,
                 type: 'POST',
-                data: $('form[name="oro_integration_channel_form"]').serialize(),
+                data: formData,
                 beforeSend: function() {
                     self.loadingMaskView.show();
                 },
