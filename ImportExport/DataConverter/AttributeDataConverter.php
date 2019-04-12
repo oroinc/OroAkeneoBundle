@@ -67,7 +67,7 @@ class AttributeDataConverter extends EntityFieldDataConverter
      *
      * @param array $importedRecord
      */
-    private function setEnumOptions(array &$importedRecord)
+    private function setEnumOptions(array &$importedRecord): void
     {
         if (empty($importedRecord['options']) || !is_array($importedRecord['options'])) {
             return;
@@ -78,6 +78,7 @@ class AttributeDataConverter extends EntityFieldDataConverter
         $defaultLocale = $transport->getMappedAkeneoLocale($defaultLocalization->getLanguageCode());
 
         foreach ($importedRecord['options'] as $key => &$option) {
+            $option['code'] = FieldConfigModelFieldNameGenerator::generate($option['code']);
             $optionKey = sprintf('enum.enum_options.%d.id', $key);
             $importedRecord[$optionKey] = $option['code'];
             $optionKey = sprintf('enum.enum_options.%d.label', $key);
