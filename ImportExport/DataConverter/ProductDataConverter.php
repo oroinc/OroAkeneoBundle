@@ -6,6 +6,7 @@ use Doctrine\Common\Util\Inflector;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeFamilyCodeGenerator;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeTypeConverter;
+use Oro\Bundle\AkeneoBundle\Tools\FieldConfigModelFieldNameGenerator;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityConfigBundle\Generator\SlugGenerator;
@@ -355,12 +356,12 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
      *
      * @return array
      */
-    private function processEnumType(array $value)
+    private function processEnumType(array $value): array
     {
         $item = array_shift($value);
 
         return [
-            'id' => $item['data'],
+            'id' => $this->prepareEnumId($item['data']),
         ];
     }
 
@@ -369,7 +370,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
      *
      * @return array
      */
-    private function processMultiEnumType(array $value)
+    private function processMultiEnumType(array $value): array
     {
         $ids = [];
         $result = [];
@@ -380,11 +381,22 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
         foreach (array_unique($ids) as $data) {
             $result[] = [
-                'id' => $data,
+                'id' => $this->prepareEnumId($data),
             ];
         }
 
         return $result;
+    }
+
+    /**
+     * Prepares enum id like saved already attribute code.
+     *
+     * @param string|null $id
+     * @return string|null
+     */
+    private function prepareEnumId(?string $id): ?string
+    {
+        return $id !== null ? FieldConfigModelFieldNameGenerator::generate($id) : null;
     }
 
     /**
