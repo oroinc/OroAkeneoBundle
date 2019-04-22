@@ -12,7 +12,7 @@ define(function(require) {
     require('jquery.select2');
     var __ = require('orotranslation/js/translator');
     var tools = require('oroui/js/tools');
-    var systemAccessModeOrganizationProvider = require('oroorganization/js/app/tools/system-access-mode-organization-provider');
+    var systemAccessModeOrganizationProvider = require('oroorganizationpro/js/app/tools/system-access-mode-organization-provider');
 
     AkeneoTransportSettingsComponent = BaseComponent.extend({
         /**
