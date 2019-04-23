@@ -26,7 +26,7 @@ class AttributeDataConverter extends EntityFieldDataConverter
         $importedRecord['useable_as_grid_filter'] =
             !in_array($importedRecord['type'], ['pim_catalog_file', 'pim_catalog_date']);
         $importedRecord['search.searchable'] = $importedRecord['useable_as_grid_filter'];
-        $importedRecord['datagrid.is_visible'] = DatagridScope::IS_VISIBLE_HIDDEN;
+        $importedRecord['datagrid.is_visible'] = DatagridScope::IS_VISIBLE_FALSE;
         $importedRecord['fieldName'] = FieldConfigModelFieldNameGenerator::generate($importedRecord['code']);
         $importedRecord['entity:id'] = (int)$this->getContext()->getValue('entity_id');
         $this->setLabels($importedRecord);
