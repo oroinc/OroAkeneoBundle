@@ -4,11 +4,14 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\Writer;
 
 use Doctrine\Common\Cache\CacheProvider;
 use Oro\Bundle\AkeneoBundle\Tools\EnumSynchronizer;
+use Oro\Bundle\EntityBundle\EntityConfig\DatagridScope;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityConfigBundle\Attribute\AttributeTypeRegistry;
+use Oro\Bundle\EntityConfigBundle\Config\ConfigInterface;
 use Oro\Bundle\EntityConfigBundle\Entity\FieldConfigModel;
 use Oro\Bundle\EntityConfigBundle\ImportExport\Writer\AttributeWriter as BaseAttributeWriter;
 use Oro\Bundle\EntityExtendBundle\Entity\EnumValueTranslation;
+use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
 use Oro\Bundle\EntityExtendBundle\Extend\RelationType;
 use Oro\Bundle\EntityExtendBundle\Tools\ExtendHelper;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
@@ -16,6 +19,9 @@ use Oro\Bundle\ProductBundle\Entity\Product;
 use Oro\Bundle\TranslationBundle\Entity\Translation;
 use Oro\Bundle\TranslationBundle\Manager\TranslationManager;
 
+/**
+ * Import writer for product attributes.
+ */
 class AttributeWriter extends BaseAttributeWriter
 {
     const ATTRIBUTE_LABELS_CONTEXT_KEY = 'attributeLabels';
@@ -250,6 +256,15 @@ class AttributeWriter extends BaseAttributeWriter
         $attributeConfig = $attributeProvider->getConfig($className, $fieldName);
         $searchConfig = $searchProvider->getConfig($className, $fieldName);
         $type = $this->attributeTypeRegistry->getAttributeType($fieldConfigModel);
+        $extendConfig = $extendProvider->getConfig($className, $fieldName);
+
+        $this->fieldTypeMapping = $this->cacheProvider->fetch('attribute_fieldTypeMapping') ?? [];
+        $importedFieldType = $this->fieldTypeMapping[$fieldConfigModel->getFieldName()] ?? null;
+
+        if ($extendConfig->is('state', ExtendScope::STATE_NEW)) {
+            $this->saveDatagridConfig($className, $fieldName);
+            $this->setSearchConfig($searchConfig, $importedFieldType);
+        }
 
         if (false === $type->isSearchable()) {
             $attributeConfig->set('searchable', false);
@@ -266,7 +281,6 @@ class AttributeWriter extends BaseAttributeWriter
             return;
         }
 
-        $extendConfig = $extendProvider->getConfig($className, $fieldName);
         $extendConfig->set('target_entity', LocalizedFallbackValue::class);
         $extendConfig->set('bidirectional', false);
         $extendConfig->set('without_default', true);
@@ -281,20 +295,37 @@ class AttributeWriter extends BaseAttributeWriter
 
         $extendConfig->set('relation_key', $relationKey);
 
-        $this->fieldTypeMapping = $this->cacheProvider->fetch('attribute_fieldTypeMapping') ?? [];
-        if (isset($this->fieldTypeMapping[$fieldConfigModel->getFieldName()]) &&
-            'pim_catalog_text' === $this->fieldTypeMapping[$fieldConfigModel->getFieldName()]) {
-            $type = 'string';
-        } else {
-            $type = 'text';
-        }
+        $fieldType = $importedFieldType === 'pim_catalog_text' ? 'string' : 'text';
 
-        $extendConfig->set('target_title', [$type]);
-        $extendConfig->set('target_detailed', [$type]);
-        $extendConfig->set('target_grid', [$type]);
+        $extendConfig->set('target_title', [$fieldType]);
+        $extendConfig->set('target_detailed', [$fieldType]);
+        $extendConfig->set('target_grid', [$fieldType]);
 
-        $importExportConfig->set('fallback_field', $type);
+        $importExportConfig->set('fallback_field', $fieldType);
         $this->configManager->persist($extendConfig);
         $this->configManager->persist($importExportConfig);
+    }
+
+    /**
+     * @param string $className
+     * @param string $fieldName
+     */
+    private function saveDatagridConfig(string $className, string $fieldName): void
+    {
+        $datagridProvider = $this->configManager->getProvider('datagrid');
+        $datagridConfig = $datagridProvider->getConfig($className, $fieldName);
+        $datagridConfig->set('is_visible', DatagridScope::IS_VISIBLE_FALSE);
+
+        $this->configManager->persist($datagridConfig);
+    }
+
+    /**
+     * @param ConfigInterface $searchConfig
+     * @param string|null $importedFieldType
+     */
+    private function setSearchConfig(ConfigInterface $searchConfig, ?string $importedFieldType): void
+    {
+        $searchable = !in_array($importedFieldType, ['pim_catalog_file', 'pim_catalog_date']);
+        $searchConfig->set('searchable', $searchable);
     }
 }
