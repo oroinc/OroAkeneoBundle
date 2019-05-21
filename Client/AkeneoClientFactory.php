@@ -13,6 +13,9 @@ use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
  */
 class AkeneoClientFactory
 {
+    /** @deprecated */
+    const MASTER_CHANNEL_NAME = 'master';
+
     /**
      * @var Crypter
      */
@@ -164,11 +167,11 @@ class AkeneoClientFactory
 
     /**
      * Persist authentication tokens.
-     * Sends request to get 1 category. It's needed to fetch token.
+     * Sends request to get currencies. It's needed to fetch token.
      */
-    private function persistTokens(): void
+    private function persistTokens()
     {
-        $this->client->getCategoryApi()->all(1);
+        $this->client->getCurrencyApi()->all();
         $this->akeneoSettings->setToken($this->client->getToken());
         $this->akeneoSettings->setRefreshToken($this->client->getRefreshToken());
         $this->akeneoSettings->setTokenExpiryDateTime(new \DateTime('now +3590 seconds'));
