@@ -191,7 +191,7 @@ services:
       - [setSlugGenerator, ["@oro_entity_config.slug.generator"]]
       - [setEntityConfigManager, ["@oro_entity_config.config_manager"]]
       - [setDateTimeFormatter, ["@oro_locale.formatter.date_time"]]
-      - [setAttachmentsDir, ["%kernel.root_dir%/import_export/attachments/"]]
+      - [setAttachmentsDir, ["%kernel.project_dir%/var/import_export/attachments/"]]
 
   oro_akeneo.importexport.strategy.product:
     class: '%oro_akeneo.importexport.strategy.product.class%'
@@ -253,7 +253,7 @@ services:
       - [setImportStrategyHelper, ['@oro_akeneo.strategy.import.helper']]
 
   oro_akeneo.importexport.writer.product_image:
-    class: '\Oro\Bundle\AkeneoBundle\ImportExport\Writer\ProductImageWriter'
+    class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\ProductImageWriter'
     parent: oro_integration.writer.persistent_batch_writer
 
   oro_akeneo.importexport.writer.attribute:
