@@ -43,7 +43,7 @@ class AttributeDataConverter extends EntityFieldDataConverter
         $defaultLocale = $this->getTransport()->getMappedAkeneoLocale($defaultLocalization->getLanguageCode());
 
         $importedRecord['entity.label'] = $importedRecord['labels'][$defaultLocale] ?? $importedRecord['code'];
-        $importedRecord['entity.label'] = substr($importedRecord['entity.label'], 0, self::ENTITY_LABEL_MAX_LENGTH);
+        $importedRecord['entity.label'] = mb_substr($importedRecord['entity.label'], 0, self::ENTITY_LABEL_MAX_LENGTH);
         $importedRecord['translatedLabels'] = [];
 
         foreach ($this->getTransport()->getAkeneoLocales() as $akeneoLocale) {

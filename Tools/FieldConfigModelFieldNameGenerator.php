@@ -13,10 +13,10 @@ class FieldConfigModelFieldNameGenerator
     {
         $value = sprintf('Akeneo_%s', $value);
 
-        if (strlen($value) < 23) {
+        if (mb_strlen($value) < 23) {
             return $value;
         }
 
-        return substr($value, 0, 11).'_'.crc32($value);
+        return mb_substr($value, 0, 11).'_'.crc32($value);
     }
 }
