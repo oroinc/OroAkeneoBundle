@@ -58,6 +58,7 @@ class ProductTypeExtension extends AbstractTypeExtension
         $fields = $this->fieldHelper->getRelations(Product::class);
         $importExportProvider = $this->configManager->getProvider('importexport');
         $extendProvider = $this->configManager->getProvider('extend');
+        $entityProvider = $this->configManager->getProvider('entity');
 
         foreach ($fields as $field) {
             $importExportConfig = $importExportProvider->getConfig(Product::class, $field['name']);
@@ -75,11 +76,14 @@ class ProductTypeExtension extends AbstractTypeExtension
                 continue;
             }
 
+            $fieldLabel = $entityProvider->getConfig(Product::class, $field['name'])->get('label');
+
             $builder
                 ->add(
                     $field['name'],
                     LocalizedFallbackValueCollectionType::class,
                     [
+                        'label' => $fieldLabel,
                         'required' => false,
                         'field' => 'string' === $importExportConfig->get('fallback_field') ? 'string' : 'text',
                         'entry_type' => 'string' === $importExportConfig->get('fallback_field')
