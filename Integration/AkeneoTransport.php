@@ -12,12 +12,11 @@ use Oro\Bundle\AkeneoBundle\Integration\Iterator\AttributeFamilyIterator;
 use Oro\Bundle\AkeneoBundle\Integration\Iterator\AttributeIterator;
 use Oro\Bundle\AkeneoBundle\Integration\Iterator\ProductIterator;
 use Oro\Bundle\IntegrationBundle\Entity\Transport;
-use Oro\Bundle\IntegrationBundle\Provider\TransportInterface;
 use Oro\Bundle\MultiCurrencyBundle\Config\MultiCurrencyConfigProvider;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Intl\Intl;
 
-class AkeneoTransport implements TransportInterface
+class AkeneoTransport implements AkeneoTransportInterface
 {
     /**
      * @var AkeneoClientFactory
@@ -55,8 +54,6 @@ class AkeneoTransport implements TransportInterface
     private $logger;
 
     /**
-     * AkeneoTransport constructor.
-     *
      * @param AkeneoClientFactory $clientFactory
      * @param MultiCurrencyConfigProvider $configProvider
      * @param AkeneoSearchBuilder $akeneoSearchBuilder
