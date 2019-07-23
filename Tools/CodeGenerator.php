@@ -2,6 +2,9 @@
 
 namespace Oro\Bundle\AkeneoBundle\Tools;
 
+/**
+ * Generates code which should start with a symbol and contain only alphabetic symbols.
+ */
 class CodeGenerator
 {
     /**
