@@ -165,18 +165,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         $fieldMapping = $this->getFieldMapping();
 
         foreach ($importedRecord['values'] as $attributeCode => $value) {
-            $attributeCodes = [
-                $attributeCode,
-                Inflector::singularize(Inflector::camelize($attributeCode)),
-                Inflector::pluralize(Inflector::camelize($attributeCode)),
-            ];
-
-            $field = null;
-            foreach ($attributeCodes as $guessedCode) {
-                if (!empty($fieldMapping[$guessedCode])) {
-                    $field = $fieldMapping[$guessedCode];
-                }
-            }
+            $field = $this->getField($attributeCode, $fieldMapping);
 
             if (!$field) {
                 unset($importedRecord['values'][$attributeCode]);
@@ -202,7 +191,9 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
                 continue;
             }
 
-            if (AttributeTypeConverter::convert($value[0]['type']) !== $field['type']) {
+            $valueFirstItem = array_values($value)[0];
+
+            if (AttributeTypeConverter::convert($valueFirstItem['type']) !== $field['type']) {
                 unset($importedRecord['values'][$attributeCode]);
 
                 continue;
@@ -216,7 +207,9 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
                     $importedRecord[$field['name']] = $this->processMultiEnumType($value);
                     break;
                 case 'file':
-                    $importedRecord[$field['name']] = $this->processFileType($value);
+                    if ($valueFirstItem['data']) {
+                        $importedRecord[$field['name']] = $this->processFileType($value);
+                    }
                     break;
                 default:
                     $importedRecord[$field['name']] = $this->processBasicType($value);
@@ -225,6 +218,30 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
             unset($importedRecord['values'][$attributeCode]);
         }
+    }
+
+    /**
+     * Gets field by attribute code.
+     *
+     * @param string $attributeCode
+     * @param array $fieldMapping
+     * @return array|null
+     */
+    private function getField(string $attributeCode, array $fieldMapping): ?array
+    {
+        $attributeCodes = [
+            $attributeCode,
+            Inflector::singularize(Inflector::camelize($attributeCode)),
+            Inflector::pluralize(Inflector::camelize($attributeCode)),
+        ];
+
+        foreach ($attributeCodes as $guessedCode) {
+            if (!empty($fieldMapping[$guessedCode])) {
+                $field = $fieldMapping[$guessedCode];
+            }
+        }
+
+        return $field ?? null;
     }
 
     private function getFieldMapping()
