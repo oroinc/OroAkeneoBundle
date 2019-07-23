@@ -2,12 +2,12 @@
 
 namespace Oro\Bundle\AkeneoBundle\Integration\Connector;
 
-use Oro\Bundle\AkeneoBundle\Integration\AkeneoTransport;
+use Oro\Bundle\AkeneoBundle\Integration\AkeneoTransportInterface;
 use Oro\Bundle\EntityConfigBundle\Entity\FieldConfigModel;
 use Oro\Bundle\IntegrationBundle\Provider\AbstractConnector;
 
 /**
- * @property AkeneoTransport $transport
+ * @property AkeneoTransportInterface $transport
  */
 class AttributeConnector extends AbstractConnector
 {
