@@ -124,7 +124,7 @@ class AttributeImportStrategy extends EntityFieldImportStrategy
                 return null;
             }
 
-            // Field should get new fieldName
+            // Field should get new fieldName @BC: Akeneo_Aken_1706289854 to Akeneo_bran_1706289854
             $fieldName = FieldConfigModelFieldNameGenerator::generate(
                 sprintf('%s_%s', $entity->getFieldName(), $entity->getType())
             );
