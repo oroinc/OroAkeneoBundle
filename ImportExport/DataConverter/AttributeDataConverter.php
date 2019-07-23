@@ -5,7 +5,6 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeTypeConverter;
 use Oro\Bundle\AkeneoBundle\Tools\FieldConfigModelFieldNameGenerator;
-use Oro\Bundle\EntityBundle\EntityConfig\DatagridScope;
 use Oro\Bundle\EntityConfigBundle\ImportExport\DataConverter\EntityFieldDataConverter;
 
 /**
@@ -14,6 +13,8 @@ use Oro\Bundle\EntityConfigBundle\ImportExport\DataConverter\EntityFieldDataConv
 class AttributeDataConverter extends EntityFieldDataConverter
 {
     use AkeneoIntegrationTrait;
+
+    private const ENTITY_LABEL_MAX_LENGTH = 50;
 
     /**
      * @var ManagerRegistry
@@ -27,10 +28,6 @@ class AttributeDataConverter extends EntityFieldDataConverter
     {
         $importedRecord['code'] = FieldConfigModelFieldNameGenerator::generate($importedRecord['code']);
         $importedRecord['type'] = AttributeTypeConverter::convert($importedRecord['type']);
-        $importedRecord['useable_as_grid_filter'] =
-            !in_array($importedRecord['type'], ['pim_catalog_file', 'pim_catalog_date']);
-        $importedRecord['search.searchable'] = $importedRecord['useable_as_grid_filter'];
-        $importedRecord['datagrid.is_visible'] = DatagridScope::IS_VISIBLE_HIDDEN;
         $importedRecord['fieldName'] = $importedRecord['code'];
         $importedRecord['entity:id'] = (int)$this->getContext()->getValue('entity_id');
         $this->setLabels($importedRecord);
@@ -50,6 +47,7 @@ class AttributeDataConverter extends EntityFieldDataConverter
         $defaultLocale = $this->getTransport()->getMappedAkeneoLocale($defaultLocalization->getLanguageCode());
 
         $importedRecord['entity.label'] = $importedRecord['labels'][$defaultLocale] ?? $importedRecord['code'];
+        $importedRecord['entity.label'] = mb_substr($importedRecord['entity.label'], 0, self::ENTITY_LABEL_MAX_LENGTH);
         $importedRecord['translatedLabels'] = [];
 
         foreach ($this->getTransport()->getAkeneoLocales() as $akeneoLocale) {

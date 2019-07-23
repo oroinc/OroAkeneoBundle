@@ -27,6 +27,8 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
 {
     use ImportStrategyAwareHelperTrait;
 
+    private const GROUP_CODE_GENERAL = 'general';
+
     /**
      * @var DefaultOwnerHelper
      */
@@ -114,10 +116,9 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
     /**
      * @param AttributeFamily $entity
      */
-    private function setSystemAttributes(AttributeFamily $entity)
+    private function setSystemAttributes(AttributeFamily $entity): void
     {
-        $defaultGroup = new AttributeGroup();
-        $defaultGroup->setAkeneoCode('default');
+        $defaultGroup = $this->getDefaultGroup($entity);
         $systemAttributes = $this->attributeManager->getSystemAttributesByClass($entity->getEntityClass());
 
         foreach ($systemAttributes as $systemAttribute) {
@@ -354,5 +355,23 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
         } else {
             $this->context->incrementAddCount();
         }
+    }
+
+    /**
+     * Gets existing default attribute group or creates new one.
+     *
+     * @param AttributeFamily $entity
+     * @return AttributeGroup
+     */
+    private function getDefaultGroup(AttributeFamily $entity): AttributeGroup
+    {
+        $defaultGroup = $entity->getAttributeGroup(self::GROUP_CODE_GENERAL);
+
+        if (!$defaultGroup) {
+            $defaultGroup = new AttributeGroup();
+            $defaultGroup->setAkeneoCode('default');
+        }
+
+        return $defaultGroup;
     }
 }
