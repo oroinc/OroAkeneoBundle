@@ -6,7 +6,7 @@ use Doctrine\Common\Util\Inflector;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeFamilyCodeGenerator;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeTypeConverter;
-use Oro\Bundle\AkeneoBundle\Tools\CodeGenerator;
+use Oro\Bundle\AkeneoBundle\Tools\Generator;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityConfigBundle\Generator\SlugGenerator;
@@ -396,7 +396,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
      */
     private function prepareEnumId(?string $id): ?string
     {
-        return $id !== null ? CodeGenerator::generate($id) : null;
+        return $id !== null ? Generator::generateCode($id) : null;
     }
 
     /**

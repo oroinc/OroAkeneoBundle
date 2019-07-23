@@ -4,7 +4,7 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeTypeConverter;
-use Oro\Bundle\AkeneoBundle\Tools\CodeGenerator;
+use Oro\Bundle\AkeneoBundle\Tools\Generator;
 use Oro\Bundle\AkeneoBundle\Tools\FieldConfigModelFieldNameGenerator;
 use Oro\Bundle\EntityConfigBundle\ImportExport\DataConverter\EntityFieldDataConverter;
 
@@ -46,8 +46,8 @@ class AttributeDataConverter extends EntityFieldDataConverter
         $defaultLocalization = $this->getDefaultLocalization();
         $defaultLocale = $this->getTransport()->getMappedAkeneoLocale($defaultLocalization->getLanguageCode());
 
-        $importedRecord['entity.label'] = $importedRecord['labels'][$defaultLocale] ?? $importedRecord['code'];
-        $importedRecord['entity.label'] = CodeGenerator::generate($importedRecord['entity.label'], 50);
+        $importedRecord['entity.label'] = $importedRecord['labels'][$defaultLocale] ??
+            Generator::generateLabel($importedRecord['code']);
 
         $importedRecord['translatedLabels'] = [];
         foreach ($this->getTransport()->getAkeneoLocales() as $akeneoLocale) {
@@ -76,11 +76,11 @@ class AttributeDataConverter extends EntityFieldDataConverter
         $defaultLocale = $transport->getMappedAkeneoLocale($defaultLocalization->getLanguageCode());
 
         foreach ($importedRecord['options'] as $key => &$option) {
-            $code = CodeGenerator::generate($option['code']);
             $optionKey = sprintf('enum.enum_options.%d.id', $key);
-            $importedRecord[$optionKey] = $code;
+            $importedRecord[$optionKey] = Generator::generateCode($option['code']);
             $optionKey = sprintf('enum.enum_options.%d.label', $key);
-            $importedRecord[$optionKey] = $option['labels'][$defaultLocale] ?? $code;
+            $importedRecord[$optionKey] =
+                $option['labels'][$defaultLocale] ?? Generator::generateLabel($option['code']);
             $importedRecord['options'][$key]['translatedLabels'] = [];
             $importedRecord['options'][$key]['defaultLabel'] = $importedRecord[$optionKey];
             $optionKey = sprintf('enum.enum_options.%d.is_default', $key);
