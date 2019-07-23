@@ -5,7 +5,6 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeTypeConverter;
 use Oro\Bundle\AkeneoBundle\Tools\FieldConfigModelFieldNameGenerator;
-use Oro\Bundle\EntityBundle\EntityConfig\DatagridScope;
 use Oro\Bundle\EntityConfigBundle\ImportExport\DataConverter\EntityFieldDataConverter;
 
 class AttributeDataConverter extends EntityFieldDataConverter
@@ -23,10 +22,6 @@ class AttributeDataConverter extends EntityFieldDataConverter
     public function convertToImportFormat(array $importedRecord, $skipNullValues = true)
     {
         $importedRecord['type'] = AttributeTypeConverter::convert($importedRecord['type']);
-        $importedRecord['useable_as_grid_filter'] =
-            !in_array($importedRecord['type'], ['pim_catalog_file', 'pim_catalog_date']);
-        $importedRecord['search.searchable'] = $importedRecord['useable_as_grid_filter'];
-        $importedRecord['datagrid.is_visible'] = DatagridScope::IS_VISIBLE_HIDDEN;
         $importedRecord['fieldName'] = FieldConfigModelFieldNameGenerator::generate($importedRecord['code']);
         $importedRecord['entity:id'] = (int)$this->getContext()->getValue('entity_id');
         $this->setLabels($importedRecord);
