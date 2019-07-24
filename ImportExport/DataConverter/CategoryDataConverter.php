@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 
+use Oro\Bundle\AkeneoBundle\Tools\Generator;
 use Oro\Bundle\EntityConfigBundle\Generator\SlugGenerator;
 use Oro\Bundle\ImportExportBundle\Context\ContextAwareInterface;
 use Oro\Bundle\LocaleBundle\ImportExport\DataConverter\LocalizedFallbackValueAwareDataConverter;
@@ -50,7 +51,8 @@ class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter imp
         $importedRecord['titles'] = [
             'default' => [
                 'fallback' => null,
-                'string' => $importedRecord['labels'][$defaultLocale] ?? $importedRecord['code'],
+                'string' => $importedRecord['labels'][$defaultLocale] ??
+                    Generator::generateLabel($importedRecord['code']),
             ],
         ];
 
