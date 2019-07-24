@@ -10,6 +10,9 @@ use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 use Oro\Bundle\IntegrationBundle\ImportExport\Processor\StepExecutionAwareImportProcessor;
 use Oro\Bundle\ProductBundle\Entity\Product;
 
+/**
+ * Converts data to import format, processes entity.
+ */
 class AttributeImportProcessor extends StepExecutionAwareImportProcessor
 {
     use CacheProviderAwareProcessor;
