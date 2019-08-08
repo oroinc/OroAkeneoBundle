@@ -2,8 +2,36 @@
 
 namespace Oro\Bundle\AkeneoBundle\Integration\Iterator;
 
+use Akeneo\Pim\ApiClient\Pagination\ResourceCursorInterface;
+use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientInterface;
+use Psr\Log\LoggerInterface;
+
 class AttributeIterator extends AbstractIterator
 {
+    /**
+     * @var array
+     */
+    private $attributesFilter = [];
+
+    /**
+     * AttributeIterator constructor.
+     *
+     * @param \Akeneo\Pim\ApiClient\Pagination\ResourceCursorInterface $resourceCursor
+     * @param \Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientInterface $client
+     * @param \Psr\Log\LoggerInterface $logger
+     * @param array $attributesFilter
+     */
+    public function __construct(
+        ResourceCursorInterface $resourceCursor,
+        AkeneoPimEnterpriseClientInterface $client,
+        LoggerInterface $logger,
+        $attributesFilter = []
+    ) {
+        $this->attributesFilter = $attributesFilter;
+
+        parent::__construct($resourceCursor, $client, $logger);
+    }
+
     /**
      * @var
      */
@@ -17,11 +45,23 @@ class AttributeIterator extends AbstractIterator
      */
     public function doCurrent()
     {
-        $attribute = $this->resourceCursor->current();
+        $attribute = $this->filter();
+
+        if (null === $attribute) {
+            return null;
+        }
 
         $this->setOptions($attribute);
 
         return $attribute;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function valid()
+    {
+        return $this->resourceCursor->valid();
     }
 
     /**
@@ -53,5 +93,30 @@ class AttributeIterator extends AbstractIterator
                 return ($a['sort_order'] < $b['sort_order']) ? -1 : 1;
             }
         );
+    }
+
+    /**
+     * @param $attribute
+     *
+     * @return array|null
+     */
+    private function filter()
+    {
+        do {
+            $attribute = $this->resourceCursor->current();
+
+            if (!empty($this->attributesFilter) && !in_array($attribute['code'], $this->attributesFilter)) {
+                $this->next();
+
+                if (!$this->valid()) {
+                    return null;
+                }
+            } else {
+                break;
+            }
+
+        } while ($this->valid());
+
+        return $attribute;
     }
 }

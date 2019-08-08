@@ -142,6 +142,13 @@ class AkeneoSettings extends Transport
     private $priceList;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="akeneo_attributes_list", type="text", nullable=true)
+     */
+    private $attributesList;
+
+    /**
      * @var ParameterBag
      */
     private $settings;
@@ -238,6 +245,7 @@ class AkeneoSettings extends Transport
                     'akeneoActiveCurrencies' => $this->getAkeneoActiveCurrencies(),
                     'akeneoLocales' => $this->getAkeneoLocales()->toArray(),
                     'akeneoLocalesList' => $this->getAkeneoLocalesList(),
+                    'akeneoAttributesList' => $this->getAttributesList(),
                 ]
             );
         }
@@ -605,6 +613,26 @@ class AkeneoSettings extends Transport
     public function setPriceList(PriceList $priceList): self
     {
         $this->priceList = $priceList;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAttributesList(): ?string
+    {
+        return $this->attributesList;
+    }
+
+    /**
+     * @param string $attributeList
+     *
+     * @return $this
+     */
+    public function setAttributesList($attributeList)
+    {
+        $this->attributesList = $attributeList;
 
         return $this;
     }

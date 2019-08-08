@@ -187,6 +187,14 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 ]
             )
             ->add(
+                'attributesList',
+                TextareaType::class,
+                [
+                    'required' => false,
+                    'label' => 'oro.akeneo.integration.settings.akeneo_attribute_list.label',
+                ]
+            )
+            ->add(
                 'rootCategory',
                 EntityType::class,
                 [
@@ -410,6 +418,8 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                     'choices' => $currencies,
                 ]
             );
+
+            $transportData['attributesList'] = str_replace(' ','', $transportData['attributesList']);
 
             $event->setData($transportData);
         } catch (\Exception $e) {
