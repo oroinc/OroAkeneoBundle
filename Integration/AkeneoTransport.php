@@ -246,11 +246,14 @@ class AkeneoTransport implements AkeneoTransportInterface
 
     /**
      * @param int $pageSize
+     * @param null $filter
      *
      * @return \Iterator
      */
     public function getAttributes(int $pageSize)
     {
-        return new AttributeIterator($this->client->getAttributeApi()->all($pageSize), $this->client, $this->logger);
+        $attributeFilter = explode(';', str_replace(' ', '', $this->transportEntity->getAttributesList()), -1);
+
+        return new AttributeIterator($this->client->getAttributeApi()->all($pageSize), $this->client, $this->logger, $attributeFilter);
     }
 }
