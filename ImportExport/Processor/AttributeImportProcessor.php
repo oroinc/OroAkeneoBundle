@@ -133,10 +133,10 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
         $this->cacheProvider->save('attribute_optionLabels', $this->optionLabels);
         $this->cacheProvider->save('attribute_fieldNameMapping', $this->fieldNameMapping);
         $this->cacheProvider->save('attribute_fieldTypeMapping', $this->fieldTypeMapping);
-        unset($this->attributeLabels);
-        unset($this->optionLabels);
-        unset($this->fieldNameMapping);
-        unset($this->fieldTypeMapping);
+        $this->attributeLabels = null;
+        $this->optionLabels = null;
+        $this->fieldNameMapping = null;
+        $this->fieldTypeMapping = null;
     }
 
     protected function removeUnprocessed()

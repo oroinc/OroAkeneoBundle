@@ -56,11 +56,11 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
      */
     public function up(Schema $schema, QueryBag $queries)
     {
-        /* Tables generation **/
+        /* Tables generation */
         $this->createOroAkeneoLocaleTable($schema);
         $this->updateIntegrationTransportTable($schema);
 
-        /* Foreign keys generation **/
+        /* Foreign keys generation */
         $this->addOroAkeneoLocaleForeignKeys($schema);
         $this->addOroIntegrationTransportForeignKeys($schema);
 

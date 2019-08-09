@@ -20,6 +20,6 @@ class FieldConfigModelFieldNameGenerator
             return $value;
         }
 
-        return mb_substr($value, 0, 11).'_'.crc32($value);
+        return mb_substr($value, 0, 11) . '_' . crc32($value);
     }
 }

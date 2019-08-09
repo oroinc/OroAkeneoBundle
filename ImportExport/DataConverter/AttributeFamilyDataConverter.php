@@ -3,8 +3,8 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 
 use Oro\Bundle\AkeneoBundle\Tools\AttributeFamilyCodeGenerator;
-use Oro\Bundle\AkeneoBundle\Tools\Generator;
 use Oro\Bundle\AkeneoBundle\Tools\FieldConfigModelFieldNameGenerator;
+use Oro\Bundle\AkeneoBundle\Tools\Generator;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager as EntityConfigManager;
 use Oro\Bundle\ImportExportBundle\Context\ContextAwareInterface;
 use Oro\Bundle\LocaleBundle\ImportExport\DataConverter\LocalizedFallbackValueAwareDataConverter;

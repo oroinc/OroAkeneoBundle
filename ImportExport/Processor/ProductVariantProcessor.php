@@ -21,6 +21,7 @@ class ProductVariantProcessor implements ProcessorInterface
     /**
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @param mixed $items
      */
     public function process($items)
     {
@@ -33,7 +34,7 @@ class ProductVariantProcessor implements ProcessorInterface
 
         $variantSkusUppercase = array_map(
             function ($variantSku) {
-                return strtoupper($variantSku);
+                return mb_strtoupper($variantSku);
             },
             array_column($items, 'variant')
         );
@@ -79,7 +80,6 @@ class ProductVariantProcessor implements ProcessorInterface
                 $hasChanges = true;
             }
         }
-
 
         if ($hasChanges) {
             return $parentProduct;

@@ -64,10 +64,10 @@ class AttributeWriter extends BaseAttributeWriter
         $this->cacheProvider->delete('attribute_optionLabels');
         $this->cacheProvider->delete('attribute_fieldNameMapping');
         $this->cacheProvider->delete('attribute_fieldTypeMapping');
-        unset($this->attributeLabels);
-        unset($this->optionLabels);
-        unset($this->fieldNameMapping);
-        unset($this->fieldTypeMapping);
+        $this->attributeLabels = null;
+        $this->optionLabels = null;
+        $this->fieldNameMapping = null;
+        $this->fieldTypeMapping = null;
     }
 
     /**
@@ -119,8 +119,6 @@ class AttributeWriter extends BaseAttributeWriter
 
         $this->saveAttributeTranslationsFromContext($items);
         $this->saveOptionTranslationsFromContext($items);
-
-        $this->configManager->clear();
     }
 
     /**
@@ -265,6 +263,8 @@ class AttributeWriter extends BaseAttributeWriter
             $this->saveDatagridConfig($className, $fieldName);
             $this->setSearchConfig($searchConfig, $importedFieldType);
         }
+
+        $attributeConfig->set('is_attribute', true);
 
         if (false === $type->isSearchable()) {
             $attributeConfig->set('searchable', false);

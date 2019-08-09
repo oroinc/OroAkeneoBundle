@@ -4,8 +4,8 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeTypeConverter;
-use Oro\Bundle\AkeneoBundle\Tools\Generator;
 use Oro\Bundle\AkeneoBundle\Tools\FieldConfigModelFieldNameGenerator;
+use Oro\Bundle\AkeneoBundle\Tools\Generator;
 use Oro\Bundle\EntityConfigBundle\ImportExport\DataConverter\EntityFieldDataConverter;
 
 /**

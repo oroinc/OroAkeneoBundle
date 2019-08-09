@@ -32,16 +32,19 @@ class Generator
 
         $ascii = @iconv('utf-8', 'ascii//TRANSLIT', (string)$value);
         if ($ascii === false) {
-            return $prefix.crc32($value);
+            return $prefix . crc32($value);
         }
 
-        $label = $prefix.$ascii;
+        $label = $prefix . $ascii;
 
         if (mb_strlen($label) <= $maxLength) {
             return $label;
         }
 
-        return $prefix.mb_substr($value, 0, $maxLength - mb_strlen($prefix.'_'.crc32($value))).'_'.crc32($value);
+        return $prefix
+            . mb_substr($value, 0, $maxLength - mb_strlen($prefix . '_' . crc32($value)))
+            . '_'
+            . crc32($value);
     }
 
     /**

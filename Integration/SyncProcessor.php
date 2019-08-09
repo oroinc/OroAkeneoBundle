@@ -44,7 +44,7 @@ class SyncProcessor implements SyncProcessorInterface, LoggerStrategyAwareInterf
             );
         }
 
-        $jobName = 'oro_integration:sync_integration:'.$integration->getId();
+        $jobName = 'oro_integration:sync_integration:' . $integration->getId();
 
         $existingJob = $this->jobProcessor->findRootJobByJobNameAndStatuses(
             $jobName,

@@ -57,6 +57,6 @@ class AttributeFamilyStatusProcessor implements ProcessorInterface
     public function flush()
     {
         $this->cacheProvider->delete('attribute_family');
-        unset($this->processedAttributeFamilies);
+        $this->processedAttributeFamilies = null;
     }
 }
