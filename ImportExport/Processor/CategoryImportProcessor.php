@@ -30,6 +30,6 @@ class CategoryImportProcessor extends StepExecutionAwareImportProcessor
     public function flush()
     {
         $this->cacheProvider->save('category', $this->processedIds);
-        unset($this->processedIds);
+        $this->processedIds = null;
     }
 }

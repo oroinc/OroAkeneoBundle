@@ -124,7 +124,7 @@ class ImportStrategyHelper extends BaseImportStrategyHelper
      */
     private function getEntityPropertiesByClassName($entityClassName)
     {
-        /**
+        /*
          * In case if we work with configured entities then we should use fieldHelper
          * to getting fields because it won't returns any hidden fields (f.e snapshot fields)
          * that mustn't be changed by import/export

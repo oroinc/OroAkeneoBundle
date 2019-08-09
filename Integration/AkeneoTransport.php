@@ -112,7 +112,8 @@ class AkeneoTransport implements AkeneoTransportInterface
         foreach ($this->client->getCurrencyApi()->all() as $currency) {
             if (false === $currency['enabled']) {
                 continue;
-            } elseif (in_array($currency['code'], $oroCurrencies)) {
+            }
+            if (in_array($currency['code'], $oroCurrencies)) {
                 $currencies[$currency['code']] = $currency['code'];
             }
         }

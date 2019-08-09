@@ -92,6 +92,7 @@ class AsyncWriter implements
                                 'connector' => 'product',
                                 'connector_parameters' => [
                                     'items' => $items,
+                                    'incremented_read' => true,
                                 ],
                             ],
                             MessagePriority::HIGH

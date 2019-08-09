@@ -34,7 +34,7 @@ class ProductPriceReader extends IteratorBasedReader
                             continue;
                         }
 
-                        $prices[$price['sku'].'_'.$price['currency']] = $price;
+                        $prices[$price['sku'] . '_' . $price['currency']] = $price;
                     }
                 }
             }

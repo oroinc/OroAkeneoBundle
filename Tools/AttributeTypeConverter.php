@@ -27,6 +27,6 @@ class AttributeTypeConverter
      */
     public static function convert(string $type): ?string
     {
-        return self::TYPE_MAPPING[strtolower($type)] ?? null;
+        return self::TYPE_MAPPING[mb_strtolower($type)] ?? null;
     }
 }

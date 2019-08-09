@@ -21,7 +21,7 @@ class ValidateConnectionController extends Controller
 
     /**
      * @Route("/validate-akeneo-connection/{channelId}/", name="oro_akeneo_validate_connection")
-     * @ParamConverter("channel", class="OroIntegrationBundle:Channel", options={"id" = "channelId"})
+     * @ParamConverter("channel", class="OroIntegrationBundle:Channel", options={"id"="channelId"})
      * @Method("POST")
      *
      * @Acl(

@@ -48,6 +48,6 @@ class AsyncProcessor implements ProcessorInterface
     public function flush()
     {
         $this->cacheProvider->save('product_variants', $this->variants);
-        unset($this->variants);
+        $this->variants = null;
     }
 }

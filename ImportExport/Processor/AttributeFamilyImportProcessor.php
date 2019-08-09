@@ -34,6 +34,6 @@ class AttributeFamilyImportProcessor extends StepExecutionAwareImportProcessor
     public function flush()
     {
         $this->cacheProvider->save('attribute_family', $this->processedAttributeFamilies);
-        unset($this->processedAttributeFamilies);
+        $this->processedAttributeFamilies = null;
     }
 }

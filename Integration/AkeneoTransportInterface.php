@@ -2,8 +2,8 @@
 
 namespace Oro\Bundle\AkeneoBundle\Integration;
 
-use Oro\Bundle\MultiCurrencyBundle\Config\MultiCurrencyConfigProvider;
 use Oro\Bundle\IntegrationBundle\Provider\TransportInterface;
+use Oro\Bundle\MultiCurrencyBundle\Config\MultiCurrencyConfigProvider;
 
 interface AkeneoTransportInterface extends TransportInterface
 {
