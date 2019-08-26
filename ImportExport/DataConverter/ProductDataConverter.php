@@ -85,7 +85,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
             ];
         }
 
-        $importedRecord['inventory_status'] = ['id' => Product::INVENTORY_STATUS_IN_STOCK,];
+        $importedRecord['inventory_status'] = ['id' => Product::INVENTORY_STATUS_IN_STOCK];
         $importedRecord['type'] = 'simple';
         $importedRecord['status'] = Product::STATUS_ENABLED;
         if (array_key_exists('enabled', $importedRecord)) {

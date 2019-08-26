@@ -58,7 +58,7 @@ class CategoryRemoveProcessor implements ProcessorInterface
     public function flush()
     {
         $this->cacheProvider->save('category_ids', $this->codeIds);
-        unset($this->processedIds);
-        unset($this->codeIds);
+        $this->processedIds = null;
+        $this->codeIds = null;
     }
 }

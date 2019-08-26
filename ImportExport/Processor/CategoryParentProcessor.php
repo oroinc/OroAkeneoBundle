@@ -30,6 +30,7 @@ class CategoryParentProcessor implements ProcessorInterface
     /**
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @param mixed $item
      */
     public function process($item)
     {
@@ -127,7 +128,7 @@ class CategoryParentProcessor implements ProcessorInterface
     {
         $this->cacheProvider->delete('category');
         $this->cacheProvider->delete('category_ids');
-        unset($this->processedIds);
-        unset($this->codeIds);
+        $this->processedIds = null;
+        $this->codeIds = null;
     }
 }

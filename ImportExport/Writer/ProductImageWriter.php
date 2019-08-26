@@ -37,8 +37,8 @@ class ProductImageWriter extends PersistentBatchWriter
             ->getQuery()
             ->execute();
 
-        unset($this->products);
-        unset($this->images);
+        $this->products = null;
+        $this->images = null;
     }
 
     protected function saveItems(array $items, EntityManager $em)

@@ -57,8 +57,7 @@ class AkeneoSettings extends Transport
     /**
      * @ORM\ManyToOne(targetEntity="Oro\Bundle\CatalogBundle\Entity\Category")
      * @ORM\JoinColumn(onDelete="SET NULL")
-     *
-     **/
+     */
     protected $rootCategory;
     /**
      * @var bool
@@ -130,7 +129,7 @@ class AkeneoSettings extends Transport
      *     orphanRemoval=true,
      *     fetch="EAGER"
      * )
-     **/
+     */
     private $akeneoLocales;
 
     /**
@@ -138,7 +137,7 @@ class AkeneoSettings extends Transport
      *
      * @ORM\ManyToOne(targetEntity="Oro\Bundle\PricingBundle\Entity\PriceList")
      * @ORM\JoinColumn(onDelete="SET NULL")
-     **/
+     */
     private $priceList;
 
     /**

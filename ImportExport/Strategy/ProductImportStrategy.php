@@ -206,7 +206,8 @@ class ProductImportStrategy extends ProductStrategy
 
         if (true === isset($this->subclassCache[$entityClass]) && true === $this->subclassCache[$entityClass]) {
             return;
-        } elseif (false === isset($this->subclassCache[$entityClass])) {
+        }
+        if (false === isset($this->subclassCache[$entityClass])) {
             $reflectionClass = new \ReflectionClass($entity);
             $this->subclassCache[$entityClass] = $reflectionClass->isSubclassOf(AbstractEnumValue::class);
 
