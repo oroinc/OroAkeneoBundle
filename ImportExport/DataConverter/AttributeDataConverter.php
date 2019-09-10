@@ -77,7 +77,7 @@ class AttributeDataConverter extends EntityFieldDataConverter
 
         foreach ($importedRecord['options'] as $key => &$option) {
             $optionKey = sprintf('enum.enum_options.%d.id', $key);
-            $importedRecord[$optionKey] = $option['code'];
+            $importedRecord[$optionKey] = Generator::generateLabel($option['code']);
             $optionKey = sprintf('enum.enum_options.%d.label', $key);
             $importedRecord[$optionKey] =
                 $option['labels'][$defaultLocale] ?? Generator::generateLabel($option['code']);
