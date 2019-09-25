@@ -44,7 +44,7 @@ oro:
         price_list:
           label: 'Pricelist'
       popup:
-        channel: 'This is a list of channels configured for the current Akeneo PIM instance. Select the required channel for product import. To refresh the list, click Refresh Channels'
+        channel: 'This is a list of channels configured for the current Akeneo PIM instance. Select the required channel for product and category import. To refresh the list, click Refresh Channels'
         currencies: 'The control configures mapping between the currencies enabled in the current Akeneo PIM instance and the currencies enabled in this application. To skip price import for a specific currency, do not add mapping to it. To refresh the list, click Refresh Currencies'
         locales: 'This control configures mapping between locales enabled in the current Akeneo PIM instance and the locales enabled in this application. To skip import of a specific locale, do not add mapping to it. To refresh the list, click Refresh Locales'
 
