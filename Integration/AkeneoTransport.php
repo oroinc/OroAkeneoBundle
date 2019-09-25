@@ -197,7 +197,8 @@ class AkeneoTransport implements AkeneoTransportInterface
             ),
             $this->client,
             $this->logger,
-            $this->filesystem
+            $this->filesystem,
+            $this->getAttributes($pageSize)
         );
     }
 
@@ -217,7 +218,8 @@ class AkeneoTransport implements AkeneoTransportInterface
             ),
             $this->client,
             $this->logger,
-            $this->filesystem
+            $this->filesystem,
+            $this->getAttributes($pageSize)
         );
     }
 
@@ -253,7 +255,11 @@ class AkeneoTransport implements AkeneoTransportInterface
      */
     public function getAttributes(int $pageSize)
     {
-        $attributeFilter = explode(';', str_replace(' ', '', $this->transportEntity->getAttributesList()), -1);
+        $attributeFilter = [];
+        $attrList = $this->transportEntity->getAttributesList();
+        if (!empty($attrList)) {
+            $attributeFilter = explode(';', str_replace(' ', '', $attrList));
+        }
 
         return new AttributeIterator($this->client->getAttributeApi()->all($pageSize), $this->client, $this->logger, $attributeFilter);
     }

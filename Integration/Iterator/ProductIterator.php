@@ -5,6 +5,7 @@ namespace Oro\Bundle\AkeneoBundle\Integration\Iterator;
 use Akeneo\Pim\ApiClient\Pagination\ResourceCursorInterface;
 use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientInterface;
 use Gaufrette\Filesystem;
+use Oro\Bundle\AkeneoBundle\Integration\Iterator\AttributeIterator;
 use Psr\Log\LoggerInterface;
 
 class ProductIterator extends AbstractIterator
@@ -35,6 +36,11 @@ class ProductIterator extends AbstractIterator
     private $filesystem;
 
     /**
+     * @var AttributeIterator
+     */
+    private $attributesList;
+
+    /**
      * AttributeIterator constructor.
      *
      * @param ResourceCursorInterface $resourceCursor
@@ -46,10 +52,12 @@ class ProductIterator extends AbstractIterator
         ResourceCursorInterface $resourceCursor,
         AkeneoPimEnterpriseClientInterface $client,
         LoggerInterface $logger,
-        Filesystem $filesystem
+        Filesystem $filesystem,
+        AttributeIterator $attributeList
     ) {
         parent::__construct($resourceCursor, $client, $logger);
         $this->filesystem = $filesystem;
+        $this->attributesList = $attributeList;
     }
 
     /**
@@ -73,7 +81,11 @@ class ProductIterator extends AbstractIterator
     protected function setValueAttributeTypes(array &$product)
     {
         if (false === $this->attributesInitialized) {
-            foreach ($this->client->getAttributeApi()->all(self::PAGE_SIZE) as $attribute) {
+            foreach ($this->attributesList as $attribute) {
+                if (null === $attribute) {
+                    continue;
+                }
+
                 $this->attributes[$attribute['code']] = $attribute;
             }
             $this->attributesInitialized = true;
@@ -86,6 +98,8 @@ class ProductIterator extends AbstractIterator
                     $this->processImageType($product['values'][$code][$key]);
                     $this->processFileType($product['values'][$code][$key]);
                 }
+            } else {
+                unset($product['values'][$code]);
             }
         }
     }
