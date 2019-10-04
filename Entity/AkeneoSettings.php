@@ -145,10 +145,24 @@ class AkeneoSettings extends Transport
      *
      * @ORM\Column(name="akeneo_attributes_list", type="text", nullable=true)
      */
-    private $attributesList;
+    private $akeneoAttributesList;
 
     /**
-     * @var ParameterBag
+     * @var string
+     *
+     * @ORM\Column(name="akeneo_attributes_image_list", type="text", nullable=true)
+     */
+    private $akeneoAttributesImageList;
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(name="akeneo_merge_image_to_parent", type="boolean", options={"default":"false"})
+     */
+    private $akeneoMergeImageToParent = false;
+
+    /**
+     * @var ParameterBagisAkeneoMergeImageToParent
      */
     private $settings;
 
@@ -231,20 +245,20 @@ class AkeneoSettings extends Transport
         if (null === $this->settings) {
             $this->settings = new ParameterBag(
                 [
-                    'clientId' => $this->getClientId(),
-                    'secret' => $this->getSecret(),
-                    'akeneoChannels' => $this->getAkeneoChannels(),
-                    'akeneoActiveChannel' => $this->getAkeneoActiveChannel(),
-                    'username' => $this->getUsername(),
-                    'password' => $this->getPassword(),
-                    'token' => $this->getToken(),
-                    'refreshToken' => $this->getRefreshToken(),
-                    'syncProducts' => $this->getSyncProducts(),
-                    'akeneoCurrencies' => $this->getAkeneoCurrencies(),
+                    'clientId'               => $this->getClientId(),
+                    'secret'                 => $this->getSecret(),
+                    'akeneoChannels'         => $this->getAkeneoChannels(),
+                    'akeneoActiveChannel'    => $this->getAkeneoActiveChannel(),
+                    'username'               => $this->getUsername(),
+                    'password'               => $this->getPassword(),
+                    'token'                  => $this->getToken(),
+                    'refreshToken'           => $this->getRefreshToken(),
+                    'syncProducts'           => $this->getSyncProducts(),
+                    'akeneoCurrencies'       => $this->getAkeneoCurrencies(),
                     'akeneoActiveCurrencies' => $this->getAkeneoActiveCurrencies(),
-                    'akeneoLocales' => $this->getAkeneoLocales()->toArray(),
-                    'akeneoLocalesList' => $this->getAkeneoLocalesList(),
-                    'akeneoAttributesList' => $this->getAttributesList(),
+                    'akeneoLocales'          => $this->getAkeneoLocales()->toArray(),
+                    'akeneoLocalesList'      => $this->getAkeneoLocalesList(),
+                    'akeneoAttributesList'   => $this->getAkeneoAttributesList(),
                 ]
             );
         }
@@ -515,6 +529,46 @@ class AkeneoSettings extends Transport
     }
 
     /**
+     * @return string|null
+     */
+    public function getAkeneoAttributesList(): ?string
+    {
+        return $this->akeneoAttributesList;
+    }
+
+    /**
+     * @param string $attributeList
+     *
+     * @return $this
+     */
+    public function setAkeneoAttributesList($attributeList)
+    {
+        $this->akeneoAttributesList = $attributeList;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAkeneoAttributesImageList(): ?string
+    {
+        return $this->akeneoAttributesImageList;
+    }
+
+    /**
+     * @param string $akeneoAttributesImageList
+     *
+     * @return $this
+     */
+    public function setAkeneoAttributesImageList($akeneoAttributesImageList)
+    {
+        $this->akeneoAttributesImageList = $akeneoAttributesImageList;
+
+        return $this;
+    }
+
+    /**
      * @return string
      */
     public function getTokenExpiryDateTime()
@@ -617,21 +671,21 @@ class AkeneoSettings extends Transport
     }
 
     /**
-     * @return string|null
+     * @return bool
      */
-    public function getAttributesList(): ?string
+    public function isAkeneoMergeImageToParent(): ?bool
     {
-        return $this->attributesList;
+        return $this->akeneoMergeImageToParent;
     }
 
     /**
-     * @param string $attributeList
+     * @param bool $akeneoMergeImageToParent
      *
      * @return $this
      */
-    public function setAttributesList($attributeList)
+    public function setAkeneoMergeImageToParent(bool $akeneoMergeImageToParent)
     {
-        $this->attributesList = $attributeList;
+        $this->akeneoMergeImageToParent = $akeneoMergeImageToParent;
 
         return $this;
     }

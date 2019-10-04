@@ -286,7 +286,7 @@ class AkeneoTransport implements AkeneoTransportInterface
     public function getAttributes(int $pageSize)
     {
         $attributeFilter = [];
-        $attrList = $this->transportEntity->getAttributesList();
+        $attrList = $this->transportEntity->getAkeneoAttributesList();
         if (!empty($attrList)) {
             $attributeFilter = explode(';', str_replace(' ', '', $attrList));
         }
