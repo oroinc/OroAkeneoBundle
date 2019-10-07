@@ -23,7 +23,7 @@ abstract class AbstractIterator implements \Iterator
     /**
      * @var LoggerInterface
      */
-    private $logger;
+    protected $logger;
 
     /**
      * AttributeIterator constructor.

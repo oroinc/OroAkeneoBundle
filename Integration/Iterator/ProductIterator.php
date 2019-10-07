@@ -6,6 +6,7 @@ use Akeneo\Pim\ApiClient\Pagination\ResourceCursorInterface;
 use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientInterface;
 use Gaufrette\Filesystem;
 use Psr\Log\LoggerInterface;
+use Akeneo\Pim\ApiClient\Exception\NotFoundHttpException;
 
 class ProductIterator extends AbstractIterator
 {
@@ -133,7 +134,13 @@ class ProductIterator extends AbstractIterator
             return;
         }
 
-        $content = $this->client->getProductMediaFileApi()->download($value['data'])->getContents();
+        try {
+            $content = $this->client->getProductMediaFileApi()->download($value['data'])->getContents();
+        } catch (NotFoundHttpException $e) {
+            $this->logger->critical($e->getMessage());
+            return;
+        }
+
         $this->filesystem->write($path, $content);
     }
 
@@ -165,7 +172,13 @@ class ProductIterator extends AbstractIterator
             return;
         }
 
-        $content = $this->client->getProductMediaFileApi()->download($value['data'])->getContents();
+        try {
+            $content = $this->client->getProductMediaFileApi()->download($value['data'])->getContents();
+        } catch (NotFoundHttpException $e) {
+            $this->logger->critical($e->getMessage());
+            return;
+        }
+        
         $this->filesystem->write($path, $content);
     }
 }
