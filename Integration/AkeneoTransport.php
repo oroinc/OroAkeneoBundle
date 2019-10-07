@@ -10,6 +10,7 @@ use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\Form\Type\AkeneoSettingsType;
 use Oro\Bundle\AkeneoBundle\Integration\Iterator\AttributeFamilyIterator;
 use Oro\Bundle\AkeneoBundle\Integration\Iterator\AttributeIterator;
+use Oro\Bundle\AkeneoBundle\Integration\Iterator\CategoryIterator;
 use Oro\Bundle\AkeneoBundle\Integration\Iterator\ProductIterator;
 use Oro\Bundle\IntegrationBundle\Entity\Transport;
 use Oro\Bundle\MultiCurrencyBundle\Config\MultiCurrencyConfigProvider;
@@ -164,11 +165,40 @@ class AkeneoTransport implements AkeneoTransportInterface
     /**
      * @param int $pageSize
      *
-     * @return \Iterator
+     * @return \Oro\Bundle\AkeneoBundle\Integration\Iterator\CategoryIterator
      */
     public function getCategories(int $pageSize)
     {
-        return $this->client->getCategoryApi()->all($pageSize);
+        $categoryTreeChannel = null;
+        $akeneoChannel = $this->transportEntity->getAkeneoActiveChannel();
+
+        if (!empty($akeneoChannel)) {
+            foreach ($this->client->getChannelApi()->all() as $channel) {
+
+                $categoryTreeChannel = ($channel['code'] == $akeneoChannel && !empty($channel['category_tree'])) ? $channel['category_tree'] : null;
+
+                if (null !== $categoryTreeChannel) {
+                    break;
+                }
+            }
+        }
+
+        if (null === $categoryTreeChannel) {
+            return $this->client->getCategoryApi()->all($pageSize);
+        }
+
+        $parentCategory = [];
+        $akeneoTree = new \ArrayIterator([], \ArrayIterator::STD_PROP_LIST);
+
+        foreach ($this->client->getCategoryApi()->all($pageSize) as $category) {
+            if ($category['code'] == $categoryTreeChannel || in_array($category['parent'], $parentCategory)) {
+                $parentCategory[] = $category['code'];
+                $akeneoTree->append($category);
+            }
+        }
+        unset($parentCategory);
+
+        return $akeneoTree;
     }
 
     /**
@@ -197,7 +227,8 @@ class AkeneoTransport implements AkeneoTransportInterface
             ),
             $this->client,
             $this->logger,
-            $this->filesystem
+            $this->filesystem,
+            $this->getAttributes($pageSize)
         );
     }
 
@@ -217,7 +248,8 @@ class AkeneoTransport implements AkeneoTransportInterface
             ),
             $this->client,
             $this->logger,
-            $this->filesystem
+            $this->filesystem,
+            $this->getAttributes($pageSize)
         );
     }
 
@@ -247,11 +279,18 @@ class AkeneoTransport implements AkeneoTransportInterface
 
     /**
      * @param int $pageSize
+     * @param null $filter
      *
      * @return \Iterator
      */
     public function getAttributes(int $pageSize)
     {
-        return new AttributeIterator($this->client->getAttributeApi()->all($pageSize), $this->client, $this->logger);
+        $attributeFilter = [];
+        $attrList = $this->transportEntity->getAkeneoAttributesList();
+        if (!empty($attrList)) {
+            $attributeFilter = explode(';', str_replace(' ', '', $attrList));
+        }
+
+        return new AttributeIterator($this->client->getAttributeApi()->all($pageSize), $this->client, $this->logger, $attributeFilter);
     }
 }
