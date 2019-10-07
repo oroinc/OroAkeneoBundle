@@ -11,6 +11,8 @@ class AttributeFamilyImportProcessor extends StepExecutionAwareImportProcessor
 
     /** @var array */
     private $processedAttributeFamilies = [];
+    /** @var string */
+    private $codePrefix;
 
     /**
      * {@inheritdoc}
@@ -18,7 +20,7 @@ class AttributeFamilyImportProcessor extends StepExecutionAwareImportProcessor
     public function process($item)
     {
         if (!empty($item['code'])) {
-            $code = AttributeFamilyCodeGenerator::generate($item['code']);
+            $code = AttributeFamilyCodeGenerator::generate($item['code'], $this->codePrefix);
             $this->processedAttributeFamilies[$code] = $code;
         }
 
@@ -35,5 +37,15 @@ class AttributeFamilyImportProcessor extends StepExecutionAwareImportProcessor
     {
         $this->cacheProvider->save('attribute_family', $this->processedAttributeFamilies);
         $this->processedAttributeFamilies = null;
+    }
+
+    /**
+     * @param string $codePrefix
+     *
+     * @return $this
+     */
+    public function setCodePrefix(string $codePrefix)
+    {
+        $this->codePrefix = $codePrefix;
     }
 }

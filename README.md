@@ -30,6 +30,16 @@ composer require "oro/commerce-akeneo:3.1.*"
 
 ## Setting up the Integration on the Oro Side
 
+A prefix is defined for atrribute code, attribute family code and their options if they are too long for OroCommerce. For example per default, it's `Akeneo_`. 
+You can change it by setting under `config/config.yml` of your project, the followings:
+```
+oro_akeneo
+  importexport
+    code_prefix: 'ak_'
+```
+Important: this should be done only at really first stage, even before you set the integration and start the first sync.
+
+
 Create a new integration to start synchronizing data from Akeneo to OroCommerce.
 
 1. In OroCommerce, navigate to "System > Integrations > Manage Integrations" in the main menu and click "Create Integration".

@@ -21,6 +21,9 @@ class AttributeDataConverter extends EntityFieldDataConverter
      * @var ManagerRegistry
      */
     protected $registry;
+    
+    /** @var string */
+    private $codePrefix;
 
     /**
      * {@inheritdoc}
@@ -28,7 +31,7 @@ class AttributeDataConverter extends EntityFieldDataConverter
     public function convertToImportFormat(array $importedRecord, $skipNullValues = true)
     {
         $importedRecord['type'] = AttributeTypeConverter::convert($importedRecord['type']);
-        $importedRecord['fieldName'] = FieldConfigModelFieldNameGenerator::generate($importedRecord['code']);
+        $importedRecord['fieldName'] = FieldConfigModelFieldNameGenerator::generate($importedRecord['code'], $this->codePrefix);
         $importedRecord['entity:id'] = (int)$this->getContext()->getValue('entity_id');
         $this->setLabels($importedRecord);
         $this->setEnumOptions($importedRecord);
@@ -117,5 +120,15 @@ class AttributeDataConverter extends EntityFieldDataConverter
     protected function getBackendHeader()
     {
         throw new \Exception('Normalization is not implemented!');
+    }
+
+    /**
+     * @param string $codePrefix
+     *
+     * @return $this
+     */
+    public function setCodePrefix($codePrefix)
+    {
+        $this->codePrefix = $codePrefix;
     }
 }

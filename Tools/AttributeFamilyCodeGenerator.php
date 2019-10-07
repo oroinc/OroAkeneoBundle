@@ -6,11 +6,12 @@ class AttributeFamilyCodeGenerator
 {
     /**
      * @param string $value
+     * @param string $prefix
      *
      * @return string
      */
-    public static function generate(string $value): string
+    public static function generate(string $value, $prefix = 'Akeneo_'): string
     {
-        return sprintf('Akeneo_%s', $value);
+        return sprintf('%s%s', $prefix, $value);
     }
 }

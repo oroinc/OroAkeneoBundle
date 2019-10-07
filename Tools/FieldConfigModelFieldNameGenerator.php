@@ -12,9 +12,9 @@ class FieldConfigModelFieldNameGenerator
      *
      * @return string
      */
-    public static function generate(string $value): string
+    public static function generate(string $value, $prefix = 'Akeneo_'): string
     {
-        $value = sprintf('Akeneo_%s', $value);
+        $value = sprintf('%s%s', $prefix, $value);
 
         if (mb_strlen($value) < 23) {
             return $value;

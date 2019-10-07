@@ -20,6 +20,8 @@ parameters:
   oro_akeneo.integration.connector.attribute_family.class:
     Oro\Bundle\AkeneoBundle\Integration\Connector\AttributeFamilyConnector
 
+  oro_akeneo.importexport.code_prefix: 'Akeneo_'
+
 services:
   oro_akeneo.importexport.normalizer.attribute_relation:
     class: Oro\Bundle\AkeneoBundle\ImportExport\Serializer\Normalizer\AttributeRelationNormalizer
@@ -106,6 +108,7 @@ services:
     calls:
       - [setRegistry, ["@doctrine"]]
       - [setConfigManager, ['@oro_config.manager']]
+      - [setCodePrefix, ['%oro_akeneo.importexport.code_prefix%']]
 
   oro_akeneo.importexport.strategy.attribute:
     class: '%oro_akeneo.importexport.strategy.attribute.class%'
@@ -145,6 +148,7 @@ services:
       - [setEntityName, ['Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeFamily']]
       - [setEntityConfigManager, ['@oro_entity_config.config_manager']]
       - [setTranslateUsingLocale, [false]]
+      - [setCodePrefix, ['%oro_akeneo.importexport.code_prefix%']]
 
   oro_akeneo.importexport.strategy.attribute_family:
     class: '%oro_akeneo.importexport.strategy.attribute_family.class%'
@@ -164,6 +168,7 @@ services:
       - [setStrategy, ["@oro_akeneo.importexport.strategy.attribute_family"]]
       - [setEntityName, ['Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeFamily']]
       - [setContextRegistry, ["@oro_importexport.context_registry"]]
+      - [setCodePrefix, ['%oro_akeneo.importexport.code_prefix%']]
 
   oro_akeneo.importexport.processor.attribute_family_status:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Processor\AttributeFamilyStatusProcessor'
@@ -192,6 +197,7 @@ services:
       - [setEntityConfigManager, ["@oro_entity_config.config_manager"]]
       - [setDateTimeFormatter, ["@oro_locale.formatter.date_time"]]
       - [setAttachmentsDir, ["%kernel.project_dir%/var/import_export/attachments/"]]
+      - [setCodePrefix, ['%oro_akeneo.importexport.code_prefix%']]
 
   oro_akeneo.importexport.strategy.product:
     class: '%oro_akeneo.importexport.strategy.product.class%'

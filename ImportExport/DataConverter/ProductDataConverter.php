@@ -4,6 +4,7 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 
 use Doctrine\Common\Util\Inflector;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
+use Oro\Bundle\AkeneoBundle\ImportExport\Processor\AttributeFamilyImportProcessor;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeFamilyCodeGenerator;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeTypeConverter;
 use Oro\Bundle\AkeneoBundle\Tools\Generator;
@@ -57,6 +58,9 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     /** @var array */
     protected $fieldMapping = [];
 
+    /** @var string */
+    private $codePrefix;
+
     /**
      * {@inheritdoc}
      */
@@ -81,7 +85,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
         if (!empty($importedRecord['family'])) {
             $importedRecord['attributeFamily'] = [
-                'code' => AttributeFamilyCodeGenerator::generate($importedRecord['family']),
+                'code' => AttributeFamilyCodeGenerator::generate($importedRecord['family'], $this->codePrefix),
             ];
         }
 
@@ -127,7 +131,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
         $importedRecord['type'] = 'configurable';
         $importedRecord['attributeFamily'] = [
-            'code' => AttributeFamilyCodeGenerator::generate($importedRecord['family_variant']['family']),
+            'code' => AttributeFamilyCodeGenerator::generate($importedRecord['family_variant']['family'], $this->codePrefix),
         ];
 
         $variantFields = [];
@@ -518,5 +522,15 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     protected function getBackendHeader()
     {
         throw new \Exception('Normalization is not implemented!');
+    }
+
+    /**
+     * @param string $codePrefix
+     *
+     * @return $this
+     */
+    public function setCodePrefix(string $codePrefix)
+    {
+        $this->codePrefix = $codePrefix;
     }
 }
