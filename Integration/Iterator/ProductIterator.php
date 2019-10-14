@@ -3,10 +3,10 @@
 namespace Oro\Bundle\AkeneoBundle\Integration\Iterator;
 
 use Akeneo\Pim\ApiClient\Pagination\ResourceCursorInterface;
+use Akeneo\Pim\ApiClient\Exception\NotFoundHttpException;
 use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientInterface;
 use Gaufrette\Filesystem;
 use Psr\Log\LoggerInterface;
-use Akeneo\Pim\ApiClient\Exception\NotFoundHttpException;
 
 class ProductIterator extends AbstractIterator
 {
