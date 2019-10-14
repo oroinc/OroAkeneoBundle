@@ -20,8 +20,6 @@ parameters:
   oro_akeneo.integration.connector.attribute_family.class:
     Oro\Bundle\AkeneoBundle\Integration\Connector\AttributeFamilyConnector
 
-  oro_akeneo.importexport.code_prefix: 'Akeneo_'
-
 services:
   oro_akeneo.importexport.normalizer.attribute_relation:
     class: Oro\Bundle\AkeneoBundle\ImportExport\Serializer\Normalizer\AttributeRelationNormalizer
