@@ -4,10 +4,13 @@ namespace Oro\Bundle\AkeneoBundle\Integration\Iterator;
 
 use Akeneo\Pim\ApiClient\Pagination\ResourceCursorInterface;
 use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientInterface;
+use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 
 abstract class AbstractIterator implements \Iterator
 {
+    use LoggerAwareTrait;
+
     const PAGE_SIZE = 100;
 
     /**
@@ -19,11 +22,6 @@ abstract class AbstractIterator implements \Iterator
      * @var AkeneoPimEnterpriseClientInterface
      */
     protected $client;
-
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
 
     /**
      * AttributeIterator constructor.
@@ -39,7 +37,8 @@ abstract class AbstractIterator implements \Iterator
     ) {
         $this->resourceCursor = $resourceCursor;
         $this->client = $client;
-        $this->logger = $logger;
+
+        $this->setLogger($logger);
     }
 
     /**
