@@ -211,6 +211,14 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 ]
             )
             ->add(
+                'alternativeIdentifier',
+                TextType::class,
+                [
+                    'label'    => 'oro.akeneo.integration.settings.alternative_identifier.label',
+                    'required' => false,
+                ]
+            )            
+            ->add(
                 'productFilter',
                 TextareaType::class,
                 [

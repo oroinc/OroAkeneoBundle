@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\AkeneoBundle\Integration\Iterator;
 
+use Akeneo\Pim\ApiClient\Exception\NotFoundHttpException;
 use Akeneo\Pim\ApiClient\Pagination\ResourceCursorInterface;
 use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientInterface;
 use Gaufrette\Filesystem;
@@ -35,21 +36,29 @@ class ProductIterator extends AbstractIterator
     private $filesystem;
 
     /**
+     * @var string|null
+     */
+    private $alternativeAttribute;
+
+    /**
      * AttributeIterator constructor.
      *
      * @param ResourceCursorInterface $resourceCursor
      * @param AkeneoPimEnterpriseClientInterface $client
      * @param LoggerInterface $logger
      * @param Filesystem $filesystem
+     * @param string|null $alternativeAttribute
      */
     public function __construct(
         ResourceCursorInterface $resourceCursor,
         AkeneoPimEnterpriseClientInterface $client,
         LoggerInterface $logger,
-        Filesystem $filesystem
+        Filesystem $filesystem,
+        ?string $alternativeAttribute = null
     ) {
         parent::__construct($resourceCursor, $client, $logger);
         $this->filesystem = $filesystem;
+        $this->alternativeAttribute = $alternativeAttribute;
     }
 
     /**
@@ -59,10 +68,38 @@ class ProductIterator extends AbstractIterator
     {
         $product = $this->resourceCursor->current();
 
+        $this->setAlternativeIdentifier($product);
         $this->setValueAttributeTypes($product);
         $this->setFamilyVariant($product);
 
         return $product;
+    }
+
+    /**
+     * Switch the product code (intern identifier in Akeneo) value
+     * with an other attribute to allow to map it differently
+     *
+     * @param array $product
+     */
+    protected function setAlternativeIdentifier(array &$product)
+    {
+        if (null === $this->alternativeAttribute) return;
+
+        list($altAttribute, $identifier) = explode(':', $this->alternativeAttribute);
+
+        if (!empty($altAttribute)
+            && isset($product['values'][$altAttribute])
+            && isset($product['identifier'])
+        ) {
+
+            if (isset($product['values'][$altAttribute][0]['data'])) {
+                if (null !== $identifier) {
+                    $product[$identifier] = $product['identifier'];
+                }
+
+                $product['identifier'] = $product['values'][$altAttribute][0]['data'];
+            }
+        }
     }
 
     /**

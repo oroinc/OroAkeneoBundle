@@ -197,7 +197,8 @@ class AkeneoTransport implements AkeneoTransportInterface
             ),
             $this->client,
             $this->logger,
-            $this->filesystem
+            $this->filesystem,
+            $this->getAlternativeIdentifier()
         );
     }
 
@@ -253,5 +254,13 @@ class AkeneoTransport implements AkeneoTransportInterface
     public function getAttributes(int $pageSize)
     {
         return new AttributeIterator($this->client->getAttributeApi()->all($pageSize), $this->client, $this->logger);
+    }
+
+    /**
+     * @return null|string
+     */
+    private function getAlternativeIdentifier(): ?string
+    {
+        return $this->transportEntity->getAlternativeIdentifier();
     }
 }

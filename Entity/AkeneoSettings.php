@@ -141,6 +141,15 @@ class AkeneoSettings extends Transport
     private $priceList;
 
     /**
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(name="akeneo_alternative_identifier", type="string", nullable=true, length=255)
+     */
+    private $alternativeIdentifier;
+
+    /**
      * @var ParameterBag
      */
     private $settings;
@@ -224,19 +233,20 @@ class AkeneoSettings extends Transport
         if (null === $this->settings) {
             $this->settings = new ParameterBag(
                 [
-                    'clientId' => $this->getClientId(),
-                    'secret' => $this->getSecret(),
-                    'akeneoChannels' => $this->getAkeneoChannels(),
-                    'akeneoActiveChannel' => $this->getAkeneoActiveChannel(),
-                    'username' => $this->getUsername(),
-                    'password' => $this->getPassword(),
-                    'token' => $this->getToken(),
-                    'refreshToken' => $this->getRefreshToken(),
-                    'syncProducts' => $this->getSyncProducts(),
-                    'akeneoCurrencies' => $this->getAkeneoCurrencies(),
+                    'clientId'               => $this->getClientId(),
+                    'secret'                 => $this->getSecret(),
+                    'akeneoChannels'         => $this->getAkeneoChannels(),
+                    'akeneoActiveChannel'    => $this->getAkeneoActiveChannel(),
+                    'username'               => $this->getUsername(),
+                    'password'               => $this->getPassword(),
+                    'token'                  => $this->getToken(),
+                    'refreshToken'           => $this->getRefreshToken(),
+                    'syncProducts'           => $this->getSyncProducts(),
+                    'akeneoCurrencies'       => $this->getAkeneoCurrencies(),
                     'akeneoActiveCurrencies' => $this->getAkeneoActiveCurrencies(),
-                    'akeneoLocales' => $this->getAkeneoLocales()->toArray(),
-                    'akeneoLocalesList' => $this->getAkeneoLocalesList(),
+                    'akeneoLocales'          => $this->getAkeneoLocales()->toArray(),
+                    'akeneoLocalesList'      => $this->getAkeneoLocalesList(),
+                    'akeneoAttributesList'   => $this->getAkeneoAttributesList(),
                 ]
             );
         }
@@ -606,5 +616,24 @@ class AkeneoSettings extends Transport
         $this->priceList = $priceList;
 
         return $this;
+    }
+    /**
+     * @param $alternativeIdentifier
+     *
+     * @return $this
+     */
+    public function setAlternativeIdentifier($alternativeIdentifier)
+    {
+        $this->alternativeIdentifier = $alternativeIdentifier;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAlternativeIdentifier(): ?string
+    {
+        return $this->alternativeIdentifier;
     }
 }
