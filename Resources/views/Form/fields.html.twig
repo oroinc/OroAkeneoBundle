@@ -97,6 +97,16 @@
                 </div>
             </div>
 
+            <div class="control-group control-group-choice">
+                <div class="control-label wrap">
+                    {{ UI.tooltip('oro.akeneo.integration.settings.alternative_identifier.tooltip'|trans, {}, 'right') }}
+                    {{ form_label(form.alternativeIdentifier) }}
+                </div>
+                <div class="controls">
+                    {{ form_widget(form.alternativeIdentifier) }}
+                </div>
+            </div>
+
             {{ form_row(form.syncProducts) }}
 
             <div class="control-group control-group-choice">

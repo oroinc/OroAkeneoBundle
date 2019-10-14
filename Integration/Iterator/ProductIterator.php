@@ -2,12 +2,11 @@
 
 namespace Oro\Bundle\AkeneoBundle\Integration\Iterator;
 
+use Akeneo\Pim\ApiClient\Exception\NotFoundHttpException;
 use Akeneo\Pim\ApiClient\Pagination\ResourceCursorInterface;
 use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientInterface;
 use Gaufrette\Filesystem;
-use Oro\Bundle\AkeneoBundle\Integration\Iterator\AttributeIterator;
 use Psr\Log\LoggerInterface;
-use Akeneo\Pim\ApiClient\Exception\NotFoundHttpException;
 
 class ProductIterator extends AbstractIterator
 {
@@ -40,6 +39,10 @@ class ProductIterator extends AbstractIterator
      * @var AttributeIterator
      */
     private $attributesList;
+    /**
+     * @var string|null
+     */
+    private $alternativeAttribute;
 
     /**
      * AttributeIterator constructor.
@@ -48,40 +51,28 @@ class ProductIterator extends AbstractIterator
      * @param AkeneoPimEnterpriseClientInterface $client
      * @param LoggerInterface $logger
      * @param Filesystem $filesystem
+     * @param \Oro\Bundle\AkeneoBundle\Integration\Iterator\AttributeIterator $attributeList
+     * @param string|null $alternativeAttribute
      */
     public function __construct(
         ResourceCursorInterface $resourceCursor,
         AkeneoPimEnterpriseClientInterface $client,
         LoggerInterface $logger,
         Filesystem $filesystem,
-        AttributeIterator $attributeList
+        AttributeIterator $attributeList,
+        ?string $alternativeAttribute = null
     ) {
         parent::__construct($resourceCursor, $client, $logger);
         $this->filesystem = $filesystem;
         $this->attributesList = $attributeList;
+        $this->alternativeAttribute = $alternativeAttribute;
+
+        $this->initAttributesList();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function doCurrent()
+    protected function initAttributesList()
     {
-        $product = $this->resourceCursor->current();
-
-        $this->setValueAttributeTypes($product);
-        $this->setFamilyVariant($product);
-
-        return $product;
-    }
-
-    /**
-     * Set attribute types for product values.
-     *
-     * @param array $product
-     */
-    protected function setValueAttributeTypes(array &$product)
-    {
-        if (false === $this->attributesInitialized) {
+        if (!$this->attributesInitialized) {
             foreach ($this->attributesList as $attribute) {
                 if (null === $attribute) {
                     continue;
@@ -91,7 +82,54 @@ class ProductIterator extends AbstractIterator
             }
             $this->attributesInitialized = true;
         }
+    }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function doCurrent()
+    {
+        $product = $this->resourceCursor->current();
+
+        $this->setAlternativeIdentifier($product);
+        $this->setValueAttributeTypes($product);
+        $this->setFamilyVariant($product);
+
+        return $product;
+    }
+
+    /**
+     * Switch the product code (intern identifier in Akeneo) value
+     * with an other attribute to allow to map it differently
+     *
+     * @param array $product
+     */
+    protected function setAlternativeIdentifier(array &$product)
+    {
+        list($altAttribute, $identifier) = explode(':', $this->alternativeAttribute);
+
+        if (!empty($altAttribute)
+            && isset($product['values'][$altAttribute])
+            && isset($product['identifier'])
+        ) {
+
+            if (isset($product['values'][$altAttribute][0]['data'])) {
+                if (null !== $identifier) {
+                    $product[$identifier] = $product['identifier'];
+                }
+
+                $product['identifier'] = $product['values'][$altAttribute][0]['data'];
+            }
+        }
+    }
+
+    /**
+     * Set attribute types for product values.
+     *
+     * @param array $product
+     */
+    protected function setValueAttributeTypes(array &$product)
+    {
         foreach ($product['values'] as $code => $values) {
             if (isset($this->attributes[$code])) {
                 foreach ($values as $key => $value) {
