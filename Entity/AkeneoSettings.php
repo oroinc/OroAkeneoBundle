@@ -246,7 +246,7 @@ class AkeneoSettings extends Transport
                     'akeneoActiveCurrencies' => $this->getAkeneoActiveCurrencies(),
                     'akeneoLocales'          => $this->getAkeneoLocales()->toArray(),
                     'akeneoLocalesList'      => $this->getAkeneoLocalesList(),
-                    'akeneoAttributesList'   => $this->getAkeneoAttributesList(),
+                    'alternativeIdentifier'  => $this->getAlternativeIdentifier(),
                 ]
             );
         }
