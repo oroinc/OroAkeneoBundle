@@ -444,9 +444,6 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 ]
             );
 
-            $transportData['akeneoAttributesList'] = str_replace(' ', '', $transportData['akeneoAttributesList']);
-            $transportData['akeneoAttributesImageList'] = str_replace(' ', '', $transportData['akeneoAttributesImageList']);
-
             $event->setData($transportData);
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]);
