@@ -200,6 +200,9 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 [
                     'required' => false,
                     'label'    => 'oro.akeneo.integration.settings.akeneo_attribute_list.label',
+                    'constraints' => [
+                        new AttributeCodeConstraint(),
+                    ]
                 ]
             )
             ->add(

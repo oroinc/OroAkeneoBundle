@@ -96,8 +96,6 @@ class AttributeIterator extends AbstractIterator
     }
 
     /**
-     * @param $attribute
-     *
      * @return array|null
      */
     private function filter()
