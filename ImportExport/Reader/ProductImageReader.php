@@ -23,9 +23,9 @@ class ProductImageReader extends IteratorBasedReader
     private $proceededParent = [];
 
     /**
-     * @var array|null
+     * @var array
      */
-    private $attributesImageFilter = null;
+    private $attributesImageFilter = [];
 
     public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
     {
@@ -47,7 +47,7 @@ class ProductImageReader extends IteratorBasedReader
         foreach ($items as &$item) {
             foreach ($item['values'] as $code => &$values) {
 
-                if (null === $this->attributesImageFilter || in_array($code, $this->attributesImageFilter)) {
+                if (in_array($code, $this->attributesImageFilter)) {
                     foreach ($values as $value) {
                         if ('pim_catalog_image' !== $value['type'] || empty($value['data'])) {
                             continue;
