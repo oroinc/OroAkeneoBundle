@@ -188,14 +188,6 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 ]
             )
             ->add(
-                'akeneoAttributesList',
-                TextareaType::class,
-                [
-                    'required' => false,
-                    'label'    => 'oro.akeneo.integration.settings.akeneo_attribute_list.label',
-                ]
-            )
-            ->add(
                 'akeneoAttributesImageList',
                 TextareaType::class,
                 [

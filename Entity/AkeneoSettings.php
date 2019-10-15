@@ -143,13 +143,6 @@ class AkeneoSettings extends Transport
     /**
      * @var string
      *
-     * @ORM\Column(name="akeneo_attributes_list", type="text", nullable=true)
-     */
-    private $akeneoAttributesList;
-
-    /**
-     * @var string
-     *
      * @ORM\Column(name="akeneo_attributes_image_list", type="text", nullable=true)
      */
     private $akeneoAttributesImageList;
@@ -258,7 +251,6 @@ class AkeneoSettings extends Transport
                     'akeneoActiveCurrencies' => $this->getAkeneoActiveCurrencies(),
                     'akeneoLocales'          => $this->getAkeneoLocales()->toArray(),
                     'akeneoLocalesList'      => $this->getAkeneoLocalesList(),
-                    'akeneoAttributesList'   => $this->getAkeneoAttributesList(),
                 ]
             );
         }
@@ -524,26 +516,6 @@ class AkeneoSettings extends Transport
     public function setAkeneoLocalesList(array $akeneoLocalesList = null)
     {
         $this->akeneoLocalesList = $akeneoLocalesList;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getAkeneoAttributesList(): ?string
-    {
-        return $this->akeneoAttributesList;
-    }
-
-    /**
-     * @param string $attributeList
-     *
-     * @return $this
-     */
-    public function setAkeneoAttributesList($attributeList)
-    {
-        $this->akeneoAttributesList = $attributeList;
 
         return $this;
     }
