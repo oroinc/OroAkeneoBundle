@@ -628,9 +628,9 @@ class AkeneoSettings extends Transport
     /**
      * @param string $attributeList
      *
-     * @return $this
+     * @return AkeneoSettings
      */
-    public function setAttributesList($attributeList)
+    public function setAttributesList(string $attributeList)
     {
         $this->attributesList = $attributeList;
 
