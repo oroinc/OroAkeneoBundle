@@ -57,8 +57,7 @@ class AkeneoSettings extends Transport
     /**
      * @ORM\ManyToOne(targetEntity="Oro\Bundle\CatalogBundle\Entity\Category")
      * @ORM\JoinColumn(onDelete="SET NULL")
-     *
-     **/
+     */
     protected $rootCategory;
     /**
      * @var bool
@@ -130,7 +129,7 @@ class AkeneoSettings extends Transport
      *     orphanRemoval=true,
      *     fetch="EAGER"
      * )
-     **/
+     */
     private $akeneoLocales;
 
     /**
@@ -138,7 +137,7 @@ class AkeneoSettings extends Transport
      *
      * @ORM\ManyToOne(targetEntity="Oro\Bundle\PricingBundle\Entity\PriceList")
      * @ORM\JoinColumn(onDelete="SET NULL")
-     **/
+     */
     private $priceList;
 
     /**
@@ -232,20 +231,20 @@ class AkeneoSettings extends Transport
         if (null === $this->settings) {
             $this->settings = new ParameterBag(
                 [
-                    'clientId' => $this->getClientId(),
-                    'secret' => $this->getSecret(),
-                    'akeneoChannels' => $this->getAkeneoChannels(),
-                    'akeneoActiveChannel' => $this->getAkeneoActiveChannel(),
-                    'username' => $this->getUsername(),
-                    'password' => $this->getPassword(),
-                    'token' => $this->getToken(),
-                    'refreshToken' => $this->getRefreshToken(),
-                    'syncProducts' => $this->getSyncProducts(),
-                    'akeneoCurrencies' => $this->getAkeneoCurrencies(),
+                    'clientId'               => $this->getClientId(),
+                    'secret'                 => $this->getSecret(),
+                    'akeneoChannels'         => $this->getAkeneoChannels(),
+                    'akeneoActiveChannel'    => $this->getAkeneoActiveChannel(),
+                    'username'               => $this->getUsername(),
+                    'password'               => $this->getPassword(),
+                    'token'                  => $this->getToken(),
+                    'refreshToken'           => $this->getRefreshToken(),
+                    'syncProducts'           => $this->getSyncProducts(),
+                    'akeneoCurrencies'       => $this->getAkeneoCurrencies(),
                     'akeneoActiveCurrencies' => $this->getAkeneoActiveCurrencies(),
-                    'akeneoLocales' => $this->getAkeneoLocales()->toArray(),
-                    'akeneoLocalesList' => $this->getAkeneoLocalesList(),
-                    'akeneoAttributesList' => $this->getAkeneoAttributesList(),
+                    'akeneoLocales'          => $this->getAkeneoLocales()->toArray(),
+                    'akeneoLocalesList'      => $this->getAkeneoLocalesList(),
+                    'akeneoAttributesList'   => $this->getAkeneoAttributesList(),
                 ]
             );
         }
@@ -628,9 +627,9 @@ class AkeneoSettings extends Transport
     /**
      * @param string $attributeList
      *
-     * @return $this
+     * @return self
      */
-    public function setAkeneoAttributesList($attributeList)
+    public function setAkeneoAttributesList(string $attributeList = null): self
     {
         $this->akeneoAttributesList = $attributeList;
 
