@@ -162,14 +162,7 @@ class AkeneoSettings extends Transport
     private $akeneoMergeImageToParent = false;
 
     /**
-     * @var string|null
-     *
-     * @ORM\Column(name="akeneo_alternative_identifier", type="string", nullable=true, length=255)
-     */
-    private $alternativeIdentifier;
-
-    /**
-     * @var ParameterBagisAkeneoMergeImageToParent
+     * @var ParameterBag
      */
     private $settings;
 
@@ -566,9 +559,9 @@ class AkeneoSettings extends Transport
     /**
      * @param string $akeneoAttributesImageList
      *
-     * @return $this
+     * @return self
      */
-    public function setAkeneoAttributesImageList($akeneoAttributesImageList)
+    public function setAkeneoAttributesImageList(string $akeneoAttributesImageList = null): self
     {
         $this->akeneoAttributesImageList = $akeneoAttributesImageList;
 
@@ -695,25 +688,5 @@ class AkeneoSettings extends Transport
         $this->akeneoMergeImageToParent = $akeneoMergeImageToParent;
 
         return $this;
-    }
-
-    /**
-     * @param $alternativeIdentifier
-     *
-     * @return $this
-     */
-    public function setAlternativeIdentifier($alternativeIdentifier)
-    {
-        $this->alternativeIdentifier = $alternativeIdentifier;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getAlternativeIdentifier(): ?string
-    {
-        return $this->alternativeIdentifier;
     }
 }
