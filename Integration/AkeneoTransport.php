@@ -280,9 +280,8 @@ class AkeneoTransport implements AkeneoTransportInterface
 
     /**
      * @param int $pageSize
-     * @param null $filter
      *
-     * @return \Iterator
+     * @return AttributeIterator
      */
     public function getAttributes(int $pageSize)
     {

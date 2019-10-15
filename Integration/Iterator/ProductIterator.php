@@ -4,7 +4,6 @@ namespace Oro\Bundle\AkeneoBundle\Integration\Iterator;
 
 use Akeneo\Pim\ApiClient\Exception\NotFoundHttpException;
 use Akeneo\Pim\ApiClient\Pagination\ResourceCursorInterface;
-use Akeneo\Pim\ApiClient\Exception\NotFoundHttpException;
 use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientInterface;
 use Gaufrette\Filesystem;
 use Psr\Log\LoggerInterface;
@@ -107,6 +106,8 @@ class ProductIterator extends AbstractIterator
      */
     protected function setAlternativeIdentifier(array &$product)
     {
+        if (null === $this->alternativeAttribute) return;
+
         list($altAttribute, $identifier) = explode(':', $this->alternativeAttribute);
 
         if (!empty($altAttribute)
