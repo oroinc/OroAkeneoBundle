@@ -47,7 +47,7 @@ oro:
         price_list:
           label: 'Pricelist'
         merge_image:
-          label: 'Merge images from children products to parent'
+          label: 'Merge images from simple products to configurable product'
           tooltip: 'Add all images from the children to the configurable product'
       popup:
         channel: 'This is a list of channels configured for the current Akeneo PIM instance. Select the required channel for product and category import. To refresh the list, click Refresh Channels'
