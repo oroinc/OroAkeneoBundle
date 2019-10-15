@@ -7,6 +7,7 @@ use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\Integration\AkeneoTransportInterface;
 use Oro\Bundle\AkeneoBundle\Settings\DataProvider\SyncProductsDataProviderInterface;
 use Oro\Bundle\AkeneoBundle\Validator\Constraints\JsonConstraint;
+use Oro\Bundle\AkeneoBundle\Validator\Constraints\AttributeCodeConstraint;
 use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\FormBundle\Form\Type\OroEncodedPlaceholderPasswordType;
 use Oro\Bundle\PricingBundle\Form\Type\PriceListSelectType;
@@ -200,6 +201,9 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 [
                     'required' => false,
                     'label'    => 'oro.akeneo.integration.settings.akeneo_attribute_image_list.label',
+                    'constraints' => [
+                        new AttributeCodeConstraint(),
+                    ],
                 ]
             )
             ->add(

@@ -162,7 +162,7 @@ class AkeneoSettings extends Transport
     private $akeneoMergeImageToParent = false;
 
     /**
-     * @var ParameterBagisAkeneoMergeImageToParent
+     * @var ParameterBag
      */
     private $settings;
 
@@ -559,9 +559,9 @@ class AkeneoSettings extends Transport
     /**
      * @param string $akeneoAttributesImageList
      *
-     * @return $this
+     * @return self
      */
-    public function setAkeneoAttributesImageList($akeneoAttributesImageList)
+    public function setAkeneoAttributesImageList(string $akeneoAttributesImageList = null): self
     {
         $this->akeneoAttributesImageList = $akeneoAttributesImageList;
 
