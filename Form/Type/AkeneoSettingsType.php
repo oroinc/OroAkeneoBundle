@@ -6,6 +6,7 @@ use Oro\Bundle\AkeneoBundle\Encoder\Crypter;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\Integration\AkeneoTransportInterface;
 use Oro\Bundle\AkeneoBundle\Settings\DataProvider\SyncProductsDataProviderInterface;
+use Oro\Bundle\AkeneoBundle\Validator\Constraints\AttributeCodeConstraint;
 use Oro\Bundle\AkeneoBundle\Validator\Constraints\JsonConstraint;
 use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\FormBundle\Form\Type\OroEncodedPlaceholderPasswordType;
@@ -187,11 +188,14 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 ]
             )
             ->add(
-                'attributesList',
+                'akeneoAttributesList',
                 TextareaType::class,
                 [
                     'required' => false,
-                    'label' => 'oro.akeneo.integration.settings.akeneo_attribute_list.label',
+                    'label'    => 'oro.akeneo.integration.settings.akeneo_attribute_list.label',
+                    'constraints' => [
+                        new AttributeCodeConstraint(),
+                    ]
                 ]
             )
             ->add(
@@ -419,7 +423,7 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 ]
             );
 
-            $transportData['attributesList'] = str_replace(' ','', $transportData['attributesList']);
+            $transportData['akeneoAttributesList'] = str_replace(' ','', $transportData['akeneoAttributesList']);
 
             $event->setData($transportData);
         } catch (\Exception $e) {
