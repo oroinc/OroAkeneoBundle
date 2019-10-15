@@ -20,11 +20,6 @@ class ProductImageReader extends IteratorBasedReader
     /**
      * @var array
      */
-    private $proceededParent = [];
-
-    /**
-     * @var array
-     */
     private $attributesImageFilter = [];
 
     public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
@@ -47,25 +42,18 @@ class ProductImageReader extends IteratorBasedReader
         foreach ($items as &$item) {
             foreach ($item['values'] as $code => &$values) {
 
-                if (in_array($code, $this->attributesImageFilter)) {
+                if (empty($this->attributesImageFilter) || in_array($code, $this->attributesImageFilter)) {
                     foreach ($values as $value) {
                         if ('pim_catalog_image' !== $value['type'] || empty($value['data'])) {
                             continue;
                         }
 
-                        $identifier = $item['identifier'] ?? $item['code'];
-
                         $images[] = [
-                            'SKU'  => $identifier,
+                            'SKU'  => $item['identifier'] ?? $item['code'],
                             'Name' => basename($value['data']),
                         ];
 
-                        if ($this->getTransport()->isAkeneoMergeImageToParent()
-                            && !empty($item['parent'])
-                            && !isset($this->proceededParent[$identifier])
-                        ) {
-
-                            $this->proceededParent[$identifier] = true;
+                        if ($this->getTransport()->isAkeneoMergeImageToParent() && !empty($item['parent'])) {
                             $images[] = [
                                 'SKU'  => $item['parent'],
                                 'Name' => basename($value['data']),
@@ -86,7 +74,7 @@ class ProductImageReader extends IteratorBasedReader
         $this->attributesImageFilter = [];
         $list = $this->getTransport()->getAkeneoAttributesImageList();
         if (!empty($list)) {
-            $this->attributesImageFilter = explode(';', str_replace(' ', '', $list));
+            $this->attributesImageFilter = explode(';', $list);
         }
     }
 
@@ -95,22 +83,21 @@ class ProductImageReader extends IteratorBasedReader
      */
     private function getTransport(): ?AkeneoSettings
     {
-        if ($this->transport) {
-            return $this->transport;
+        if (!$this->transport) {
+
+            if (!$this->getContext() || false === $this->getContext()->hasOption('channel')) {
+                return null;
+            }
+
+            $channelId = $this->getContext()->getOption('channel');
+            $channel = $this->doctrineHelper->getEntityRepositoryForClass(Channel::class)->find($channelId);
+
+            if (!$channel) {
+                return null;
+            }
+
+            $this->transport = $channel->getTransport();
         }
-
-        if (!$this->getContext() || false === $this->getContext()->hasOption('channel')) {
-            return null;
-        }
-
-        $channelId = $this->getContext()->getOption('channel');
-        $channel = $this->doctrineHelper->getEntityRepositoryForClass(Channel::class)->find($channelId);
-
-        if (!$channel) {
-            return null;
-        }
-
-        $this->transport = $channel->getTransport();
 
         return $this->transport;
     }
