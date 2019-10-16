@@ -58,6 +58,11 @@ services:
     tags:
       - { name: validator.constraint_validator, alias: oro_akeneo.json_validator }
 
+  oro_akeneo.validator.attribute_code_validator:
+    class: Oro\Bundle\AkeneoBundle\Validator\AttributeCodeValidator
+    tags:
+      - { name: validator.constraint_validator, alias: oro_akeneo.attribute_code_validator }
+
   oro_akeneo.event_subscriber.doctrine:
     class: 'Oro\Bundle\AkeneoBundle\EventSubscriber\DoctrineSubscriber'
     calls:
