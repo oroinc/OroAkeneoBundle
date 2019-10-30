@@ -165,7 +165,7 @@ class AkeneoTransport implements AkeneoTransportInterface
     /**
      * @param int $pageSize
      *
-     * @return \Oro\Bundle\AkeneoBundle\Integration\Iterator\CategoryIterator
+     * @return \Iterator
      */
     public function getCategories(int $pageSize)
     {

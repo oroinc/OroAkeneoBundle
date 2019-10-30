@@ -2,6 +2,8 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\ImportExportBundle\Strategy\Import\ConfigurableAddOrReplaceStrategy;
 use Oro\Bundle\ProductBundle\Entity\ProductImage;
@@ -13,6 +15,8 @@ use Oro\Bundle\ProductBundle\Entity\ProductImageType;
 class ProductImageImportStrategy extends ConfigurableAddOrReplaceStrategy implements ClosableInterface
 {
     use ImportStrategyAwareHelperTrait;
+
+    const DUPLICATED_IMAGES = 'duplicated_images';
 
     /**
      * @var array
@@ -53,7 +57,7 @@ class ProductImageImportStrategy extends ConfigurableAddOrReplaceStrategy implem
     /**
      * @param ProductImage $entity
      *
-     * @return object
+     * @return object|null
      */
     protected function afterProcessEntity($entity)
     {
@@ -82,22 +86,40 @@ class ProductImageImportStrategy extends ConfigurableAddOrReplaceStrategy implem
      * @param ProductImage $entity
      *
      * @return bool
-     *
-     * @throws \Doctrine\ORM\NoResultException
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     private function isImageDuplicate(ProductImage $entity): bool
     {
-        $count = $this->doctrineHelper->getEntityRepository($entity)->createQueryBuilder('pi')
-            ->select('count(pi.id)')
-            ->leftJoin('pi.image', 'i')
-            ->where('pi.product = :product')
-            ->andWhere('i.originalFilename = :name')
-            ->setParameter('product', $entity->getProduct())
-            ->setParameter('name', $entity->getImage()->getOriginalFilename())
-            ->getQuery()
-            ->getSingleScalarResult();
+        try {
+            $image = $this->doctrineHelper->getEntityRepository($entity)->createQueryBuilder('pi')
+                ->select('pi')
+                ->leftJoin('pi.image', 'i')
+                ->where('pi.product = :product')
+                ->andWhere('i.originalFilename = :name')
+                ->setParameter('product', $entity->getProduct())
+                ->setParameter('name', $entity->getImage()->getOriginalFilename())
+                ->getQuery()
+                ->getSingleResult();
+        } catch (NoResultException $e) {
+            return false;
+        } catch (NonUniqueResultException $e) {
+            return true;
+        }
 
-        return (int)$count > 0;
+        $this->addDuplicatedImages($image);
+        return true;
+    }
+
+    /**
+     * @param \Oro\Bundle\ProductBundle\Entity\ProductImage $image
+     *
+     * @return void
+     */
+    private function addDuplicatedImages(ProductImage $image): void
+    {
+        $duplicatedImages = $this->context->getValue(self::DUPLICATED_IMAGES);
+        $duplicatedImages = $duplicatedImages ?? [];
+        $duplicatedImages[$image->getProduct()->getId()][] = $image->getImage()->getId();
+
+        $this->context->setValue(self::DUPLICATED_IMAGES, $duplicatedImages);
     }
 }
