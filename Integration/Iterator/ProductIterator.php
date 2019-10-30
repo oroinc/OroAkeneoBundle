@@ -108,7 +108,7 @@ class ProductIterator extends AbstractIterator
     {
         if (null === $this->alternativeAttribute) return;
 
-        list($altAttribute, $identifier) = explode(':', $this->alternativeAttribute);
+        @list($altAttribute, $identifier) = explode(':', $this->alternativeAttribute);
 
         if (!empty($altAttribute)
             && isset($product['values'][$altAttribute])
