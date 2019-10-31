@@ -12,7 +12,7 @@ class AlternativeIdentifierConstraint extends Constraint
     /**
      * @var string
      */
-    public $message = 'oro.akeneo.validator.attribute_code.message';
+    public $message = 'oro.akeneo.validator.alternative_identifier.message';
 
     /**
      * {@inheritdoc}
