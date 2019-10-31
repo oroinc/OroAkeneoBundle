@@ -6,6 +6,7 @@ use Oro\Bundle\AkeneoBundle\Encoder\Crypter;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\Integration\AkeneoTransportInterface;
 use Oro\Bundle\AkeneoBundle\Settings\DataProvider\SyncProductsDataProviderInterface;
+use Oro\Bundle\AkeneoBundle\Validator\Constraints\AlternativeIdentifierConstraint;
 use Oro\Bundle\AkeneoBundle\Validator\Constraints\JsonConstraint;
 use Oro\Bundle\AkeneoBundle\Validator\Constraints\AttributeCodeConstraint;
 use Oro\Bundle\CatalogBundle\Entity\Category;
@@ -194,7 +195,7 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                     'label'    => 'oro.akeneo.integration.settings.alternative_identifier.label',
                     'required' => false,
                     'constraints' => [
-                        new AttributeCodeConstraint(),
+                        new AlternativeIdentifierConstraint(),
                     ]
                 ]
             )
