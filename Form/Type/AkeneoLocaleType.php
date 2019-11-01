@@ -58,7 +58,6 @@ class AkeneoLocaleType extends AbstractType implements LoggerAwareInterface
                 ChoiceType::class,
                 [
                     'choices' => $this->codes,
-                    'choices_as_values' => true,
                     'label' => false,
                     'constraints' => [
                         new NotBlank(),
@@ -112,7 +111,6 @@ class AkeneoLocaleType extends AbstractType implements LoggerAwareInterface
                 ChoiceType::class,
                 [
                     'choices' => $this->codes,
-                    'choices_as_values' => true,
                 ]
             );
     }
@@ -132,7 +130,6 @@ class AkeneoLocaleType extends AbstractType implements LoggerAwareInterface
                     ChoiceType::class,
                     [
                         'choices' => $this->codes,
-                        'choices_as_values' => true,
                     ]
                 );
 
