@@ -17,6 +17,7 @@ use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\ImportExport\Normalizer\LocalizationCodeFormatter;
 use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStrategy;
 use Oro\Bundle\ProductBundle\Entity\Product;
+use Oro\Bundle\SecurityBundle\Owner\OwnerChecker;
 
 /**
  * Strategy to import attribute families.
@@ -30,9 +31,14 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
     private const GROUP_CODE_GENERAL = 'general';
 
     /**
-     * @var DefaultOwnerHelper
+     * @var $ownerHelper DefaultOwnerHelper
      */
     protected $ownerHelper;
+
+    /**
+     * @var $ownerChecker OwnerChecker
+     */
+    protected $ownerChecker;
 
     /**
      * @var AttributeManager
@@ -47,9 +53,17 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
     /**
      * @param DefaultOwnerHelper $ownerHelper
      */
-    public function setOwnerHelper($ownerHelper)
+    public function setOwnerHelper(DefaultOwnerHelper $ownerHelper): void
     {
         $this->ownerHelper = $ownerHelper;
+    }
+
+    /**
+     * @param OwnerChecker $ownerChecker
+     */
+    public function setOwnerChecker(OwnerChecker $ownerChecker): void
+    {
+        $this->ownerChecker = $ownerChecker;
     }
 
     /**
@@ -63,7 +77,7 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
     /**
      * @param AttributeManager $attributeManager
      */
-    public function setAttributeManager(AttributeManager $attributeManager)
+    public function setAttributeManager(AttributeManager $attributeManager): void
     {
         $this->attributeManager = $attributeManager;
     }
