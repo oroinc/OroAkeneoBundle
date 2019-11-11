@@ -108,7 +108,8 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
                 ],
             ];
         }
-
+        $importedRecord['owner'] = ['id' => 1];
+        $importedRecord['organization'] = ['id' => 1];
         return $importedRecord;
     }
 

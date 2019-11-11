@@ -34,7 +34,8 @@ class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter imp
         $this->setRootCategory($importedRecord);
 
         $importedRecord['channel:id'] = $this->getContext()->getOption('channel');
-
+        $importedRecord['owner'] = ['id' => 1];
+        $importedRecord['organization'] = ['id' => 1];
         return parent::convertToImportFormat($importedRecord, $skipNullValues);
     }
 
