@@ -6,13 +6,12 @@ use Oro\Bundle\AkeneoBundle\Placeholder\SchemaUpdateFilter;
 use Oro\Bundle\IntegrationBundle\Entity\Channel;
 use Oro\Bundle\IntegrationBundle\Provider\AbstractConnector;
 use Oro\Bundle\IntegrationBundle\Provider\AllowedConnectorInterface;
-use Oro\Bundle\IntegrationBundle\Provider\ConnectorInterface;
 use Oro\Bundle\ProductBundle\Entity\Product;
 
 /**
  * Integration product connector.
  */
-class ProductConnector extends AbstractConnector implements ConnectorInterface, AllowedConnectorInterface
+class ProductConnector extends AbstractConnector implements AllowedConnectorInterface
 {
     const IMPORT_JOB_NAME = 'akeneo_product_import';
     const PAGE_SIZE = 100;
