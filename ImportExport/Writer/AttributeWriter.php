@@ -70,41 +70,26 @@ class AttributeWriter extends BaseAttributeWriter
         $this->fieldTypeMapping = null;
     }
 
-    /**
-     * @param EnumSynchronizer $enumSynchronizer
-     */
     public function setEnumSynchronizer(EnumSynchronizer $enumSynchronizer): void
     {
         $this->enumSynchronizer = $enumSynchronizer;
     }
 
-    /**
-     * @param AttributeTypeRegistry $attributeTypeRegistry
-     */
     public function setAttributeTypeRegistry(AttributeTypeRegistry $attributeTypeRegistry): void
     {
         $this->attributeTypeRegistry = $attributeTypeRegistry;
     }
 
-    /**
-     * @param TranslationManager $translationManager
-     */
     public function setTranslationManager(TranslationManager $translationManager)
     {
         $this->translationManager = $translationManager;
     }
 
-    /**
-     * @param DoctrineHelper $doctrineHelper
-     */
     public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
     {
         $this->doctrineHelper = $doctrineHelper;
     }
 
-    /**
-     * @param CacheProvider $cacheProvider
-     */
     public function setCacheProvider(CacheProvider $cacheProvider): void
     {
         $this->cacheProvider = $cacheProvider;
@@ -123,8 +108,6 @@ class AttributeWriter extends BaseAttributeWriter
 
     /**
      * Save attribute translations from context.
-     *
-     * @param array $items
      */
     private function saveAttributeTranslationsFromContext(array $items)
     {
@@ -150,18 +133,14 @@ class AttributeWriter extends BaseAttributeWriter
                     TranslationManager::DEFAULT_DOMAIN,
                     Translation::SCOPE_UI
                 );
-                $this->translationManager->invalidateCache($locale);
             }
         }
 
         $this->translationManager->flush();
-        $this->translationManager->clear();
     }
 
     /**
      * Save option translations from context.
-     *
-     * @param array $items
      */
     private function saveOptionTranslationsFromContext(array $items)
     {
@@ -209,8 +188,6 @@ class AttributeWriter extends BaseAttributeWriter
     }
 
     /**
-     * @param FieldConfigModel $fieldConfigModel
-     *
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
@@ -306,10 +283,6 @@ class AttributeWriter extends BaseAttributeWriter
         $this->configManager->persist($importExportConfig);
     }
 
-    /**
-     * @param string $className
-     * @param string $fieldName
-     */
     private function saveDatagridConfig(string $className, string $fieldName): void
     {
         $datagridProvider = $this->configManager->getProvider('datagrid');
@@ -319,10 +292,6 @@ class AttributeWriter extends BaseAttributeWriter
         $this->configManager->persist($datagridConfig);
     }
 
-    /**
-     * @param ConfigInterface $searchConfig
-     * @param string|null $importedFieldType
-     */
     private function setSearchConfig(ConfigInterface $searchConfig, ?string $importedFieldType): void
     {
         $searchable = !in_array($importedFieldType, ['pim_catalog_file', 'pim_catalog_date']);

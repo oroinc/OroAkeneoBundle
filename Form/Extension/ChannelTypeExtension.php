@@ -17,7 +17,6 @@ class ChannelTypeExtension extends AbstractTypeExtension
      * @var array
      */
     protected $mandatoryConnectors = [
-        'attribute',
         'attribute_family',
     ];
 
