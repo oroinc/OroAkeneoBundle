@@ -82,8 +82,6 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
 
     /**
      * Set attribute labels in context for writer.
-     * @param array $item
-     * @param string $fieldName
      */
     private function updateAttributeLabelTranslationContext(array &$item, string $fieldName)
     {
@@ -96,8 +94,6 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
 
     /**
      * Set option labels in context for writer.
-     * @param array $item
-     * @param string $fieldName
      */
     private function updateOptionLabelTranslationContext(array &$item, string $fieldName)
     {
@@ -144,6 +140,7 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
         $fields = $this->fieldHelper->getFields(Product::class, true);
         $importExportProvider = $this->configManager->getProvider('importexport');
         $extendProvider = $this->configManager->getProvider('extend');
+        $flushRequired = false;
 
         foreach ($fields as $field) {
             if (array_key_exists($field['name'], $this->fieldNameMapping)) {
@@ -176,23 +173,19 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
             $entityConfig = $extendProvider->getConfig(Product::class);
             $entityConfig->set('upgradeable', true);
             $this->configManager->persist($entityConfig);
+            $flushRequired = true;
         }
 
-        $this->configManager->flush();
-        $this->configManager->clear();
+        if ($flushRequired) {
+            $this->configManager->flush();
+        }
     }
 
-    /**
-     * @param FieldHelper $fieldHelper
-     */
     public function setFieldHelper(FieldHelper $fieldHelper): void
     {
         $this->fieldHelper = $fieldHelper;
     }
 
-    /**
-     * @param string $className
-     */
     public function setEntityConfigModelClassName(string $className)
     {
         $this->entityConfigModelClassName = $className;
