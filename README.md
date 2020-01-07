@@ -72,7 +72,7 @@ Create a new integration to start synchronizing data from Akeneo to OroCommerce.
 
      **Note:** Your input is validated on the go. If you get a validation warning, ensure to correct the code or any issues reported.
 
-   * Connectors - The connectors that enable you to sync either the category or products or both by selecting/deselecting the relevant connector. The attribute and attribute family are mandatory connectors which cannot be disabled.
+   * Connectors - The connectors that enable you to sync either the category or products or both by selecting/deselecting the relevant connector. The attribute family connector is mandatory and cannot be disabled.
    * Default Owner - The Owner determines the list of users who can manage the integration and the data synchronized with it. All entities imported within the integration will be assigned to the selected user. By default, the field is prepopulated with the user creating the integration.
 
 4. The Statuses field displays the log of the integration including the date and status of the connector execution, and the statistics it provides.
