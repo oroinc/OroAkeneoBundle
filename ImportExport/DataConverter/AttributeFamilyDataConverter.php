@@ -14,6 +14,9 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
 {
     use AkeneoIntegrationTrait;
 
+    /** @var array */
+    protected $fieldMapping = [];
+
     /**
      * @var EntityConfigManager
      */
@@ -46,15 +49,53 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
                     FieldConfigModelFieldNameGenerator::generate($attributeCode)
                 );
 
-                if (!$entityConfigFieldId) {
+                if ($entityConfigFieldId) {
+                    $group['attributeRelations'][] = ['entityConfigFieldId' => $entityConfigFieldId];
+
                     continue;
                 }
 
-                $group['attributeRelations'][] = ['entityConfigFieldId' => $entityConfigFieldId];
+                // @BC: Keep Akeneo_Aken_1706289854
+                $fieldName = $this->getFieldMapping()[$attributeCode] ?? null;
+                if (!$fieldName) {
+                    continue;
+                }
+                $entityConfigFieldId = $this->entityConfigManager->getConfigModelId(
+                    $importedRecord['entityClass'],
+                    $fieldName
+                );
+                if ($entityConfigFieldId) {
+                    $group['attributeRelations'][] = ['entityConfigFieldId' => $entityConfigFieldId];
+
+                    continue;
+                }
             }
         }
 
         return parent::convertToImportFormat($importedRecord, $skipNullValues);
+    }
+
+    private function getFieldMapping(): array
+    {
+        if ($this->fieldMapping) {
+            return $this->fieldMapping;
+        }
+
+        $importExportProvider = $this->entityConfigManager->getProvider('importexport');
+        foreach ($importExportProvider->getConfigs(Product::class) as $field) {
+            if ('akeneo' !== $field->get('source')) {
+                continue;
+            }
+
+            $source = $field->get('source_name');
+            if (!$source) {
+                continue;
+            }
+
+            $this->fieldMapping[$source] = $field->getId()->getFieldName();
+        }
+
+        return $this->fieldMapping;
     }
 
     /**
