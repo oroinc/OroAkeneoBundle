@@ -11,6 +11,7 @@ use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityConfigBundle\Entity\FieldConfigModel;
 use Oro\Bundle\EntityConfigBundle\Manager\AttributeManager;
 use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
+use Oro\Bundle\ImportExportBundle\Strategy\Import\ConfigurableAddOrReplaceStrategy;
 use Oro\Bundle\IntegrationBundle\Entity\Channel;
 use Oro\Bundle\IntegrationBundle\ImportExport\Helper\DefaultOwnerHelper;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
@@ -79,7 +80,53 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
         $this->setSystemAttributes($entity);
         $this->setOwner($entity);
 
+        $existingEntity = $this->findExistingEntity($entity);
+        if (!$existingEntity) {
+            return parent::beforeProcessEntity($entity);
+        }
+
+        $fields = $this->fieldHelper->getRelations(AttributeFamily::class);
+        foreach ($fields as $field) {
+            if ($this->isLocalizedFallbackValue($field)) {
+                $fieldName = $field['name'];
+                $this->mapCollections(
+                    $this->fieldHelper->getObjectValue($entity, $fieldName),
+                    $this->fieldHelper->getObjectValue($existingEntity, $fieldName)
+                );
+            }
+        }
+
+        $fields = $this->fieldHelper->getRelations(AttributeGroup::class);
+        foreach ($entity->getAttributeGroups() as $attributeGroup) {
+            $existingAttributeGroup = $this->findExistingEntity($attributeGroup);
+
+            foreach ($fields as $field) {
+                if ($this->isLocalizedFallbackValue($field)) {
+                    $fieldName = $field['name'];
+                    $this->mapCollections(
+                        $this->fieldHelper->getObjectValue($attributeGroup, $fieldName),
+                        $this->fieldHelper->getObjectValue($existingAttributeGroup, $fieldName)
+                    );
+                }
+            }
+        }
+
         return parent::beforeProcessEntity($entity);
+    }
+
+    protected function generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation)
+    {
+        return ConfigurableAddOrReplaceStrategy::generateSearchContextForRelationsUpdate(
+            $entity,
+            $entityName,
+            $fieldName,
+            $isPersistRelation
+        );
+    }
+
+    protected function findExistingEntity($entity, array $searchContext = [])
+    {
+        return ConfigurableAddOrReplaceStrategy::findExistingEntity($entity, $searchContext);
     }
 
     /**
@@ -92,6 +139,10 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
         foreach ($entity->getAttributeGroups() as $attributeGroup) {
             foreach ($attributeGroup->getAttributeRelations() as $attributeRelation) {
                 $fieldConfigModel = $this->getFieldConfigModel($attributeRelation->getEntityConfigFieldId());
+                if (!$fieldConfigModel) {
+                    continue;
+                }
+
                 $extendConfig = $extendProvider->getConfig(Product::class, $fieldConfigModel->getFieldName());
 
                 if (ExtendScope::STATE_ACTIVE !== $extendConfig->get('state')) {
@@ -245,8 +296,6 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
                             $searchContext,
                             true
                         );
-
-                        $this->cacheInverseFieldRelation($entityName, $fieldName, $relationEntity);
                     }
                     $this->fieldHelper->setObjectValue($entity, $fieldName, $relationEntity);
                 } elseif ($this->fieldHelper->isMultipleRelation($field)) {

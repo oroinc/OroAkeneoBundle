@@ -24,7 +24,7 @@ class AttributeRelationNormalizer extends ConfigurableEntityNormalizer
                 }
 
                 $relation = new AttributeGroupRelation();
-                $relation->setEntityConfigFieldId($item['entityConfigFieldId']);
+                $relation->setEntityConfigFieldId((int)$item['entityConfigFieldId']);
                 $result->addAttributeRelation($relation);
             }
         }
