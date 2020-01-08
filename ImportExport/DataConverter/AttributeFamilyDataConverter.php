@@ -19,9 +19,6 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
      */
     protected $entityConfigManager;
 
-    /**
-     * @param EntityConfigManager $entityConfigManager
-     */
     public function setEntityConfigManager(EntityConfigManager $entityConfigManager)
     {
         $this->entityConfigManager = $entityConfigManager;
@@ -44,10 +41,6 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
             $group['akeneo_code'] = $group['code'];
 
             foreach ($group['attributes'] as $attributeCode) {
-                if (false === in_array($attributeCode, $importedRecord['attributes'])) {
-                    continue;
-                }
-
                 $entityConfigFieldId = $this->entityConfigManager->getConfigModelId(
                     $importedRecord['entityClass'],
                     FieldConfigModelFieldNameGenerator::generate($attributeCode)
@@ -66,15 +59,13 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
 
     /**
      * Set labels with locales mapping from settings.
-     *
-     * @param array $importedRecord
      */
     private function setLabels(array &$importedRecord)
     {
         $labels = $importedRecord['labels'];
 
         $defaultLocalization = $this->getDefaultLocalization();
-        $defaultLocale = $this->getTransport()->getMappedAkeneoLocale($defaultLocalization->getFormattingCode());
+        $defaultLocale = $this->getTransport()->getMappedAkeneoLocale($defaultLocalization->getLanguageCode());
 
         $importedRecord['labels'] = [
             'default' => [
