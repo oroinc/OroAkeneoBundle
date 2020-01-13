@@ -375,6 +375,8 @@ services:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Reader\ProductVariantReader'
     arguments:
       - "@oro_importexport.context_registry"
+    calls:
+      - [setDoctrineHelper, ["@oro_entity.doctrine_helper"]]
 
   oro_akeneo.importexport.reader.category_parent:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Reader\CategoryParentReader'
