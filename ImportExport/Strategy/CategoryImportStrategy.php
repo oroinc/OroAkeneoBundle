@@ -112,7 +112,6 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy
 
     /**
      * @param object $entity
-     * @param array|null $itemData
      *
      * @see \Oro\Bundle\ImportExportBundle\Strategy\Import\ImportStrategyHelper::importEntity
      * @see \Oro\Bundle\AkeneoBundle\ImportExport\Strategy\ImportStrategyHelper::importEntity

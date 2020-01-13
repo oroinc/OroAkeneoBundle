@@ -17,9 +17,6 @@ interface AkeneoTransportInterface extends TransportInterface
      */
     public function getMergedCurrencies();
 
-    /**
-     * @param MultiCurrencyConfigProvider $configProvider
-     */
     public function setConfigProvider(MultiCurrencyConfigProvider $configProvider);
 
     /**
@@ -33,8 +30,6 @@ interface AkeneoTransportInterface extends TransportInterface
     public function getChannels();
 
     /**
-     * @param int $pageSize
-     *
      * @return \Iterator
      */
     public function getCategories(int $pageSize);
@@ -47,22 +42,16 @@ interface AkeneoTransportInterface extends TransportInterface
     /**
      * {@inheritdoc}
      *
-     * @param int $pageSize
-     *
      * @return \Iterator
      */
     public function getProducts(int $pageSize);
 
     /**
-     * @param int $pageSize
-     *
      * @return \Iterator
      */
     public function getProductModels(int $pageSize);
 
     /**
-     * @param int $pageSize
-     *
      * @return \Iterator
      */
     public function getAttributes(int $pageSize);

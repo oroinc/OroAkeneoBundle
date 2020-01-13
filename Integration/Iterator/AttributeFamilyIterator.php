@@ -28,8 +28,6 @@ class AttributeFamilyIterator extends AbstractIterator
 
     /**
      * Set groups from API.
-     *
-     * @param array $family
      */
     private function setGroups(array &$family)
     {

@@ -15,12 +15,6 @@ class Generator
     private const DEFAULT_CODE_PREFIX = '';
     private const DEFAULT_CODE_LENGTH = 22;
 
-    /**
-     * @param string $value
-     * @param int $maxLength
-     * @param string $prefix
-     * @return string
-     */
     public static function generateLabel(
         string $value,
         int $maxLength = self::DEFAULT_LABEL_LENGTH,
@@ -47,12 +41,6 @@ class Generator
             . crc32($value);
     }
 
-    /**
-     * @param string $value
-     * @param int $maxLength
-     * @param string $prefix
-     * @return string
-     */
     public static function generateCode(
         string $value,
         int $maxLength = self::DEFAULT_CODE_LENGTH,

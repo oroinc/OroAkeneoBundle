@@ -27,8 +27,6 @@ class FieldConfigSubscriber implements EventSubscriberInterface
 
     /**
      * Updates field config.
-     *
-     * @param FieldConfigEvent $event
      */
     public function updateFieldConfig(FieldConfigEvent $event)
     {

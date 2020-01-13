@@ -21,8 +21,6 @@ class AttributeTypeConverter
     ];
 
     /**
-     * @param string $type
-     *
      * @return string
      */
     public static function convert(string $type): ?string

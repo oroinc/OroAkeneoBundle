@@ -63,9 +63,6 @@ class ProductConnector extends AbstractConnector implements ConnectorInterface, 
         return !$this->needToUpdateSchema($integration);
     }
 
-    /**
-     * @param SchemaUpdateFilter $schemaUpdateFilter
-     */
     public function setSchemaUpdateFilter(SchemaUpdateFilter $schemaUpdateFilter): void
     {
         $this->schemaUpdateFilter = $schemaUpdateFilter;
@@ -103,9 +100,6 @@ class ProductConnector extends AbstractConnector implements ConnectorInterface, 
 
     /**
      * Checks if schema is changed and need to update it.
-     *
-     * @param Channel $integration
-     * @return bool
      */
     private function needToUpdateSchema(Channel $integration): bool
     {

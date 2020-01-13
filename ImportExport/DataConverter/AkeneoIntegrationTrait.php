@@ -26,9 +26,6 @@ trait AkeneoIntegrationTrait
      */
     protected $registry;
 
-    /**
-     * @param ManagerRegistry $registry
-     */
     public function setRegistry(ManagerRegistry $registry)
     {
         $this->registry = $registry;
@@ -42,9 +39,6 @@ trait AkeneoIntegrationTrait
         $this->context = $context;
     }
 
-    /**
-     * @return ContextInterface
-     */
     public function getContext(): ContextInterface
     {
         return $this->context;
@@ -84,8 +78,6 @@ trait AkeneoIntegrationTrait
     }
 
     /**
-     * @param string $code
-     *
      * @return Localization[]
      */
     private function getLocalizations(string $code)

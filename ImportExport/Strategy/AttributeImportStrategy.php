@@ -75,7 +75,8 @@ class AttributeImportStrategy extends EntityFieldImportStrategy
         $supportedTypes = $this->fieldTypeProvider->getSupportedFieldTypes();
         $relationTypes = $this->fieldTypeProvider->getSupportedRelationTypes();
 
-        if (        !in_array($entity->getType(), $supportedTypes, true) &&
+        if (
+            !in_array($entity->getType(), $supportedTypes, true) &&
             !in_array($entity->getType(), $relationTypes, true)
         ) {
             $this->addErrors($this->translator->trans('oro.entity_config.import.message.invalid_field_type'));
@@ -105,7 +106,8 @@ class AttributeImportStrategy extends EntityFieldImportStrategy
 
         $fields = $this->fieldHelper->getFields($entity->getEntity()->getClassName(), true);
         foreach ($fields as $field) {
-            if (                $field['name'] !== $entityCode &&
+            if (
+                $field['name'] !== $entityCode &&
                 $field['name'] !== $this->makeSingular($entityCode) &&
                 $field['name'] !== $this->makePlural($entityCode)
             ) {
@@ -124,7 +126,7 @@ class AttributeImportStrategy extends EntityFieldImportStrategy
 
             // Field should be skipped
             if (
-            $entity->getType() === $field['type'] ||
+                $entity->getType() === $field['type'] ||
                 (RelationType::MANY_TO_MANY === $entity->getType() && RelationType::TO_MANY === $field['type'])
             ) {
                 return null;

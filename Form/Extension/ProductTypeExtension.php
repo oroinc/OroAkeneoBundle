@@ -32,9 +32,6 @@ class ProductTypeExtension extends AbstractTypeExtension
 
     /**
      * ProductTypeExtension constructor.
-     *
-     * @param ConfigManager $configManager
-     * @param FieldHelper $fieldHelper
      */
     public function __construct(ConfigManager $configManager, FieldHelper $fieldHelper)
     {
