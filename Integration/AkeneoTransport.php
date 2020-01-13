@@ -34,7 +34,7 @@ class AkeneoTransport implements AkeneoTransportInterface
     private $configProvider;
 
     /**
-     * @var Transport
+     * @var AkeneoSettings
      */
     private $transportEntity;
 
@@ -197,7 +197,8 @@ class AkeneoTransport implements AkeneoTransportInterface
             ),
             $this->client,
             $this->logger,
-            $this->filesystem
+            $this->filesystem,
+            $this->getAttributes($pageSize)
         );
     }
 
@@ -217,7 +218,8 @@ class AkeneoTransport implements AkeneoTransportInterface
             ),
             $this->client,
             $this->logger,
-            $this->filesystem
+            $this->filesystem,
+            $this->getAttributes($pageSize)
         );
     }
 
@@ -248,10 +250,19 @@ class AkeneoTransport implements AkeneoTransportInterface
     /**
      * @param int $pageSize
      *
-     * @return \Iterator
+     * @return AttributeIterator
      */
     public function getAttributes(int $pageSize)
     {
-        return new AttributeIterator($this->client->getAttributeApi()->all($pageSize), $this->client, $this->logger);
+        $attributeFilter = [];
+        $attrList = $this->transportEntity->getAkeneoAttributesList();
+        if (!empty($attrList)) {
+            $attributeFilter = array_merge(
+                explode(';', $attrList) ?? [],
+                explode(';', $this->transportEntity->getAkeneoAttributesImageList()) ?? []
+            );
+        }
+
+        return new AttributeIterator($this->client->getAttributeApi()->all($pageSize), $this->client, $this->logger, $attributeFilter);
     }
 }

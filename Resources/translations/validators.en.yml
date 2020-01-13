@@ -2,3 +2,5 @@ oro.akeneo:
   validator:
     ajax:
       message: 'Product filter is invalid. Please make sure it uses a valid JSON format.'
+    attribute_code:
+      message: 'Only letters, numbers and underscores and semi colon for separator are allowed.'
