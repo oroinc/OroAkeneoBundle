@@ -175,9 +175,6 @@ class AsyncWriter implements
         $this->stepExecution = $stepExecution;
     }
 
-    /**
-     * @param CacheProvider $cacheProvider
-     */
     public function setCacheProvider(CacheProvider $cacheProvider): void
     {
         $this->cacheProvider = $cacheProvider;

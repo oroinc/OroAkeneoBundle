@@ -41,9 +41,6 @@ class AkeneoLocaleType extends AbstractType implements LoggerAwareInterface
     }
 
     /**
-     * @param FormBuilderInterface $builder
-     * @param array $options
-     *
      * @throws ConstraintDefinitionException
      * @throws InvalidOptionsException
      * @throws MissingOptionsException
@@ -92,9 +89,6 @@ class AkeneoLocaleType extends AbstractType implements LoggerAwareInterface
         return $choices;
     }
 
-    /**
-     * @param FormEvent $event
-     */
     public function onPreSetData(FormEvent $event)
     {
         $form = $event->getForm();
@@ -117,9 +111,6 @@ class AkeneoLocaleType extends AbstractType implements LoggerAwareInterface
             );
     }
 
-    /**
-     * @param FormEvent $event
-     */
     public function onPreSubmit(FormEvent $event)
     {
         try {
@@ -143,8 +134,6 @@ class AkeneoLocaleType extends AbstractType implements LoggerAwareInterface
     }
 
     /**
-     * @param OptionsResolver $resolver
-     *
      * @throws AccessException
      */
     public function configureOptions(OptionsResolver $resolver)

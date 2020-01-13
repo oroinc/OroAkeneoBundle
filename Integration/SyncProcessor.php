@@ -20,10 +20,6 @@ class SyncProcessor implements SyncProcessorInterface, LoggerStrategyAwareInterf
     /** @var NullLogger */
     private $logger;
 
-    /**
-     * @param JobProcessor $jobProcessor
-     * @param SyncProcessorInterface $syncProcessor
-     */
     public function __construct(JobProcessor $jobProcessor, SyncProcessorInterface $syncProcessor)
     {
         $this->jobProcessor = $jobProcessor;

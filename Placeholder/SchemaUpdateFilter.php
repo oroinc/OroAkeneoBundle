@@ -26,9 +26,6 @@ class SchemaUpdateFilter
 
     /**
      * SchemaUpdateFilter constructor.
-     *
-     * @param ConfigManager $configManager
-     * @param EntityConfigProviderHelper $entityConfigProviderHelper
      */
     public function __construct(ConfigManager $configManager, EntityConfigProviderHelper $entityConfigProviderHelper)
     {
@@ -40,7 +37,6 @@ class SchemaUpdateFilter
      * Check if schema update button is applicable.
      *
      * @param object $entity
-     * @param string $entityConfigModelClass
      *
      * @return bool
      */

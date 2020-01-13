@@ -119,9 +119,6 @@ class CumulativeWriter implements
     }
 
     /**
-     * @param array $items
-     * @return bool
-     *
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
@@ -198,9 +195,6 @@ class CumulativeWriter implements
         return count($entityStates);
     }
 
-    /**
-     * @param OptionalListenerManager $optionalListenerManager
-     */
     public function setOptionalListenerManager(OptionalListenerManager $optionalListenerManager)
     {
         $this->optionalListenerManager = $optionalListenerManager;
@@ -250,9 +244,6 @@ class CumulativeWriter implements
         }
     }
 
-    /**
-     * @param int $batchSize
-     */
     public function setBatchSize(int $batchSize)
     {
         $this->batchSize = $batchSize;

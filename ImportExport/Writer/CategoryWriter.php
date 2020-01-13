@@ -24,10 +24,6 @@ class CategoryWriter extends PersistentBatchWriter
         $this->categoryListener = $categoryListener;
     }
 
-    /**
-     * @param array $items
-     * @param EntityManager $em
-     */
     protected function saveItems(array $items, EntityManager $em)
     {
         try {

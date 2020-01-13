@@ -2,11 +2,10 @@
 
 namespace Oro\Bundle\AkeneoBundle\Integration\Iterator;
 
-use Akeneo\Pim\ApiClient\Pagination\ResourceCursorInterface;
 use Akeneo\Pim\ApiClient\Exception\NotFoundHttpException;
+use Akeneo\Pim\ApiClient\Pagination\ResourceCursorInterface;
 use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientInterface;
 use Gaufrette\Filesystem;
-use Oro\Bundle\AkeneoBundle\Integration\Iterator\AttributeIterator;
 use Psr\Log\LoggerInterface;
 
 class ProductIterator extends AbstractIterator
@@ -43,11 +42,6 @@ class ProductIterator extends AbstractIterator
 
     /**
      * AttributeIterator constructor.
-     *
-     * @param ResourceCursorInterface $resourceCursor
-     * @param AkeneoPimEnterpriseClientInterface $client
-     * @param LoggerInterface $logger
-     * @param Filesystem $filesystem
      */
     public function __construct(
         ResourceCursorInterface $resourceCursor,
@@ -76,8 +70,6 @@ class ProductIterator extends AbstractIterator
 
     /**
      * Set attribute types for product values.
-     *
-     * @param array $product
      */
     protected function setValueAttributeTypes(array &$product)
     {
@@ -107,8 +99,6 @@ class ProductIterator extends AbstractIterator
 
     /**
      * Set family variant from API.
-     *
-     * @param array $model
      */
     private function setFamilyVariant(array &$model)
     {
@@ -152,18 +142,13 @@ class ProductIterator extends AbstractIterator
             $content = $this->client->getProductMediaFileApi()->download($value['data'])->getContents();
         } catch (NotFoundHttpException $e) {
             $this->logger->critical($e->getMessage());
+
             return;
         }
 
         $this->filesystem->write($path, $content);
     }
 
-    /**
-     * @param string $type
-     * @param string $code
-     *
-     * @return string
-     */
     protected function getFilePath(string $type, string $code): string
     {
         return sprintf('%s/%s', $type, basename($code));
@@ -190,9 +175,10 @@ class ProductIterator extends AbstractIterator
             $content = $this->client->getProductMediaFileApi()->download($value['data'])->getContents();
         } catch (NotFoundHttpException $e) {
             $this->logger->critical($e->getMessage());
+
             return;
         }
-        
+
         $this->filesystem->write($path, $content);
     }
 }

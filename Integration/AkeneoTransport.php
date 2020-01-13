@@ -53,13 +53,6 @@ class AkeneoTransport implements AkeneoTransportInterface
      */
     private $logger;
 
-    /**
-     * @param AkeneoClientFactory $clientFactory
-     * @param MultiCurrencyConfigProvider $configProvider
-     * @param AkeneoSearchBuilder $akeneoSearchBuilder
-     * @param FilesystemMap $filesystemMap
-     * @param LoggerInterface $logger
-     */
     public function __construct(
         AkeneoClientFactory $clientFactory,
         MultiCurrencyConfigProvider $configProvider,
@@ -121,9 +114,6 @@ class AkeneoTransport implements AkeneoTransportInterface
         return $currencies;
     }
 
-    /**
-     * @param MultiCurrencyConfigProvider $configProvider
-     */
     public function setConfigProvider(MultiCurrencyConfigProvider $configProvider)
     {
         $this->configProvider = $configProvider;
@@ -162,8 +152,6 @@ class AkeneoTransport implements AkeneoTransportInterface
     }
 
     /**
-     * @param int $pageSize
-     *
      * @return \Iterator
      */
     public function getCategories(int $pageSize)
@@ -181,8 +169,6 @@ class AkeneoTransport implements AkeneoTransportInterface
 
     /**
      * {@inheritdoc}
-     *
-     * @param int $pageSize
      *
      * @return \Iterator
      */
@@ -203,8 +189,6 @@ class AkeneoTransport implements AkeneoTransportInterface
     }
 
     /**
-     * @param int $pageSize
-     *
      * @return \Iterator
      */
     public function getProductModels(int $pageSize)
@@ -248,8 +232,6 @@ class AkeneoTransport implements AkeneoTransportInterface
     }
 
     /**
-     * @param int $pageSize
-     *
      * @return AttributeIterator
      */
     public function getAttributes(int $pageSize)

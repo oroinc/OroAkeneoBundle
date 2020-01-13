@@ -53,17 +53,11 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
         $this->ownerHelper = $ownerHelper;
     }
 
-    /**
-     * @param ConfigManager $configManager
-     */
     public function setConfigManager(ConfigManager $configManager): void
     {
         $this->configManager = $configManager;
     }
 
-    /**
-     * @param AttributeManager $attributeManager
-     */
     public function setAttributeManager(AttributeManager $attributeManager)
     {
         $this->attributeManager = $attributeManager;
@@ -129,9 +123,6 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
         return ConfigurableAddOrReplaceStrategy::findExistingEntity($entity, $searchContext);
     }
 
-    /**
-     * @param AttributeFamily $entity
-     */
     private function removeInactiveAttributes(AttributeFamily $entity)
     {
         $extendProvider = $this->configManager->getProvider('extend');
@@ -153,8 +144,6 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
     }
 
     /**
-     * @param int $id
-     *
      * @return FieldConfigModel|null
      */
     private function getFieldConfigModel(int $id)
@@ -164,9 +153,6 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
             ->find($id);
     }
 
-    /**
-     * @param AttributeFamily $entity
-     */
     private function setSystemAttributes(AttributeFamily $entity): void
     {
         $defaultGroup = $this->getDefaultGroup($entity);
@@ -187,12 +173,6 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
         $entity->addAttributeGroup($defaultGroup);
     }
 
-    /**
-     * @param AttributeFamily $attributeFamily
-     * @param FieldConfigModel $attribute
-     *
-     * @return bool
-     */
     private function containsAttribute(AttributeFamily $attributeFamily, FieldConfigModel $attribute): bool
     {
         foreach ($attributeFamily->getAttributeGroups() as $attributeGroup) {
@@ -208,8 +188,6 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
 
     /**
      * Sets owner.
-     *
-     * @param AttributeFamily $entity
      */
     private function setOwner(AttributeFamily $entity)
     {
@@ -257,7 +235,6 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
 
     /**
      * @param object $entity
-     * @param array|null $itemData
      *
      * @see \Oro\Bundle\ImportExportBundle\Strategy\Import\ImportStrategyHelper::importEntity
      * @see \Oro\Bundle\AkeneoBundle\ImportExport\Strategy\ImportStrategyHelper::importEntity
@@ -336,7 +313,6 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
      * @param object $entity
      * @param object $existingEntity
      * @param mixed|array|null $itemData
-     * @param array $excludedFields
      */
     protected function importExistingEntity(
         $entity,
@@ -352,9 +328,6 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
     }
 
     /**
-     * @param AttributeGroup $entity
-     * @param AttributeGroup $existingEntity
-     *
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     private function processAttributeRelations(AttributeGroup $entity, AttributeGroup $existingEntity): void
@@ -408,9 +381,6 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
 
     /**
      * Gets existing default attribute group or creates new one.
-     *
-     * @param AttributeFamily $entity
-     * @return AttributeGroup
      */
     private function getDefaultGroup(AttributeFamily $entity): AttributeGroup
     {

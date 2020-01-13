@@ -73,9 +73,6 @@ class AkeneoClientFactory
 
     /**
      * AkeneoClientFactory constructor.
-     *
-     * @param DoctrineHelper $doctrineHelper
-     * @param Crypter $crypter
      */
     public function __construct(DoctrineHelper $doctrineHelper, Crypter $crypter)
     {
@@ -86,7 +83,6 @@ class AkeneoClientFactory
     /**
      * Create Akeneo PIM client instance.
      *
-     * @param AkeneoSettings $akeneoSettings
      * @param bool $tokensEnabled
      *
      * @return AkeneoPimEnterpriseClient
@@ -95,7 +91,8 @@ class AkeneoClientFactory
     {
         $this->initProperties($akeneoSettings);
 
-        if ($akeneoSettings->getToken() &&
+        if (
+            $akeneoSettings->getToken() &&
             $akeneoSettings->getTokenExpiryDateTime() &&
             $akeneoSettings->getTokenExpiryDateTime() > new \DateTime('now') &&
             true === $tokensEnabled
@@ -110,8 +107,6 @@ class AkeneoClientFactory
 
     /**
      * Set properties from AkeneoSettings entity.
-     *
-     * @param AkeneoSettings $akeneoSettings
      */
     private function initProperties(AkeneoSettings $akeneoSettings)
     {

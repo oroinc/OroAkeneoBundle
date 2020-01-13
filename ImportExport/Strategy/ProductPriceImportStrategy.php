@@ -18,8 +18,10 @@ class ProductPriceImportStrategy extends BaseStrategy
      */
     protected function beforeProcessEntity($entity)
     {
-        if ($entity->getPrice() &&
-            !in_array($entity->getPrice()->getCurrency(), $this->getTransport()->getAkeneoActiveCurrencies())) {
+        if (
+            $entity->getPrice() &&
+            !in_array($entity->getPrice()->getCurrency(), $this->getTransport()->getAkeneoActiveCurrencies())
+        ) {
             return null;
         }
 

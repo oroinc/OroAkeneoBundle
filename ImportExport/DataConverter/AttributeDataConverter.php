@@ -38,8 +38,6 @@ class AttributeDataConverter extends EntityFieldDataConverter
 
     /**
      * Set labels with locales mapping from settings.
-     *
-     * @param array $importedRecord
      */
     private function setLabels(array &$importedRecord)
     {
@@ -62,8 +60,6 @@ class AttributeDataConverter extends EntityFieldDataConverter
 
     /**
      * Set enum options.
-     *
-     * @param array $importedRecord
      */
     private function setEnumOptions(array &$importedRecord): void
     {

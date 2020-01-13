@@ -54,8 +54,6 @@ class AkeneoLocale
     }
 
     /**
-     * @param string $code
-     *
      * @return AkeneoLocale
      */
     public function setCode(string $code): self
@@ -96,8 +94,6 @@ class AkeneoLocale
     }
 
     /**
-     * @param AkeneoSettings|null $akeneoSettings
-     *
      * @return AkeneoLocale
      */
     public function setAkeneoSettings(AkeneoSettings $akeneoSettings = null): self
