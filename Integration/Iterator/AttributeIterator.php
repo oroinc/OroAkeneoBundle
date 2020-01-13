@@ -16,9 +16,6 @@ class AttributeIterator extends AbstractIterator
     /**
      * AttributeIterator constructor.
      *
-     * @param \Akeneo\Pim\ApiClient\Pagination\ResourceCursorInterface $resourceCursor
-     * @param \Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientInterface $client
-     * @param \Psr\Log\LoggerInterface $logger
      * @param array $attributesFilter
      */
     public function __construct(
@@ -67,8 +64,6 @@ class AttributeIterator extends AbstractIterator
     /**
      * Get attribute options from API.
      *
-     * @param array $attribute
-     *
      * @return array
      */
     private function setOptions(array &$attribute)
@@ -112,7 +107,6 @@ class AttributeIterator extends AbstractIterator
             } else {
                 break;
             }
-
         } while ($this->valid());
 
         return $attribute;

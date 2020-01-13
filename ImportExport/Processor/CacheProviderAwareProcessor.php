@@ -9,9 +9,6 @@ trait CacheProviderAwareProcessor
     /** @var CacheProvider */
     private $cacheProvider;
 
-    /**
-     * @param CacheProvider $cacheProvider
-     */
     public function setCacheProvider(CacheProvider $cacheProvider)
     {
         $this->cacheProvider = $cacheProvider;

@@ -71,8 +71,6 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
 
     /**
      * Create oro_akeneo_locale table.
-     *
-     * @param Schema $schema
      */
     protected function createOroAkeneoLocaleTable(Schema $schema)
     {
@@ -87,8 +85,6 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
 
     /**
      * Update oro_integration_transport table.
-     *
-     * @param Schema $schema
      *
      * @throws \Doctrine\DBAL\Schema\SchemaException
      */
@@ -127,8 +123,6 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
 
     /**
      * Add oro_akeneo_locale foreign keys.
-     *
-     * @param Schema $schema
      */
     protected function addOroAkeneoLocaleForeignKeys(Schema $schema)
     {
@@ -143,8 +137,6 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
 
     /**
      * Add oro_integration_transport foreign keys.
-     *
-     * @param Schema $schema
      */
     protected function addOroIntegrationTransportForeignKeys(Schema $schema)
     {
@@ -165,8 +157,6 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
 
     /**
      * Add channel & akeneo code to category table.
-     *
-     * @param Schema $schema
      */
     protected function updateCategoryTable(Schema $schema)
     {
@@ -212,8 +202,6 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
 
     /**
      * Add channel to attribute family table.
-     *
-     * @param Schema $schema
      */
     protected function updateAttributeFamilyTable(Schema $schema)
     {
@@ -242,8 +230,6 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
 
     /**
      * Add akeneo_code to attribute group table.
-     *
-     * @param Schema $schema
      *
      * @throws SchemaException
      */

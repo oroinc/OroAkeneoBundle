@@ -30,11 +30,6 @@ class ValidateConnectionController extends Controller
      *      permission="VIEW"
      * )
      *
-     * @param Request $request
-     * @param Channel|null $channel
-     *
-     * @return JsonResponse
-     *
      * @throws \InvalidArgumentException
      */
     public function validateConnectionAction(Request $request, Channel $channel = null): JsonResponse

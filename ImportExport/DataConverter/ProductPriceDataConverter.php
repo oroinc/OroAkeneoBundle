@@ -40,9 +40,6 @@ class ProductPriceDataConverter extends BaseProductPriceDataConverter
         return $transport->getPriceList()->getId();
     }
 
-    /**
-     * @param PriceListProvider $priceListProvider
-     */
     public function setPriceListProvider(PriceListProvider $priceListProvider): void
     {
         $this->priceListProvider = $priceListProvider;

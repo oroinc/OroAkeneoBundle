@@ -16,9 +16,6 @@ class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter imp
      */
     protected $slugGenerator;
 
-    /**
-     * @param SlugGenerator $slugGenerator
-     */
     public function setSlugGenerator(SlugGenerator $slugGenerator)
     {
         $this->slugGenerator = $slugGenerator;
@@ -40,8 +37,6 @@ class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter imp
 
     /**
      * Set titles with locales mapping from settings.
-     *
-     * @param array $importedRecord
      */
     private function setTitles(array &$importedRecord)
     {
@@ -68,9 +63,6 @@ class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter imp
         }
     }
 
-    /**
-     * @param array $importedRecord
-     */
     private function setSlugs(array &$importedRecord)
     {
         $importedRecord['slugPrototypes'] = $importedRecord['titles'] ?? [];
@@ -81,8 +73,6 @@ class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter imp
 
     /**
      * Check root category setting from akeneo settings.
-     *
-     * @param array $importedRecord
      */
     private function setRootCategory(array &$importedRecord)
     {

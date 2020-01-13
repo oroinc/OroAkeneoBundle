@@ -33,13 +33,6 @@ class ImportProductProcessor implements MessageProcessorInterface, TopicSubscrib
     /** @var SyncProcessorRegistry */
     private $syncProcessorRegistry;
 
-    /**
-     * @param DoctrineHelper $doctrineHelper
-     * @param JobRunner $jobRunner
-     * @param TokenStorageInterface $tokenStorage
-     * @param LoggerInterface $logger
-     * @param SyncProcessorRegistry $syncProcessorRegistry
-     */
     public function __construct(
         DoctrineHelper $doctrineHelper,
         JobRunner $jobRunner,

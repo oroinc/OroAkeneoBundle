@@ -13,8 +13,6 @@ class Crypter
 
     /**
      * Crypter constructor.
-     *
-     * @param SymmetricCrypterInterface $crypter
      */
     public function __construct(SymmetricCrypterInterface $crypter)
     {
