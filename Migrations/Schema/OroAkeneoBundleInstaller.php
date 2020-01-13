@@ -20,22 +20,22 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
      * @var array
      */
     protected $options = [
-        'extend' => [
-            'origin' => ExtendScope::OWNER_CUSTOM,
-            'owner' => ExtendScope::OWNER_CUSTOM,
-            'state' => ExtendScope::STATE_NEW,
+        'extend'       => [
+            'origin'        => ExtendScope::OWNER_CUSTOM,
+            'owner'         => ExtendScope::OWNER_CUSTOM,
+            'state'         => ExtendScope::STATE_NEW,
             'is_serialized' => false,
-            'is_extend' => true,
+            'is_extend'     => true,
         ],
-        'datagrid' => [
-            'is_visible' => 0,
+        'datagrid'     => [
+            'is_visible'  => 0,
             'show_filter' => 0,
-            'order' => null,
+            'order'       => null,
         ],
-        'form' => [
+        'form'         => [
             'is_enabled' => false,
         ],
-        'view' => [
+        'view'         => [
             'is_displayable' => false,
         ],
         'importexport' => [
@@ -48,7 +48,7 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
      */
     public function getMigrationVersion()
     {
-        return 'v1_4';
+        return 'v1_6';
     }
 
     /**
@@ -115,8 +115,12 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
         $table->addColumn('akeneo_active_channel', 'string', ['notnull' => false, 'length' => 255]);
         $table->addColumn('akeneo_acl_voter_enabled', 'boolean', ['notnull' => false]);
         $table->addColumn('akeneo_product_filter', 'text', ['notnull' => false]);
+        $table->addColumn('akeneo_attributes_list', 'text', ['notnull' => false]);
         $table->addColumn('rootcategory_id', 'integer', ['notnull' => false]);
         $table->addColumn('pricelist_id', 'integer', ['notnull' => false]);
+        $table->addColumn('akeneo_attributes_list', 'text', ['notnull' => false]);
+        $table->addColumn('akeneo_attributes_image_list', 'text', ['notnull' => false]);
+        $table->addColumn('akeneo_merge_image_to_parent', 'boolean', ['notnull' => false]);
         $table->addIndex(['rootcategory_id'], 'idx_d7a389a852d2453c', []);
         $table->addIndex(['pricelist_id'], 'idx_d7a389a846b960c4', []);
     }
@@ -173,10 +177,10 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
             'oro_integration_channel',
             'name',
             [
-                'form' => [
+                'form'   => [
                     'is_enabled' => false,
                 ],
-                'view' => [
+                'view'   => [
                     'is_displayable' => false,
                 ],
                 'entity' => [
@@ -200,7 +204,7 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
             'akeneo_code',
             'string',
             [
-                'notnull' => false,
+                'notnull'     => false,
                 'oro_options' => $options,
             ]
         );
@@ -220,10 +224,10 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
             'oro_integration_channel',
             'name',
             [
-                'form' => [
+                'form'   => [
                     'is_enabled' => false,
                 ],
-                'view' => [
+                'view'   => [
                     'is_displayable' => false,
                 ],
                 'entity' => [
@@ -258,7 +262,7 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
             'akeneo_code',
             'string',
             [
-                'notnull' => false,
+                'notnull'     => false,
                 'oro_options' => $options,
             ]
         );
