@@ -7,6 +7,7 @@ use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\Integration\AkeneoTransportInterface;
 use Oro\Bundle\AkeneoBundle\Settings\DataProvider\SyncProductsDataProviderInterface;
 use Oro\Bundle\AkeneoBundle\Validator\Constraints\JsonConstraint;
+use Oro\Bundle\AkeneoBundle\Validator\Constraints\AttributeCodeConstraint;
 use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\FormBundle\Form\Type\OroEncodedPlaceholderPasswordType;
 use Oro\Bundle\PricingBundle\Form\Type\PriceListSelectType;
@@ -129,26 +130,26 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 ChoiceType::class,
                 [
                     'choices_as_values' => true,
-                    'required' => true,
-                    'label' => 'oro.akeneo.integration.settings.akeneo_channels.label',
-                    'multiple' => false,
-                    'choices' => [],
-                    'constraints' => new NotBlank(),
+                    'required'          => true,
+                    'label'             => 'oro.akeneo.integration.settings.akeneo_channels.label',
+                    'multiple'          => false,
+                    'choices'           => [],
+                    'constraints'       => new NotBlank(),
                 ]
             )
             ->add(
                 'syncProducts',
                 ChoiceType::class,
                 [
-                    'choices' => $this->syncProductsDataProvider->getSyncProducts(),
+                    'choices'           => $this->syncProductsDataProvider->getSyncProducts(),
                     'choices_as_values' => true,
-                    'choice_label' => function ($action) {
+                    'choice_label'      => function ($action) {
                         return $this->translator->trans(
                             sprintf('oro.akeneo.integration.settings.sync_products.%s', $action)
                         );
                     },
-                    'label' => 'oro.akeneo.integration.settings.sync_products.label',
-                    'required' => true,
+                    'label'             => 'oro.akeneo.integration.settings.sync_products.label',
+                    'required'          => true,
                 ]
             )
             ->add(
@@ -156,20 +157,20 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 ChoiceType::class,
                 [
                     'choices_as_values' => true,
-                    'required' => false,
-                    'label' => 'oro.akeneo.integration.settings.akeneo_currencies.label',
-                    'multiple' => true,
-                    'choices' => [],
+                    'required'          => false,
+                    'label'             => 'oro.akeneo.integration.settings.akeneo_currencies.label',
+                    'multiple'          => true,
+                    'choices'           => [],
                 ]
             )
             ->add(
                 'akeneoLocales',
                 CollectionType::class,
                 [
-                    'entry_type' => AkeneoLocaleType::class,
-                    'allow_add' => true,
-                    'by_reference' => false,
-                    'allow_delete' => true,
+                    'entry_type'    => AkeneoLocaleType::class,
+                    'allow_add'     => true,
+                    'by_reference'  => false,
+                    'allow_delete'  => true,
                     'entry_options' => [
                         'parent_data' => $this->codes,
                     ],
@@ -180,26 +181,37 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 ChoiceType::class,
                 [
                     'choices_as_values' => true,
+                    'required'          => false,
+                    'label'             => false,
+                    'multiple'          => true,
+                    'choices'           => [],
+                ]
+            )
+            ->add(
+                'akeneoAttributesList',
+                TextareaType::class,
+                [
                     'required' => false,
-                    'label' => false,
-                    'multiple' => true,
-                    'choices' => [],
+                    'label'    => 'oro.akeneo.integration.settings.akeneo_attribute_list.label',
+                    'constraints' => [
+                        new AttributeCodeConstraint(),
+                    ]
                 ]
             )
             ->add(
                 'rootCategory',
                 EntityType::class,
                 [
-                    'class' => Category::class,
-                    'required' => false,
-                    'placeholder' => 'oro.akeneo.integration.settings.root_category.placeholder',
+                    'class'         => Category::class,
+                    'required'      => false,
+                    'placeholder'   => 'oro.akeneo.integration.settings.root_category.placeholder',
                     'query_builder' => function (NestedTreeRepository $er) {
                         return $er->getChildrenQueryBuilder()
                             ->orderBy('node.root')
                             ->addOrderBy('node.left')
                             ->andWhere('node.akeneo_code IS NULL');
                     },
-                    'choice_label' => function (Category $category) {
+                    'choice_label'  => function (Category $category) {
                         $label = $category->getTitle();
                         while ($parentCategory = $category->getParentCategory()) {
                             $label = sprintf('%s / %s', $parentCategory->getTitle(), $label);
@@ -214,8 +226,8 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 'productFilter',
                 TextareaType::class,
                 [
-                    'required' => false,
-                    'label' => 'oro.akeneo.integration.settings.akeneo_product_filter.label',
+                    'required'    => false,
+                    'label'       => 'oro.akeneo.integration.settings.akeneo_product_filter.label',
                     'constraints' => [
                         new JsonConstraint(),
                     ],
@@ -226,7 +238,7 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 PriceListSelectType::class,
                 [
                     'required' => true,
-                    'label' => 'oro.akeneo.integration.settings.price_list.label',
+                    'label'    => 'oro.akeneo.integration.settings.price_list.label',
                 ]
             );
 
@@ -252,11 +264,11 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
             ChoiceType::class,
             [
                 'choices_as_values' => true,
-                'required' => true,
-                'label' => 'oro.akeneo.integration.settings.akeneo_channels.label',
-                'multiple' => false,
-                'choices' => $data->getAkeneoChannels(),
-                'placeholder' => 'oro.akeneo.integration.settings.akeneo_channels.placeholder',
+                'required'          => true,
+                'label'             => 'oro.akeneo.integration.settings.akeneo_channels.label',
+                'multiple'          => false,
+                'choices'           => $data->getAkeneoChannels(),
+                'placeholder'       => 'oro.akeneo.integration.settings.akeneo_channels.placeholder',
             ]
         );
 
@@ -265,10 +277,10 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
             ChoiceType::class,
             [
                 'choices_as_values' => true,
-                'required' => false,
-                'label' => 'oro.akeneo.integration.settings.akeneo_currencies.label',
-                'multiple' => true,
-                'choices' => $data->getAkeneoCurrencies(),
+                'required'          => false,
+                'label'             => 'oro.akeneo.integration.settings.akeneo_currencies.label',
+                'multiple'          => true,
+                'choices'           => $data->getAkeneoCurrencies(),
             ]
         );
 
@@ -277,10 +289,10 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
             ChoiceType::class,
             [
                 'choices_as_values' => true,
-                'required' => false,
-                'label' => false,
-                'multiple' => true,
-                'choices' => $data->getAkeneoLocalesList(),
+                'required'          => false,
+                'label'             => false,
+                'multiple'          => true,
+                'choices'           => $data->getAkeneoLocalesList(),
             ]
         );
 
@@ -289,10 +301,10 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
             'akeneoLocales',
             CollectionType::class,
             [
-                'entry_type' => AkeneoLocaleType::class,
-                'allow_add' => true,
-                'by_reference' => false,
-                'allow_delete' => true,
+                'entry_type'    => AkeneoLocaleType::class,
+                'allow_add'     => true,
+                'by_reference'  => false,
+                'allow_delete'  => true,
                 'entry_options' => [
                     'parent_data' => $this->codes,
                 ],
@@ -334,10 +346,10 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 ChoiceType::class,
                 [
                     'choices_as_values' => true,
-                    'required' => false,
-                    'label' => 'oro.akeneo.integration.settings.akeneo_channels.label',
-                    'multiple' => false,
-                    'choices' => $channels,
+                    'required'          => false,
+                    'label'             => 'oro.akeneo.integration.settings.akeneo_channels.label',
+                    'multiple'          => false,
+                    'choices'           => $channels,
                 ]
             );
 
@@ -348,10 +360,10 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 ChoiceType::class,
                 [
                     'choices_as_values' => true,
-                    'required' => false,
-                    'label' => 'oro.akeneo.integration.settings.akeneo_channels.label',
-                    'multiple' => true,
-                    'choices' => $channels,
+                    'required'          => false,
+                    'label'             => 'oro.akeneo.integration.settings.akeneo_channels.label',
+                    'multiple'          => true,
+                    'choices'           => $channels,
                 ]
             );
 
@@ -362,10 +374,10 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 ChoiceType::class,
                 [
                     'choices_as_values' => true,
-                    'required' => false,
-                    'label' => false,
-                    'multiple' => true,
-                    'choices' => $localesList,
+                    'required'          => false,
+                    'label'             => false,
+                    'multiple'          => true,
+                    'choices'           => $localesList,
                 ]
             );
 
@@ -375,10 +387,10 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 'akeneoLocales',
                 CollectionType::class,
                 [
-                    'entry_type' => AkeneoLocaleType::class,
-                    'allow_add' => true,
-                    'by_reference' => false,
-                    'allow_delete' => true,
+                    'entry_type'    => AkeneoLocaleType::class,
+                    'allow_add'     => true,
+                    'by_reference'  => false,
+                    'allow_delete'  => true,
                     'entry_options' => [
                         'parent_data' => $this->codes,
                     ],
@@ -390,10 +402,10 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 ChoiceType::class,
                 [
                     'choices_as_values' => true,
-                    'required' => false,
-                    'label' => 'oro.akeneo.integration.settings.akeneo_currencies.label',
-                    'multiple' => true,
-                    'choices' => $currencies,
+                    'required'          => false,
+                    'label'             => 'oro.akeneo.integration.settings.akeneo_currencies.label',
+                    'multiple'          => true,
+                    'choices'           => $currencies,
                 ]
             );
 
@@ -404,10 +416,10 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 ChoiceType::class,
                 [
                     'choices_as_values' => true,
-                    'required' => false,
-                    'label' => 'oro.akeneo.integration.settings.akeneo_currencies.label',
-                    'multiple' => true,
-                    'choices' => $currencies,
+                    'required'          => false,
+                    'label'             => 'oro.akeneo.integration.settings.akeneo_currencies.label',
+                    'multiple'          => true,
+                    'choices'           => $currencies,
                 ]
             );
 

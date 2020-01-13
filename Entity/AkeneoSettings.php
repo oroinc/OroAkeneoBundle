@@ -141,6 +141,13 @@ class AkeneoSettings extends Transport
     private $priceList;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="akeneo_attributes_list", type="text", nullable=true)
+     */
+    private $akeneoAttributesList;
+
+    /**
      * @var ParameterBag
      */
     private $settings;
@@ -224,19 +231,20 @@ class AkeneoSettings extends Transport
         if (null === $this->settings) {
             $this->settings = new ParameterBag(
                 [
-                    'clientId' => $this->getClientId(),
-                    'secret' => $this->getSecret(),
-                    'akeneoChannels' => $this->getAkeneoChannels(),
-                    'akeneoActiveChannel' => $this->getAkeneoActiveChannel(),
-                    'username' => $this->getUsername(),
-                    'password' => $this->getPassword(),
-                    'token' => $this->getToken(),
-                    'refreshToken' => $this->getRefreshToken(),
-                    'syncProducts' => $this->getSyncProducts(),
-                    'akeneoCurrencies' => $this->getAkeneoCurrencies(),
+                    'clientId'               => $this->getClientId(),
+                    'secret'                 => $this->getSecret(),
+                    'akeneoChannels'         => $this->getAkeneoChannels(),
+                    'akeneoActiveChannel'    => $this->getAkeneoActiveChannel(),
+                    'username'               => $this->getUsername(),
+                    'password'               => $this->getPassword(),
+                    'token'                  => $this->getToken(),
+                    'refreshToken'           => $this->getRefreshToken(),
+                    'syncProducts'           => $this->getSyncProducts(),
+                    'akeneoCurrencies'       => $this->getAkeneoCurrencies(),
                     'akeneoActiveCurrencies' => $this->getAkeneoActiveCurrencies(),
-                    'akeneoLocales' => $this->getAkeneoLocales()->toArray(),
-                    'akeneoLocalesList' => $this->getAkeneoLocalesList(),
+                    'akeneoLocales'          => $this->getAkeneoLocales()->toArray(),
+                    'akeneoLocalesList'      => $this->getAkeneoLocalesList(),
+                    'akeneoAttributesList'   => $this->getAkeneoAttributesList(),
                 ]
             );
         }
@@ -604,6 +612,26 @@ class AkeneoSettings extends Transport
     public function setPriceList(PriceList $priceList): self
     {
         $this->priceList = $priceList;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAkeneoAttributesList(): ?string
+    {
+        return $this->akeneoAttributesList;
+    }
+
+    /**
+     * @param string $attributeList
+     *
+     * @return self
+     */
+    public function setAkeneoAttributesList(string $attributeList = null): self
+    {
+        $this->akeneoAttributesList = $attributeList;
 
         return $this;
     }
