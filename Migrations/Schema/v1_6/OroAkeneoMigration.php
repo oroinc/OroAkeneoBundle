@@ -1,12 +1,4 @@
 <?php
-/**
- * Diglin GmbH - Switzerland
- *
- * @author      Sylvain Rayé <support at diglin.com>
- * @category    Diglin
- * @package     GroupeRG - Orocommerce
- * @copyright   Copyright (c) Diglin (https://www.diglin.com)
- */
 
 namespace Oro\Bundle\AkeneoBundle\Migrations\Schema\v1_6;
 
