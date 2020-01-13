@@ -148,6 +148,20 @@ class AkeneoSettings extends Transport
     private $akeneoAttributesList;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="akeneo_attributes_image_list", type="text", nullable=true)
+     */
+    private $akeneoAttributesImageList;
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(name="akeneo_merge_image_to_parent", type="boolean", options={"default":"false"})
+     */
+    private $akeneoMergeImageToParent = false;
+
+    /**
      * @var ParameterBag
      */
     private $settings;
@@ -515,6 +529,26 @@ class AkeneoSettings extends Transport
     }
 
     /**
+     * @return string|null
+     */
+    public function getAkeneoAttributesImageList(): ?string
+    {
+        return $this->akeneoAttributesImageList;
+    }
+
+    /**
+     * @param string $akeneoAttributesImageList
+     *
+     * @return self
+     */
+    public function setAkeneoAttributesImageList(string $akeneoAttributesImageList = null): self
+    {
+        $this->akeneoAttributesImageList = $akeneoAttributesImageList;
+
+        return $this;
+    }
+
+    /**
      * @return string
      */
     public function getTokenExpiryDateTime()
@@ -632,6 +666,26 @@ class AkeneoSettings extends Transport
     public function setAkeneoAttributesList(string $attributeList = null): self
     {
         $this->akeneoAttributesList = $attributeList;
+
+        return $this;
+    }
+    
+    /**
+     * @return bool
+     */
+    public function isAkeneoMergeImageToParent(): ?bool
+    {
+        return $this->akeneoMergeImageToParent;
+    }
+
+    /**
+     * @param bool $akeneoMergeImageToParent
+     *
+     * @return $this
+     */
+    public function setAkeneoMergeImageToParent(bool $akeneoMergeImageToParent)
+    {
+        $this->akeneoMergeImageToParent = $akeneoMergeImageToParent;
 
         return $this;
     }

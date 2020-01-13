@@ -199,6 +199,17 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 ]
             )
             ->add(
+                'akeneoAttributesImageList',
+                TextareaType::class,
+                [
+                    'required' => false,
+                    'label'    => 'oro.akeneo.integration.settings.akeneo_attribute_image_list.label',
+                    'constraints' => [
+                        new AttributeCodeConstraint(),
+                    ],
+                ]
+            )
+            ->add(
                 'rootCategory',
                 EntityType::class,
                 [
@@ -239,6 +250,19 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 [
                     'required' => true,
                     'label'    => 'oro.akeneo.integration.settings.price_list.label',
+                ]
+            )
+            ->add(
+                'akeneoMergeImageToParent',
+                ChoiceType::class,
+                [
+                    'required' => false,
+                    'label'    => 'oro.akeneo.integration.settings.merge_image.label',
+                    'multiple' => false,
+                    'choices'  => [
+                        'Yes' => true,
+                        'No'  => false,
+                    ],
                 ]
             );
 

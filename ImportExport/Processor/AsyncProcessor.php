@@ -29,14 +29,12 @@ class AsyncProcessor implements ProcessorInterface
             if (!empty($item[$field])) {
                 foreach ((array)$item[$field] as $variant) {
                     $this->variants[$item['parent']][$variant] = [
-                        'parent' => $item['parent'],
+                        'parent'  => $item['parent'],
                         'variant' => $variant,
                     ];
                 }
             }
         }
-
-        unset($item['parent']);
     }
 
     public function initialize()
