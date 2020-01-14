@@ -14,7 +14,7 @@ With this extension, you will be able to sync the following data from Akeneo to 
 * Configurable products, simple products & all product data from supported attributes
 * Categories and category trees
 
-## Compatibity
+## Compatibility
 
 | Connector  | OroCommerce |   Akeneo   | Build |
 |------------|-------------|------------|-------|
@@ -25,7 +25,7 @@ With this extension, you will be able to sync the following data from Akeneo to 
 
 Connector supports and tested on the next dataset:
 
-* Locale: 4
+* Locales: 4
 * Currencies: 2
 * Catalogs:
 * * Levels: 4, children: 1000
