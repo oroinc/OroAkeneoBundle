@@ -74,6 +74,7 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
         $this->setSystemAttributes($entity);
         $this->setOwner($entity);
 
+        /** @var AttributeFamily $existingEntity */
         $existingEntity = $this->findExistingEntity($entity);
         if (!$existingEntity) {
             return parent::beforeProcessEntity($entity);
@@ -92,7 +93,15 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
 
         $fields = $this->fieldHelper->getRelations(AttributeGroup::class);
         foreach ($entity->getAttributeGroups() as $attributeGroup) {
-            $existingAttributeGroup = $this->findExistingEntity($attributeGroup);
+            $existingAttributeGroup = null;
+            foreach ($existingEntity->getAttributeGroups() as $possibleAttributeGroup) {
+                if ($possibleAttributeGroup->getCode() === $attributeGroup->getCode()) {
+                    $existingAttributeGroup = $possibleAttributeGroup;
+                }
+            }
+            if (!$existingAttributeGroup) {
+                continue;
+            }
 
             foreach ($fields as $field) {
                 if ($this->isLocalizedFallbackValue($field)) {
