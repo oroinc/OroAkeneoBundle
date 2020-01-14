@@ -251,6 +251,7 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                     'label'    => 'oro.akeneo.integration.settings.merge_image.label',
                     'multiple' => false,
                     'placeholder' => false,
+                    'choices_as_values' => true,
                     'choices'  => [
                         'Yes' => true,
                         'No'  => false,

@@ -14,6 +14,27 @@ With this extension, you will be able to sync the following data from Akeneo to 
 * Configurable products, simple products & all product data from supported attributes
 * Categories and category trees
 
+## Compatibility
+
+| Connector  | OroCommerce |   Akeneo   | Build |
+|------------|-------------|------------|-------|
+|    v1.6    |    v1.6     | v2.3, v3.2 | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=1.6)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
+|    v3.1    |    v3.1     | v2.3, v3.2 | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=3.1)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
+
+## Dataset
+
+Connector supports and tested on the next dataset:
+
+* Locales: 4
+* Currencies: 2
+* Catalogs:
+* * Levels: 4, children: 1000
+* * Levels: 4, children: 1000
+* Attribute Groups: 15 per Attribute Family
+* Attributes: 400, 5% localizable, 2% scopable, 1% localizable and scopable, 100% usable in grid
+* Attribute Families: 50, up to 100 Attributes per Attribute Family
+* Products: 50000, including images
+
 ## Installation
 
 1. Add composer package
@@ -22,9 +43,9 @@ With this extension, you will be able to sync the following data from Akeneo to 
 composer require "oro/commerce-akeneo:1.6.*"
 ```
 
-2. Follow [Installation Guide](https://oroinc.com/b2b-ecommerce/doc/1.6/install-upgrade)
+2. Follow [Setup Guide](https://doc.oroinc.com/backend/setup/upgrade-to-new-version)
 
-3. Configure [Message Queue](https://oroinc.com/b2b-ecommerce/doc/1.6/admin-guide/op-structure/mq)
+3. Configure [Message Queue](https://doc.oroinc.com/backend/mq/consumer/#options)
 
 ** Recommended time limit option values is 30 seconds `--time-limit=+30seconds`
 
@@ -62,6 +83,20 @@ Create a new integration to start synchronizing data from Akeneo to OroCommerce.
    * Product Filter - The filter that enables you to embed the necessary code that would sync only the products you desire. As this filter is passed via API request, it must be filled in JSON format. More details on the format and filter options available for the products can be found in the [Filters section](https://api.akeneo.com/documentation/filter.html) of the Akeneo PIM documentation.
 
      **Note:** Your input is validated on the go. If you get a validation warning, ensure to correct the code or any issues reported.
+   
+   * Attribute Filter - The filter that enables you to limit the list of imported attributes. Values must be attribute code, separated with a semi-colon.
+
+     **Example:** `sku;descr;price;custom`
+    
+     **Note:** if not defined before to save the integration, all attributes will be imported.
+
+   * Image Attribute Filter - The filter that enables you to limit the list of imported image attributes. Values must be attribute code, separated with a semi-colon. 
+   
+     **Example:** `image;picture`
+     
+     **Note:** The filter extends Attribute Filter, no need to list attribute codes twice.
+
+   * Merge Images From Simple Products To Configurable Product: Copy images from Simple products to their Configurable parent products.
 
    * Connectors - The connectors that enable you to sync either the category or products or both by selecting/deselecting the relevant connector. The attribute family connector is mandatory and cannot be disabled.
    * Default Owner - The Owner determines the list of users who can manage the integration and the data synchronized with it. All entities imported within the integration will be assigned to the selected user. By default, the field is prepopulated with the user creating the integration.
@@ -81,15 +116,16 @@ To start the synchronization manually, click "Schedule Sync" on the top right. W
 
  Click the "Check job progress" link to see the synchronization status.
 
-**Note:** Every time you synchronize **new** product attributes from Akeneo, the "Update Schema" button appears on the top right of the Akeneo integration page and the Product Attributes page ("Products > Product Attributes"). Refresh the integration update page and click the "Update Schema" button to apply the changes and enable the product attributes. Otherwise, the attributes will be unavailable. Keep in mind that updating schema sets the Oro instance to the maintenance mode, so it is recommended to check if no critical processes are running before clicking the button.
+**Note:** Every time you synchronize **new** product attributes from Akeneo, the `Update Schema` button appears on the top right of the Akeneo integration page and the Product Attributes page (`Products > Product Attributes`). Refresh the integration update page and click the `Update Schema` button to apply the changes and enable the product attributes. Otherwise, the attributes will be unavailable. Keep in mind that updating schema sets the Oro instance to the maintenance mode, so it is recommended to check if no critical processes are running before clicking the button.
+
+**Note:** Click `Update Cache` button at `System > Localization > Translations` get translation applied. This action required for older versions of OroCommerce.
 
 Once the schema update is complete, you can schedule another sync. To schedule full sync now, press the "Schedule Sync" button one more time.
-
 ## Limitations
 
 Because of the differences between Akeneo and OroCommerce, you should take into account a few limitations.
 
-* When you create new attributes on the Akeneo side, they won't be saved to the product information in OroCommerce until the schema has been updated manually by pressing the "Update Schema" button on the integration page.
+* When you create new attributes on the Akeneo side, they won't be saved to the product information in OroCommerce until the schema has been updated manually by pressing the `Update Schema` button on the integration page.
 * When you add a select or multi-select attribute in Akeneo, the options won't be synchronized until the schema has been updated.
 * Akeneo date field type can have a different value for every locale. The same behavior is not possible in OroCommerce. For this reason, it is imported as a localized fallback value.
 * Akeneo multi-select fields can have different values per locale. In OroCommerce, all the values from the various locales are combined.
