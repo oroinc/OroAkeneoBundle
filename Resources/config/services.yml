@@ -90,5 +90,6 @@ services:
       - '@security.token_storage'
       - '@logger'
       - '@oro_integration.processor_registry'
+      - '@oro_message_queue.job.storage'
     tags:
       - { name: 'oro_message_queue.client.message_processor', topicName: 'oro_akeneo.importexport.product' }

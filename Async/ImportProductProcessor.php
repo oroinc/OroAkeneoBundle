@@ -11,6 +11,7 @@ use Oro\Component\MessageQueue\Client\TopicSubscriberInterface;
 use Oro\Component\MessageQueue\Consumption\MessageProcessorInterface;
 use Oro\Component\MessageQueue\Job\Job;
 use Oro\Component\MessageQueue\Job\JobRunner;
+use Oro\Component\MessageQueue\Job\JobStorage;
 use Oro\Component\MessageQueue\Transport\MessageInterface;
 use Oro\Component\MessageQueue\Transport\SessionInterface;
 use Oro\Component\MessageQueue\Util\JSON;
@@ -33,18 +34,31 @@ class ImportProductProcessor implements MessageProcessorInterface, TopicSubscrib
     /** @var SyncProcessorRegistry */
     private $syncProcessorRegistry;
 
+    /** @var JobStorage */
+    private $jobStorage;
+
+    /**
+     * @param DoctrineHelper $doctrineHelper
+     * @param JobRunner $jobRunner
+     * @param TokenStorageInterface $tokenStorage
+     * @param LoggerInterface $logger
+     * @param SyncProcessorRegistry $syncProcessorRegistry
+     * @param JobStorage $jobStorage
+     */
     public function __construct(
         DoctrineHelper $doctrineHelper,
         JobRunner $jobRunner,
         TokenStorageInterface $tokenStorage,
         LoggerInterface $logger,
-        SyncProcessorRegistry $syncProcessorRegistry
+        SyncProcessorRegistry $syncProcessorRegistry,
+        JobStorage $jobStorage
     ) {
         $this->doctrineHelper = $doctrineHelper;
         $this->jobRunner = $jobRunner;
         $this->tokenStorage = $tokenStorage;
         $this->logger = $logger;
         $this->syncProcessorRegistry = $syncProcessorRegistry;
+        $this->jobStorage = $jobStorage;
     }
 
     /**
@@ -90,6 +104,24 @@ class ImportProductProcessor implements MessageProcessorInterface, TopicSubscrib
             return self::REJECT;
         }
 
+        //make sure that product variants processing is run after importing all products
+        if (!empty($body['connector_parameters']['variants'])) {
+            $job  = $this->jobStorage->findJobById($body['jobId']);
+            if (!$job) {
+                $this->logger->error(
+                    sprintf('Could not find job with id: %s', $body['jobId'])
+                );
+
+                return self::REJECT;
+            }
+
+            $runningChildJobsCount = $this->getRunningChildJobs($body, $job->getRootJob());
+
+            if ($runningChildJobsCount > 0) {
+                return self::REQUEUE;
+            }
+        }
+
         $this->setTemporaryIntegrationToken($integration);
 
         $result = $this->jobRunner->runDelayed(
@@ -108,5 +140,32 @@ class ImportProductProcessor implements MessageProcessorInterface, TopicSubscrib
         );
 
         return $result ? self::ACK : self::REJECT;
+    }
+
+    /**
+     * @param array $body
+     * @param Job $rootJob
+     *
+     * @return integer
+     *
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    protected function getRunningChildJobs($body, Job $rootJob)
+    {
+        $statuses = [Job::STATUS_NEW, Job::STATUS_RUNNING];
+        $variantsJobName = sprintf('oro_integration:sync_integration:%s:variants', $body['integrationId']);
+        $queryBuilder = $this->jobStorage->createJobQueryBuilder('j');
+        $queryBuilder
+            ->select($queryBuilder->expr()->count('j.id'))
+            ->andWhere($queryBuilder->expr()->neq('j.name', ':jobName'))
+            ->andWhere($queryBuilder->expr()->eq('j.rootJob', ':rootJob'))
+            ->andWhere($queryBuilder->expr()->in('j.status', ':statuses'))
+            ->setParameters([
+                'jobName' => $variantsJobName,
+                'statuses' => $statuses,
+                'rootJob' => $rootJob
+            ]);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }
