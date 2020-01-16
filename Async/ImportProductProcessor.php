@@ -37,14 +37,6 @@ class ImportProductProcessor implements MessageProcessorInterface, TopicSubscrib
     /** @var JobStorage */
     private $jobStorage;
 
-    /**
-     * @param DoctrineHelper $doctrineHelper
-     * @param JobRunner $jobRunner
-     * @param TokenStorageInterface $tokenStorage
-     * @param LoggerInterface $logger
-     * @param SyncProcessorRegistry $syncProcessorRegistry
-     * @param JobStorage $jobStorage
-     */
     public function __construct(
         DoctrineHelper $doctrineHelper,
         JobRunner $jobRunner,
@@ -143,14 +135,9 @@ class ImportProductProcessor implements MessageProcessorInterface, TopicSubscrib
     }
 
     /**
-     * @param array $body
-     * @param Job $rootJob
-     *
-     * @return integer
-     *
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    protected function getRunningChildJobs($body, Job $rootJob)
+    protected function getRunningChildJobs(array $body, Job $rootJob): int
     {
         $statuses = [Job::STATUS_NEW, Job::STATUS_RUNNING];
         $variantsJobName = sprintf('oro_integration:sync_integration:%s:variants', $body['integrationId']);
@@ -166,6 +153,6 @@ class ImportProductProcessor implements MessageProcessorInterface, TopicSubscrib
                 'rootJob' => $rootJob
             ]);
 
-        return $queryBuilder->getQuery()->getSingleScalarResult();
+        return (int)$queryBuilder->getQuery()->getSingleScalarResult();
     }
 }
