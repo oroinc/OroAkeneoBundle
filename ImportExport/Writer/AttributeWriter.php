@@ -100,8 +100,17 @@ class AttributeWriter extends BaseAttributeWriter
      */
     public function write(array $items)
     {
-        parent::write($items);
+        $translations = [];
 
+        foreach ($items as $item) {
+            $translations = array_merge($translations, $this->writeItem($item));
+        }
+
+        if (!$this->configManager->canSkipFlush()) {
+            $this->configManager->flush();
+        }
+
+        $this->translationHelper->saveTranslations($translations);
         $this->saveAttributeTranslationsFromContext($items);
         $this->saveOptionTranslationsFromContext($items);
     }
