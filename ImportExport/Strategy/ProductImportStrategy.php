@@ -39,11 +39,6 @@ class ProductImportStrategy extends ProductStrategy
 
     protected function beforeProcessEntity($entity)
     {
-        if ($entity->getCategory() instanceof Category) {
-            $category = $this->findExistingEntity($entity->getCategory());
-            $entity->setCategory($category);
-        }
-
         /** @var Product $existingProduct */
         $existingProduct = $this->findExistingEntity($entity);
         if ($existingProduct) {
@@ -69,6 +64,13 @@ class ProductImportStrategy extends ProductStrategy
         }
 
         return parent::beforeProcessEntity($entity);
+    }
+
+    protected function afterProcessEntity($entity)
+    {
+        $this->processCategory($entity);
+
+        return parent::afterProcessEntity($entity);
     }
 
     protected function mapCollections(Collection $importedCollection, Collection $sourceCollection)
@@ -102,30 +104,6 @@ class ProductImportStrategy extends ProductStrategy
 
     protected function setLocalizationKeys($entity, array $field)
     {
-    }
-
-    protected function findExistingEntity($entity, array $searchContext = [])
-    {
-        if ($entity instanceof Category && $entity->getAkeneoCode()) {
-            return $this->databaseHelper->findOneBy(
-                Category::class,
-                ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $entity->getChannel()]
-            );
-        }
-
-        return parent::findExistingEntity($entity, $searchContext);
-    }
-
-    protected function findExistingEntityByIdentityFields($entity, array $searchContext = [])
-    {
-        if ($entity instanceof Category && $entity->getAkeneoCode()) {
-            return $this->databaseHelper->findOneBy(
-                Category::class,
-                ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $entity->getChannel()]
-            );
-        }
-
-        return parent::findExistingEntityByIdentityFields($entity, $searchContext);
     }
 
     /**
@@ -237,6 +215,49 @@ class ProductImportStrategy extends ProductStrategy
             $this->context->incrementUpdateCount();
         } else {
             $this->context->incrementAddCount();
+        }
+    }
+
+    protected function processCategory($entity)
+    {
+        $entity->setCategory(null);
+        $rawItemData = $this->context->getValue('rawItemData');
+        if (empty($rawItemData['categories'])) {
+            return;
+        }
+
+        $akeneoCodes = (array)$rawItemData['categories'];
+        $akeneoCodes = array_filter($akeneoCodes, function ($item) {
+            return null !== $item && "" !== $item;
+        });
+
+        if (empty($akeneoCodes)) {
+            return;
+        }
+
+        $channelId = $this->context->getOption('channel');
+
+        $existingEntityCategory = $entity->getCategory();
+        if ($existingEntityCategory instanceof Category) {
+            $categories = $this->doctrineHelper
+                ->getEntityRepository(Category::class)
+                ->findBy(['akeneo_code' => $akeneoCodes, 'channel' => $channelId]);
+            $resultCategory = null;
+            /** @var Category $category */
+            foreach ($categories as $category) {
+                if (null === $resultCategory || $entity->getId() === $category->getId()) {
+                    $resultCategory = $category;
+                }
+            }
+        } else {
+            $resultCategory = $this->databaseHelper->findOneBy(
+                Category::class,
+                ['akeneo_code' => reset($akeneoCodes), 'channel' => $channelId]
+            );
+        }
+
+        if ($resultCategory instanceof Category) {
+            $entity->setCategory($resultCategory);
         }
     }
 }

@@ -131,29 +131,15 @@ class CumulativeWriter implements
         $entityManager = $this->registry->getManager();
         $unitOfWork = $entityManager->getUnitOfWork();
 
-        $count = $this->getUnitOfWorkChangesCount($unitOfWork);
-        if ($count > $this->batchSize) {
-            return $letsWrite;
-        }
-
-        $entityStates = $this->getUnitOfWorkStatesCount($unitOfWork);
-        if ($entityStates > self::MAX_UOW_OBJECTS_WITHOUT_CHANGES) {
-            return $letsWrite;
-        }
-
-        if ($count && $entityStates > self::MAX_UOW_OBJECTS_WITH_CHANGES) {
-            return $letsWrite;
-        }
-
-        if (!$count) {
-            return $letsSkip;
-        }
-
         foreach ($items as $item) {
             $unitOfWork->computeChangeSet($entityManager->getClassMetadata(ClassUtils::getClass($item)), $item);
         }
 
         $count = $this->getUnitOfWorkChangesCount($unitOfWork);
+        if (!$count) {
+            return $letsSkip;
+        }
+
         if ($count > $this->batchSize) {
             return $letsWrite;
         }

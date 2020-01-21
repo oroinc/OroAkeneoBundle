@@ -71,6 +71,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     public function convertToImportFormat(array $importedRecord, $skipNullValues = true)
     {
         unset($importedRecord['_links']);
+        unset($importedRecord['categories']); //categories should be proccessed in strategy
 
         $importedRecord['sku'] = $importedRecord['identifier'] ?? $importedRecord['code'];
         $importedRecord['primaryUnitPrecision'] = [
@@ -95,7 +96,6 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
         $this->processValues($importedRecord);
         $this->setSlugs($importedRecord);
-        $this->setCategory($importedRecord);
         $this->setFamilyVariant($importedRecord);
 
         $importedRecord = parent::convertToImportFormat($importedRecord, $skipNullValues);
@@ -406,21 +406,6 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         foreach ($importedRecord['slugPrototypes'] as &$slugPrototype) {
             $slugPrototype['string'] = $this->slugGenerator->slugify($slugPrototype['string']);
         }
-    }
-
-    /**
-     * Set category.
-     */
-    private function setCategory(array &$importedRecord)
-    {
-        $categories = (array)$importedRecord['categories'] ?? [];
-        unset($importedRecord['categories']);
-        if (!$categories) {
-            return;
-        }
-
-        $importedRecord['category:akeneo_code'] = reset($categories);
-        $importedRecord['category:channel:id'] = $this->context->getOption('channel');
     }
 
     public function setEntityConfigManager(ConfigManager $entityConfigManager): void
