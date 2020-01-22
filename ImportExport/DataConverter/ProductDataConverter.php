@@ -70,8 +70,8 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
      */
     public function convertToImportFormat(array $importedRecord, $skipNullValues = true)
     {
-        unset($importedRecord['_links']);
-        unset($importedRecord['categories']); //categories should be proccessed in strategy
+    	//categories should be proccessed in strategy
+        unset($importedRecord['_links'], $importedRecord['categories']);        
 
         $importedRecord['sku'] = $importedRecord['identifier'] ?? $importedRecord['code'];
         $importedRecord['primaryUnitPrecision'] = [
