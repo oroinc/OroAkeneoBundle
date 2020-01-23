@@ -41,6 +41,10 @@ class Generator
             . crc32($value);
     }
 
+    /**
+     * @deprecated
+     * @internal
+     */
     public static function generateCode(
         string $value,
         int $maxLength = self::DEFAULT_CODE_LENGTH,
