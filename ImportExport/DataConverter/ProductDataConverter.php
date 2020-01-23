@@ -368,7 +368,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
      */
     private function prepareEnumId(?string $id): ?string
     {
-        return $id !== null ? Generator::generateCode($id) : null;
+        return $id !== null ? Generator::generateLabel($id) : null;
     }
 
     private function processFileType(array $value): string
