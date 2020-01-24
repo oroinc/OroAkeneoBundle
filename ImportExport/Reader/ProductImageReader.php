@@ -41,7 +41,6 @@ class ProductImageReader extends IteratorBasedReader
         $images = [];
         foreach ($items as &$item) {
             foreach ($item['values'] as $code => &$values) {
-
                 if (empty($this->attributesImageFilter) || in_array($code, $this->attributesImageFilter)) {
                     foreach ($values as $value) {
                         if ('pim_catalog_image' !== $value['type'] || empty($value['data'])) {
@@ -84,7 +83,6 @@ class ProductImageReader extends IteratorBasedReader
     private function getTransport(): ?AkeneoSettings
     {
         if (!$this->transport) {
-
             if (!$this->getContext() || false === $this->getContext()->hasOption('channel')) {
                 return null;
             }

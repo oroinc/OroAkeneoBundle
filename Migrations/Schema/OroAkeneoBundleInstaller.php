@@ -71,8 +71,6 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
 
     /**
      * Create oro_akeneo_locale table.
-     *
-     * @param Schema $schema
      */
     protected function createOroAkeneoLocaleTable(Schema $schema)
     {
@@ -87,8 +85,6 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
 
     /**
      * Update oro_integration_transport table.
-     *
-     * @param Schema $schema
      *
      * @throws \Doctrine\DBAL\Schema\SchemaException
      */
@@ -115,20 +111,18 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
         $table->addColumn('akeneo_active_channel', 'string', ['notnull' => false, 'length' => 255]);
         $table->addColumn('akeneo_acl_voter_enabled', 'boolean', ['notnull' => false]);
         $table->addColumn('akeneo_product_filter', 'text', ['notnull' => false]);
+        $table->addColumn('akeneo_attributes_list', 'text', ['notnull' => false]);
         $table->addColumn('rootcategory_id', 'integer', ['notnull' => false]);
         $table->addColumn('pricelist_id', 'integer', ['notnull' => false]);
-        $table->addColumn('akeneo_attributes_list', 'text', ['notnull' => false]);
-        $table->addColumn('akeneo_merge_image_to_parent', 'boolean', ['notnull' => false, 'default' => false]);
-        $table->addColumn('akeneo_attributes_image_list', 'text', ['notnull' => false]);
         $table->addColumn('akeneo_alternative_identifier', 'string', ['notnull' => false,'length' => 255]);
+        $table->addColumn('akeneo_attributes_image_list', 'text', ['notnull' => false]);
+        $table->addColumn('akeneo_merge_image_to_parent', 'boolean', ['notnull' => false]);
         $table->addIndex(['rootcategory_id'], 'idx_d7a389a852d2453c', []);
         $table->addIndex(['pricelist_id'], 'idx_d7a389a846b960c4', []);
     }
 
     /**
      * Add oro_akeneo_locale foreign keys.
-     *
-     * @param Schema $schema
      */
     protected function addOroAkeneoLocaleForeignKeys(Schema $schema)
     {
@@ -143,8 +137,6 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
 
     /**
      * Add oro_integration_transport foreign keys.
-     *
-     * @param Schema $schema
      */
     protected function addOroIntegrationTransportForeignKeys(Schema $schema)
     {
@@ -165,8 +157,6 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
 
     /**
      * Add channel & akeneo code to category table.
-     *
-     * @param Schema $schema
      */
     protected function updateCategoryTable(Schema $schema)
     {
@@ -212,8 +202,6 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
 
     /**
      * Add channel to attribute family table.
-     *
-     * @param Schema $schema
      */
     protected function updateAttributeFamilyTable(Schema $schema)
     {
@@ -242,8 +230,6 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
 
     /**
      * Add akeneo_code to attribute group table.
-     *
-     * @param Schema $schema
      *
      * @throws SchemaException
      */

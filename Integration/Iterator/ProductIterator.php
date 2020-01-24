@@ -39,6 +39,7 @@ class ProductIterator extends AbstractIterator
      * @var AttributeIterator
      */
     private $attributesList;
+
     /**
      * @var string|null
      */
@@ -46,13 +47,6 @@ class ProductIterator extends AbstractIterator
 
     /**
      * AttributeIterator constructor.
-     *
-     * @param ResourceCursorInterface $resourceCursor
-     * @param AkeneoPimEnterpriseClientInterface $client
-     * @param LoggerInterface $logger
-     * @param Filesystem $filesystem
-     * @param \Oro\Bundle\AkeneoBundle\Integration\Iterator\AttributeIterator $attributeList
-     * @param string|null $alternativeAttribute
      */
     public function __construct(
         ResourceCursorInterface $resourceCursor,
@@ -101,8 +95,6 @@ class ProductIterator extends AbstractIterator
     /**
      * Switch the product code (intern identifier in Akeneo) value
      * with an other attribute to allow to map it differently
-     *
-     * @param array $product
      */
     protected function setAlternativeIdentifier(array &$product)
     {
@@ -127,11 +119,20 @@ class ProductIterator extends AbstractIterator
 
     /**
      * Set attribute types for product values.
-     *
-     * @param array $product
      */
     protected function setValueAttributeTypes(array &$product)
     {
+        if (false === $this->attributesInitialized) {
+            foreach ($this->attributesList as $attribute) {
+                if (null === $attribute) {
+                    continue;
+                }
+
+                $this->attributes[$attribute['code']] = $attribute;
+            }
+            $this->attributesInitialized = true;
+        }
+
         foreach ($product['values'] as $code => $values) {
             if (isset($this->attributes[$code])) {
                 foreach ($values as $key => $value) {
@@ -147,8 +148,6 @@ class ProductIterator extends AbstractIterator
 
     /**
      * Set family variant from API.
-     *
-     * @param array $model
      */
     private function setFamilyVariant(array &$model)
     {
@@ -192,18 +191,13 @@ class ProductIterator extends AbstractIterator
             $content = $this->client->getProductMediaFileApi()->download($value['data'])->getContents();
         } catch (NotFoundHttpException $e) {
             $this->logger->critical($e->getMessage());
+
             return;
         }
 
         $this->filesystem->write($path, $content);
     }
 
-    /**
-     * @param string $type
-     * @param string $code
-     *
-     * @return string
-     */
     protected function getFilePath(string $type, string $code): string
     {
         return sprintf('%s/%s', $type, basename($code));
@@ -230,6 +224,7 @@ class ProductIterator extends AbstractIterator
             $content = $this->client->getProductMediaFileApi()->download($value['data'])->getContents();
         } catch (NotFoundHttpException $e) {
             $this->logger->critical($e->getMessage());
+
             return;
         }
 

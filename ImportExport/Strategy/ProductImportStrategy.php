@@ -55,6 +55,17 @@ class ProductImportStrategy extends ProductStrategy
             foreach ($existingProduct->getParentVariantLinks() as $variantLink) {
                 $entity->getParentVariantLinks()->add($variantLink);
             }
+
+            $fields = $this->fieldHelper->getRelations(Product::class);
+            foreach ($fields as $field) {
+                if ($this->isLocalizedFallbackValue($field)) {
+                    $fieldName = $field['name'];
+                    $this->mapCollections(
+                        $this->fieldHelper->getObjectValue($entity, $fieldName),
+                        $this->fieldHelper->getObjectValue($existingProduct, $fieldName)
+                    );
+                }
+            }
         }
 
         return parent::beforeProcessEntity($entity);
@@ -119,7 +130,6 @@ class ProductImportStrategy extends ProductStrategy
 
     /**
      * @param object $entity
-     * @param array|null $itemData
      *
      * @see \Oro\Bundle\ImportExportBundle\Strategy\Import\ImportStrategyHelper::importEntity
      * @see \Oro\Bundle\AkeneoBundle\ImportExport\Strategy\ImportStrategyHelper::importEntity
@@ -158,8 +168,6 @@ class ProductImportStrategy extends ProductStrategy
                             $searchContext,
                             true
                         );
-
-                        $this->cacheInverseFieldRelation($entityName, $fieldName, $relationEntity);
                     }
                     $this->fieldHelper->setObjectValue($entity, $fieldName, $relationEntity);
                 } elseif ($this->fieldHelper->isMultipleRelation($field)) {

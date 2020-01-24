@@ -44,7 +44,8 @@ class ChannelTypeExtension extends AbstractTypeExtension
         $builder->addEventListener(
             FormEvents::PRE_SET_DATA,
             function (FormEvent $event) {
-                if (false === $event->getData() instanceof Channel ||
+                if (
+                    false === $event->getData() instanceof Channel ||
                     AkeneoChannel::TYPE !== $event->getData()->getType()
                 ) {
                     return;

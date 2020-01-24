@@ -36,7 +36,8 @@ class CategoryVoter extends AbstractEntityVoter
      */
     protected function getPermissionForAttribute($class, $identifier, $attribute)
     {
-        if (is_a($this->object, $this->className, true)
+        if (
+            is_a($this->object, $this->className, true)
             && null !== $this->object->getChannel()
             && AkeneoChannel::TYPE === $this->object->getChannel()->getType()
             && true === $this->object->getChannel()->getTransport()->isAclVoterEnabled()

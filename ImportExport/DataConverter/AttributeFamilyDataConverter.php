@@ -14,6 +14,9 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
 {
     use AkeneoIntegrationTrait;
 
+    /** @var array */
+    protected $fieldMapping = [];
+
     /**
      * @var EntityConfigManager
      */
@@ -47,37 +50,69 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
             $group['akeneo_code'] = $group['code'];
 
             foreach ($group['attributes'] as $attributeCode) {
-                if (false === in_array($attributeCode, $importedRecord['attributes'])) {
-                    continue;
-                }
-
                 $entityConfigFieldId = $this->entityConfigManager->getConfigModelId(
                     $importedRecord['entityClass'],
                     FieldConfigModelFieldNameGenerator::generate($attributeCode, $this->codePrefix)
                 );
 
-                if (!$entityConfigFieldId) {
+                if ($entityConfigFieldId) {
+                    $group['attributeRelations'][] = ['entityConfigFieldId' => $entityConfigFieldId];
+
                     continue;
                 }
 
-                $group['attributeRelations'][] = ['entityConfigFieldId' => $entityConfigFieldId];
+                // @BC: Keep Akeneo_Aken_1706289854
+                $fieldName = $this->getFieldMapping()[$attributeCode] ?? null;
+                if (!$fieldName) {
+                    continue;
+                }
+                $entityConfigFieldId = $this->entityConfigManager->getConfigModelId(
+                    $importedRecord['entityClass'],
+                    $fieldName
+                );
+                if ($entityConfigFieldId) {
+                    $group['attributeRelations'][] = ['entityConfigFieldId' => $entityConfigFieldId];
+
+                    continue;
+                }
             }
         }
 
         return parent::convertToImportFormat($importedRecord, $skipNullValues);
     }
 
+    private function getFieldMapping(): array
+    {
+        if ($this->fieldMapping) {
+            return $this->fieldMapping;
+        }
+
+        $importExportProvider = $this->entityConfigManager->getProvider('importexport');
+        foreach ($importExportProvider->getConfigs(Product::class) as $field) {
+            if ('akeneo' !== $field->get('source')) {
+                continue;
+            }
+
+            $source = $field->get('source_name');
+            if (!$source) {
+                continue;
+            }
+
+            $this->fieldMapping[$source] = $field->getId()->getFieldName();
+        }
+
+        return $this->fieldMapping;
+    }
+
     /**
      * Set labels with locales mapping from settings.
-     *
-     * @param array $importedRecord
      */
     private function setLabels(array &$importedRecord)
     {
         $labels = $importedRecord['labels'];
 
         $defaultLocalization = $this->getDefaultLocalization();
-        $defaultLocale = $this->getTransport()->getMappedAkeneoLocale($defaultLocalization->getFormattingCode());
+        $defaultLocale = $this->getTransport()->getMappedAkeneoLocale($defaultLocalization->getLanguageCode());
 
         $importedRecord['labels'] = [
             'default' => [
@@ -122,11 +157,9 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
     }
 
     /**
-     * @param string $codePrefix
-     *
      * @return $this
      */
-    public function setCodePrefix($codePrefix)
+    public function setCodePrefix(string $codePrefix)
     {
         $this->codePrefix = $codePrefix;
     }

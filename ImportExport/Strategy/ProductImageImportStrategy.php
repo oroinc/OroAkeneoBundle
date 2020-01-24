@@ -54,8 +54,6 @@ class ProductImageImportStrategy extends ConfigurableAddOrReplaceStrategy implem
 
     /**
      * Denormalizer sets wrong keys so ProductImage::removeType doesn't work.
-     *
-     * @param ProductImage $entity
      */
     private function removeImageTypes(ProductImage $entity)
     {

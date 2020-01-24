@@ -152,7 +152,6 @@ class ImportStrategyHelper extends BaseImportStrategyHelper
      * Gets identity values for entity.
      *
      * @param $entity
-     * @return array
      */
     private function getIdentityValues($entity): array
     {

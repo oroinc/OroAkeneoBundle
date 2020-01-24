@@ -180,7 +180,6 @@
 
             {{ form_row(form.rootCategory) }}
             {{ form_row(form.priceList) }}
-            {{ form_row(form.akeneoMergeImageToParent) }}
 
             <div class="control-group control-group-choice">
                 <div class="control-label wrap">
@@ -195,6 +194,16 @@
 
             <div class="control-group control-group-choice">
                 <div class="control-label wrap">
+                    {{ UI.tooltip('oro.akeneo.integration.settings.akeneo_attribute_list.tooltip'|trans, {}, 'right') }}
+                    {{ form_label(form.akeneoAttributesList) }}
+                </div>
+                <div class="controls {% if (form_errors(form.akeneoAttributesList)|length > 0) %} validation-error {% endif %}">
+                    {{ form_widget(form.akeneoAttributesList) }}
+                    {{ form_errors(form.akeneoAttributesList) }}
+                </div>
+            </div>
+            <div class="control-group control-group-choice">
+                <div class="control-label wrap">
                     {{ UI.tooltip('oro.akeneo.integration.settings.akeneo_attribute_image_list.tooltip'|trans, {}, 'right') }}
                     {{ form_label(form.akeneoAttributesImageList) }}
                 </div>
@@ -204,16 +213,7 @@
                 </div>
             </div>
 
-            <div class="control-group control-group-choice">
-                <div class="control-label wrap">
-                    {{ UI.tooltip('oro.akeneo.integration.settings.akeneo_attribute_list.tooltip'|trans, {}, 'right') }}
-                    {{ form_label(form.akeneoAttributesList) }}
-                </div>
-                <div class="controls {% if (form_errors(form.akeneoAttributesList)|length > 0) %} validation-error {% endif %}">
-                    {{ form_widget(form.akeneoAttributesList) }}
-                    {{ form_errors(form.akeneoAttributesList) }}
-                </div>
-            </div>
+            {{ form_row(form.akeneoMergeImageToParent) }}
         </div>
     </div>
 {% endblock %}

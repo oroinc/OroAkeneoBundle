@@ -1,12 +1,4 @@
 <?php
-/**
- * Diglin GmbH - Switzerland
- *
- * @author      Sylvain Rayé <support at diglin.com>
- * @category    Diglin
- * @package     GroupeRG - Orocommerce
- * @copyright   Copyright (c) Diglin (https://www.diglin.com)
- */
 
 namespace Oro\Bundle\AkeneoBundle\Migrations\Schema\v1_5;
 
@@ -18,7 +10,7 @@ use Oro\Bundle\MigrationBundle\Migration\QueryBag;
  * @SuppressWarnings(PHPMD.TooManyMethods)
  * @SuppressWarnings(PHPMD.ExcessiveClassLength)
  */
-class OroAkeneoBundleInstaller implements Migration
+class OroAkeneoMigration implements Migration
 {
     /**
      * {@inheritdoc}
@@ -33,14 +25,12 @@ class OroAkeneoBundleInstaller implements Migration
      */
     public function up(Schema $schema, QueryBag $queries)
     {
-        /** Tables generation **/
+        /* Tables generation */
         $this->updateOroIntegrationTransportTable($schema);
     }
 
     /**
      * Create oro_integration_transport table
-     *
-     * @param Schema $schema
      */
     protected function updateOroIntegrationTransportTable(Schema $schema)
     {

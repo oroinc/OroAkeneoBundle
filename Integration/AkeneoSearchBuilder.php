@@ -16,8 +16,6 @@ class AkeneoSearchBuilder
      * Build search filters from json.
      *
      * @param string $json
-     *
-     * @return array
      */
     public function getFilters(string $json = null): array
     {
@@ -51,19 +49,12 @@ class AkeneoSearchBuilder
 
     /**
      * @param $string
-     *
-     * @return bool
      */
     public function isJSON($string): bool
     {
         return is_string($string) && is_array(json_decode($string, true)) && (JSON_ERROR_NONE == json_last_error());
     }
 
-    /**
-     * @param array $option
-     *
-     * @return bool
-     */
     private function isValidOption(array $option): bool
     {
         return is_array($option) &&

@@ -25,10 +25,6 @@ abstract class AbstractIterator implements \Iterator
 
     /**
      * AttributeIterator constructor.
-     *
-     * @param ResourceCursorInterface $resourceCursor
-     * @param AkeneoPimEnterpriseClientInterface $client
-     * @param LoggerInterface $logger
      */
     public function __construct(
         ResourceCursorInterface $resourceCursor,

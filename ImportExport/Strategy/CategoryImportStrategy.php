@@ -25,9 +25,32 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy
                 $parent = $this->findExistingEntity($parent);
                 $entity->setParentCategory($parent);
             }
+
+            $existingEntity = $this->findExistingEntity($entity);
+            if ($existingEntity) {
+                $fields = $this->fieldHelper->getRelations(Category::class);
+                foreach ($fields as $field) {
+                    if ($this->isLocalizedFallbackValue($field)) {
+                        $fieldName = $field['name'];
+                        $this->mapCollections(
+                            $this->fieldHelper->getObjectValue($entity, $fieldName),
+                            $this->fieldHelper->getObjectValue($existingEntity, $fieldName)
+                        );
+                    }
+                }
+            }
         }
 
         return parent::beforeProcessEntity($entity);
+    }
+
+    protected function afterProcessEntity($entity)
+    {
+        if ($entity instanceof Category && !$entity->getMaterializedPath()) {
+            $entity->setMaterializedPath('');
+        }
+
+        return parent::afterProcessEntity($entity);
     }
 
     protected function findExistingEntity($entity, array $searchContext = [])
@@ -89,7 +112,6 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy
 
     /**
      * @param object $entity
-     * @param array|null $itemData
      *
      * @see \Oro\Bundle\ImportExportBundle\Strategy\Import\ImportStrategyHelper::importEntity
      * @see \Oro\Bundle\AkeneoBundle\ImportExport\Strategy\ImportStrategyHelper::importEntity
@@ -128,8 +150,6 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy
                             $searchContext,
                             true
                         );
-
-                        $this->cacheInverseFieldRelation($entityName, $fieldName, $relationEntity);
                     }
                     $this->fieldHelper->setObjectValue($entity, $fieldName, $relationEntity);
                 } elseif ($this->fieldHelper->isMultipleRelation($field)) {

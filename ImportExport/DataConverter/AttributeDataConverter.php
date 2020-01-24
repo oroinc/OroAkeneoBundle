@@ -21,7 +21,7 @@ class AttributeDataConverter extends EntityFieldDataConverter
      * @var ManagerRegistry
      */
     protected $registry;
-    
+
     /** @var string */
     private $codePrefix;
 
@@ -41,8 +41,6 @@ class AttributeDataConverter extends EntityFieldDataConverter
 
     /**
      * Set labels with locales mapping from settings.
-     *
-     * @param array $importedRecord
      */
     private function setLabels(array &$importedRecord)
     {
@@ -65,8 +63,6 @@ class AttributeDataConverter extends EntityFieldDataConverter
 
     /**
      * Set enum options.
-     *
-     * @param array $importedRecord
      */
     private function setEnumOptions(array &$importedRecord): void
     {
@@ -123,11 +119,9 @@ class AttributeDataConverter extends EntityFieldDataConverter
     }
 
     /**
-     * @param string $codePrefix
-     *
      * @return $this
      */
-    public function setCodePrefix($codePrefix)
+    public function setCodePrefix(string $codePrefix)
     {
         $this->codePrefix = $codePrefix;
     }

@@ -7,9 +7,6 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
  */
 trait ImportStrategyAwareHelperTrait
 {
-    /**
-     * @param ImportStrategyHelper $strategyHelper
-     */
     public function setImportStrategyHelper(ImportStrategyHelper $strategyHelper): void
     {
         $this->strategyHelper = $strategyHelper;

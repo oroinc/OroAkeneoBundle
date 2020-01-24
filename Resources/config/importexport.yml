@@ -323,6 +323,7 @@ services:
     parent: oro_integration.writer.persistent_batch_writer
     calls:
       - [setCategoryMaterializedPathModifier, ["@oro_akeneo.importexport.writer.category_modifier"]]
+      - [setCategoryListener, ["@oro_akeneo.event_listener.category"]]
 
   oro_akeneo.importexport.writer.async_product:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\AsyncWriter'
@@ -337,12 +338,14 @@ services:
     parent: oro_integration.writer.persistent_batch_writer
     calls:
       - [setCategoryMaterializedPathModifier, ["@oro_akeneo.importexport.writer.category_modifier"]]
+      - [setCategoryListener, ["@oro_akeneo.event_listener.category"]]
 
   oro_akeneo.importexport.writer.category_parent:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\CategoryParentWriter'
     parent: oro_integration.writer.persistent_batch_writer
     calls:
       - [setCategoryMaterializedPathModifier, ["@oro_akeneo.importexport.writer.category_modifier"]]
+      - [setCategoryListener, ["@oro_akeneo.event_listener.category"]]
 
   oro_akeneo.importexport.cache:
     public: false
@@ -397,3 +400,19 @@ services:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\CategoryMaterializedPathModifier'
     parent: oro_catalog.model.category_materialized_path_modifier
     decorates: oro_catalog.model.category_materialized_path_modifier
+
+  oro_akeneo.event_listener.category:
+    class: 'Oro\Bundle\AkeneoBundle\EventListener\CategoryListener'
+    decorates: oro_catalog.event_listener.orm.category_listener
+    arguments:
+      - '@oro_akeneo.event_listener.category.inner'
+
+  oro_akeneo.event_listener.deleted_attribute_relation:
+    class: 'Oro\Bundle\AkeneoBundle\EventListener\DeletedAttributeRelationListener'
+    decorates: oro_entity_config.event_listener.deleted_attribute_relation
+    parent: oro_entity_config.event_listener.deleted_attribute_relation
+
+  oro_akeneo.event_listener.deleted_attribute_relation_serialized:
+    class: 'Oro\Bundle\AkeneoBundle\EventListener\DeletedAttributeRelationListener'
+    decorates: oro_serialized_fields.event_listener.deleted_attribute_relation_serialized
+    parent: oro_serialized_fields.event_listener.deleted_attribute_relation_serialized

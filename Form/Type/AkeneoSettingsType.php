@@ -7,8 +7,8 @@ use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\Integration\AkeneoTransportInterface;
 use Oro\Bundle\AkeneoBundle\Settings\DataProvider\SyncProductsDataProviderInterface;
 use Oro\Bundle\AkeneoBundle\Validator\Constraints\AlternativeIdentifierConstraint;
-use Oro\Bundle\AkeneoBundle\Validator\Constraints\JsonConstraint;
 use Oro\Bundle\AkeneoBundle\Validator\Constraints\AttributeCodeConstraint;
+use Oro\Bundle\AkeneoBundle\Validator\Constraints\JsonConstraint;
 use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\FormBundle\Form\Type\OroEncodedPlaceholderPasswordType;
 use Oro\Bundle\PricingBundle\Form\Type\PriceListSelectType;
@@ -60,12 +60,6 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
      */
     private $crypter;
 
-    /**
-     * @param TranslatorInterface $translator
-     * @param SyncProductsDataProviderInterface $syncProductsDataProvider
-     * @param AkeneoTransportInterface $akeneoTransport
-     * @param Crypter $crypter
-     */
     public function __construct(
         TranslatorInterface $translator,
         SyncProductsDataProviderInterface $syncProductsDataProvider,
@@ -79,9 +73,6 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
     }
 
     /**
-     * @param FormBuilderInterface $builder
-     * @param array $options
-     *
      * @throws ConstraintDefinitionException
      * @throws InvalidOptionsException
      * @throws MissingOptionsException
@@ -271,6 +262,7 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                     'required' => false,
                     'label'    => 'oro.akeneo.integration.settings.merge_image.label',
                     'multiple' => false,
+                    'placeholder' => false,
                     'choices'  => [
                         'Yes' => true,
                         'No'  => false,
@@ -282,9 +274,6 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
         $builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'onPreSubmit'], 5000);
     }
 
-    /**
-     * @param FormEvent $event
-     */
     public function onPreSetData(FormEvent $event)
     {
         $form = $event->getForm();
@@ -349,8 +338,6 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
     }
 
     /**
-     * @param FormEvent $event
-     *
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     public function onPreSubmit(FormEvent $event)
@@ -466,8 +453,6 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
     }
 
     /**
-     * @param OptionsResolver $resolver
-     *
      * @throws AccessException
      */
     public function configureOptions(OptionsResolver $resolver)
