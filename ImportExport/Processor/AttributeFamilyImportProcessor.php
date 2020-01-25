@@ -39,12 +39,7 @@ class AttributeFamilyImportProcessor extends StepExecutionAwareImportProcessor
         $this->processedAttributeFamilies = null;
     }
 
-    /**
-     * @param string $codePrefix
-     *
-     * @return $this
-     */
-    public function setCodePrefix(string $codePrefix)
+    public function setCodePrefix(string $codePrefix): void
     {
         $this->codePrefix = $codePrefix;
     }

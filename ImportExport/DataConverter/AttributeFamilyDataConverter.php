@@ -156,10 +156,7 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
         throw new \Exception('Normalization is not implemented!');
     }
 
-    /**
-     * @return $this
-     */
-    public function setCodePrefix(string $codePrefix)
+    public function setCodePrefix(string $codePrefix): void
     {
         $this->codePrefix = $codePrefix;
     }

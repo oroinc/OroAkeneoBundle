@@ -4,7 +4,6 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 
 use Doctrine\Common\Util\Inflector;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
-use Oro\Bundle\AkeneoBundle\ImportExport\Processor\AttributeFamilyImportProcessor;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeFamilyCodeGenerator;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeTypeConverter;
 use Oro\Bundle\AkeneoBundle\Tools\Generator;
@@ -468,12 +467,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         throw new \Exception('Normalization is not implemented!');
     }
 
-    /**
-     * @param string $codePrefix
-     *
-     * @return $this
-     */
-    public function setCodePrefix(string $codePrefix)
+    public function setCodePrefix(string $codePrefix): void
     {
         $this->codePrefix = $codePrefix;
     }
