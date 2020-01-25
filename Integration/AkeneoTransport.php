@@ -253,5 +253,4 @@ class AkeneoTransport implements AkeneoTransportInterface
     {
         return $this->transportEntity->getAlternativeIdentifier();
     }
-
 }

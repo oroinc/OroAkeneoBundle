@@ -681,5 +681,5 @@ class AkeneoSettings extends Transport
         $this->alternativeIdentifier = $alternativeIdentifier;
 
         return $this;
-}
+    }
 }

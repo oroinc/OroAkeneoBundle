@@ -97,15 +97,14 @@ class ProductIterator extends AbstractIterator
      */
     protected function setAlternativeIdentifier(array &$product): void
     {
-        if (null === $this->alternativeAttribute) return;
+        if (null === $this->alternativeAttribute) {
+            return;
+        }
 
         @list($altAttribute, $identifier) = explode(':', $this->alternativeAttribute);
 
-        if (!empty($altAttribute)
-            && isset($product['values'][$altAttribute])
-            && isset($product['identifier'])
+        if (!empty($altAttribute) && isset($product['values'][$altAttribute]) && isset($product['identifier'])
         ) {
-
             if (isset($product['values'][$altAttribute][0]['data'])) {
                 if (null !== $identifier) {
                     $product[$identifier] = $product['identifier'];
