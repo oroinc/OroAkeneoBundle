@@ -4,3 +4,5 @@ oro.akeneo:
       message: 'Product filter is invalid. Please make sure it uses a valid JSON format.'
     attribute_code:
       message: 'Only letters, numbers and underscores and semi colon for separator are allowed.'
+    alternative_identifier:
+      message: 'Only letters, digits, underscore or ":" character is allowed'

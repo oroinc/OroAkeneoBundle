@@ -41,6 +41,11 @@ class ProductIterator extends AbstractIterator
     private $attributesList;
 
     /**
+     * @var string|null
+     */
+    private $alternativeAttribute;
+
+    /**
      * AttributeIterator constructor.
      */
     public function __construct(
@@ -48,32 +53,20 @@ class ProductIterator extends AbstractIterator
         AkeneoPimEnterpriseClientInterface $client,
         LoggerInterface $logger,
         Filesystem $filesystem,
-        AttributeIterator $attributeList
+        AttributeIterator $attributeList,
+        ?string $alternativeAttribute = null
     ) {
         parent::__construct($resourceCursor, $client, $logger);
         $this->filesystem = $filesystem;
         $this->attributesList = $attributeList;
+        $this->alternativeAttribute = $alternativeAttribute;
+
+        $this->initAttributesList();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function doCurrent()
+    protected function initAttributesList()
     {
-        $product = $this->resourceCursor->current();
-
-        $this->setValueAttributeTypes($product);
-        $this->setFamilyVariant($product);
-
-        return $product;
-    }
-
-    /**
-     * Set attribute types for product values.
-     */
-    protected function setValueAttributeTypes(array &$product)
-    {
-        if (false === $this->attributesInitialized) {
+        if (!$this->attributesInitialized) {
             foreach ($this->attributesList as $attribute) {
                 if (null === $attribute) {
                     continue;
@@ -83,7 +76,51 @@ class ProductIterator extends AbstractIterator
             }
             $this->attributesInitialized = true;
         }
+    }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function doCurrent()
+    {
+        $product = $this->resourceCursor->current();
+
+        $this->setAlternativeIdentifier($product);
+        $this->setValueAttributeTypes($product);
+        $this->setFamilyVariant($product);
+
+        return $product;
+    }
+    /**
+     * Switch the product code (intern identifier in Akeneo) value
+     * with an other attribute to allow to map it differently
+     */
+    protected function setAlternativeIdentifier(array &$product): void
+    {
+        if (null === $this->alternativeAttribute) return;
+
+        @list($altAttribute, $identifier) = explode(':', $this->alternativeAttribute);
+
+        if (!empty($altAttribute)
+            && isset($product['values'][$altAttribute])
+            && isset($product['identifier'])
+        ) {
+
+            if (isset($product['values'][$altAttribute][0]['data'])) {
+                if (null !== $identifier) {
+                    $product[$identifier] = $product['identifier'];
+                }
+
+                $product['identifier'] = $product['values'][$altAttribute][0]['data'];
+            }
+        }
+    }
+
+    /**
+     * Set attribute types for product values.
+     */
+    protected function setValueAttributeTypes(array &$product)
+    {
         foreach ($product['values'] as $code => $values) {
             if (isset($this->attributes[$code])) {
                 foreach ($values as $key => $value) {
