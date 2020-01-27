@@ -66,6 +66,12 @@ class ProductImportStrategy extends ProductStrategy
                     );
                 }
             }
+
+            $category = $existingProduct->getCategory();
+            $categories = array_filter((array)$this->context->getValue('rawItemData')['categories'] ?? []);
+            if ($category && $category->getAkeneoCode() && in_array($category->getAkeneoCode(), $categories)) {
+                $entity->setCategory($category);
+            }
         }
 
         return parent::beforeProcessEntity($entity);
