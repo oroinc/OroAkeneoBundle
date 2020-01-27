@@ -3,6 +3,7 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Writer;
 
 use Doctrine\Common\Cache\CacheProvider;
+use Oro\Bundle\AkeneoBundle\Config\ChangesAwareInterface;
 use Oro\Bundle\AkeneoBundle\Tools\EnumSynchronizer;
 use Oro\Bundle\EntityBundle\EntityConfig\DatagridScope;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
@@ -106,7 +107,7 @@ class AttributeWriter extends BaseAttributeWriter
             $translations = array_merge($translations, $this->writeItem($item));
         }
 
-        if (!$this->configManager->canSkipFlush()) {
+        if ($this->configManager instanceof ChangesAwareInterface && $this->configManager->hasChanges()) {
             $this->configManager->flush();
         }
 
