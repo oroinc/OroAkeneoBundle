@@ -1,53 +1,54 @@
---- src/Oro/Component/MessageQueue/Job/JobRunner.php	2019-06-26 13:40:14.000000000 +0300
-+++ src/Oro/Component/MessageQueue/Job/JobRunner.php	2019-07-25 22:18:09.000000000 +0300
-@@ -17,6 +17,15 @@
+--- src/Oro/Component/MessageQueue/Job/JobRunner.php	2019-08-08 19:23:39.756000000 +0300
++++ src/Oro/Component/MessageQueue/Job/JobRunner.php	2020-01-28 00:51:17.686117975 +0200
+@@ -21,6 +21,15 @@
      /** @var Job */
      private $rootJob;
  
 +    /** @var string */
-+    private $reservedMemory;
++    private static $reservedMemory;
 +
 +    /** @var Job */
-+    private $callbackResultJob;
++    private static $callbackResultJob;
 +
 +    /** @var Job */
-+    private $createDelayedJob;
++    private static $createDelayedJob;
 +
      /**
       * @param JobProcessor       $jobProcessor
       * @param ExtensionInterface $jobExtension
-@@ -27,6 +36,10 @@
+@@ -31,6 +40,11 @@
          $this->jobProcessor = $jobProcessor;
          $this->jobExtension = $jobExtension;
          $this->rootJob = $rootJob;
 +
-+        $this->reservedMemory = str_repeat('x', 4 * 1024 * 1024);
-+
-+        register_shutdown_function([$this, 'handleFatalError']);
++        if (!self::$reservedMemory) {
++            self::$reservedMemory = str_repeat('x', 32 * 1024 * 1024);
++            register_shutdown_function([$this, 'handleFatalError']);
++        }
      }
  
      /**
-@@ -89,7 +102,9 @@
+@@ -91,7 +105,9 @@
          $jobRunner = $this->getJobRunnerForChildJob($this->rootJob);
  
          try {
-+            $this->createDelayedJob = $childJob;
++            self::$createDelayedJob = $childJob;
              $createResult = call_user_func($startCallback, $jobRunner, $childJob);
-+            $this->createDelayedJob = null;
++            self::$createDelayedJob = null;
          } catch (\Throwable $e) {
              $this->jobProcessor->failChildJob($childJob);
- 
-@@ -206,7 +221,9 @@
+             $this->jobExtension->onError($childJob);
+@@ -204,7 +220,9 @@
      {
          $jobRunner = $this->getJobRunnerForChildJob($job->getRootJob());
          try {
-+            $this->callbackResultJob = $job;
++            self::$callbackResultJob = $job;
              $result = call_user_func($runCallback, $jobRunner, $job);
-+            $this->callbackResultJob = null;
++            self::$callbackResultJob = $job;
          } catch (\Throwable $e) {
              $this->jobProcessor->failAndRedeliveryChildJob($job);
- 
-@@ -222,4 +239,45 @@
+             $this->jobExtension->onError($job);
+@@ -217,4 +235,48 @@
  
          return $result;
      }
@@ -57,39 +58,42 @@
 +     */
 +    public function handleFatalError()
 +    {
-+        if (!$this->reservedMemory) {
++        if (!self::$reservedMemory) {
++            self::$callbackResultJob = null;
++            self::$createDelayedJob = null;
++
 +            return;
 +        }
 +
-+        $this->reservedMemory = null;
++        self::$reservedMemory = 'x';
 +
 +        $error = error_get_last();
 +        if (!$error) {
++            self::$callbackResultJob = null;
++            self::$createDelayedJob = null;
++
 +            return;
 +        }
 +
 +        if (false === ($error['type'] &= E_PARSE | E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR)) {
++            self::$callbackResultJob = null;
++            self::$createDelayedJob = null;
++
 +            return;
 +        }
 +
-+        if ($this->callbackResultJob) {
-+            $this->jobProcessor->failAndRedeliveryChildJob($this->callbackResultJob);
++        if (self::$callbackResultJob) {
++            $this->jobProcessor->failAndRedeliveryChildJob(self::$callbackResultJob);
++            $this->jobExtension->onError(self::$callbackResultJob);
 +
-+            if ($this->jobExtension instanceof ChainExtension) {
-+                $this->jobExtension->onError($this->callbackResultJob);
-+            }
-+
-+            $this->callbackResultJob = null;
++            self::$callbackResultJob = null;
 +        }
 +
-+        if ($this->createDelayedJob) {
-+            $this->jobProcessor->failChildJob($this->createDelayedJob);
++        if (self::$createDelayedJob) {
++            $this->jobProcessor->failChildJob(self::$createDelayedJob);
++            $this->jobExtension->onError(self::$createDelayedJob);
 +
-+            if ($this->jobExtension instanceof ChainExtension) {
-+                $this->jobExtension->onError($this->createDelayedJob);
-+            }
-+
-+            $this->createDelayedJob = null;
++            self::$createDelayedJob = null;
 +        }
 +    }
  }
