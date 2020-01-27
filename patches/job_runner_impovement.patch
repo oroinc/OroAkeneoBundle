@@ -1,6 +1,5 @@
-Index: vendor/oro/platform/src/Oro/Component/MessageQueue/Job/JobRunner.php
---- vendor/oro/platform/src/Oro/Component/MessageQueue/Job/JobRunner.php	2019-06-26 13:40:14.000000000 +0300
-+++ vendor/oro/platform/src/Oro/Component/MessageQueue/Job/JobRunner.php	2019-07-25 22:18:09.000000000 +0300
+--- src/Oro/Component/MessageQueue/Job/JobRunner.php	2019-06-26 13:40:14.000000000 +0300
++++ src/Oro/Component/MessageQueue/Job/JobRunner.php	2019-07-25 22:18:09.000000000 +0300
 @@ -17,6 +17,15 @@
      /** @var Job */
      private $rootJob;
