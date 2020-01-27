@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\AkeneoBundle\Integration;
 
+use Akeneo\Pim\ApiClient\Exception\NotFoundHttpException;
 use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientInterface;
 use Gaufrette\Filesystem;
 use Knp\Bundle\GaufretteBundle\FilesystemMap;
@@ -183,7 +184,6 @@ class AkeneoTransport implements AkeneoTransportInterface
             ),
             $this->client,
             $this->logger,
-            $this->filesystem,
             $this->getAttributes($pageSize)
         );
     }
@@ -202,7 +202,6 @@ class AkeneoTransport implements AkeneoTransportInterface
             ),
             $this->client,
             $this->logger,
-            $this->filesystem,
             $this->getAttributes($pageSize)
         );
     }
@@ -246,5 +245,32 @@ class AkeneoTransport implements AkeneoTransportInterface
         }
 
         return new AttributeIterator($this->client->getAttributeApi()->all($pageSize), $this->client, $this->logger, $attributeFilter);
+    }
+
+    public function downloadAndSaveMediaFile($type, $code)
+    {
+        $path = $this->getFilePath($type, $code);
+
+        if ($this->filesystem->has($path)) {
+            return;
+        }
+
+        try {
+            $content = $this->client->getProductMediaFileApi()->download($code)->getContents();
+        } catch (NotFoundHttpException $e) {
+            $this->logger->critical(
+                'Error on downloading media file.',
+                ['message' => $e->getMessage(), 'exception' => $e]
+            );
+
+            return;
+        }
+
+        $this->filesystem->write($path, $content);
+    }
+
+    protected function getFilePath(string $type, string $code): string
+    {
+        return sprintf('%s/%s', $type, basename($code));
     }
 }

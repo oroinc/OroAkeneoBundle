@@ -360,6 +360,8 @@ services:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Reader\ProductReader'
     arguments:
       - "@oro_importexport.context_registry"
+    calls:
+      - [setContextMediator, ["@oro_integration.provider.connector_context_mediator"]]
 
   oro_akeneo.importexport.reader.price:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Reader\ProductPriceReader'
@@ -372,6 +374,7 @@ services:
       - "@oro_importexport.context_registry"
     calls:
       - [setDoctrineHelper, ["@oro_entity.doctrine_helper"]]
+      - [setContextMediator, ["@oro_integration.provider.connector_context_mediator"]]
 
   oro_akeneo.importexport.reader.product_variant:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Reader\ProductVariantReader'
