@@ -156,36 +156,7 @@ class AkeneoTransport implements AkeneoTransportInterface
      */
     public function getCategories(int $pageSize)
     {
-        $categoryTreeChannel = null;
-        $akeneoChannel = $this->transportEntity->getAkeneoActiveChannel();
-
-        if (!empty($akeneoChannel)) {
-            foreach ($this->client->getChannelApi()->all() as $channel) {
-
-                $categoryTreeChannel = ($channel['code'] == $akeneoChannel && !empty($channel['category_tree'])) ? $channel['category_tree'] : null;
-
-                if (null !== $categoryTreeChannel) {
-                    break;
-                }
-            }
-        }
-
-        if (null === $categoryTreeChannel) {
-            return $this->client->getCategoryApi()->all($pageSize);
-        }
-
-        $parentCategory = [];
-        $akeneoTree = new \ArrayIterator([], \ArrayIterator::STD_PROP_LIST);
-
-        foreach ($this->client->getCategoryApi()->all($pageSize) as $category) {
-            if ($category['code'] == $categoryTreeChannel || in_array($category['parent'], $parentCategory)) {
-                $parentCategory[] = $category['code'];
-                $akeneoTree->append($category);
-            }
-        }
-        unset($parentCategory);
-
-        return $akeneoTree;
+        return $this->client->getCategoryApi()->all($pageSize);
     }
 
     /**
