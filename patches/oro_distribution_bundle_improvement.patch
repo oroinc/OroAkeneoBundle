@@ -1,6 +1,5 @@
-Index: vendor/oro/platform/src/Oro/Bundle/DistributionBundle/OroDistributionBundle.php
---- vendor/oro/platform/src/Oro/Bundle/DistributionBundle/OroDistributionBundle.php	2019-12-20 00:35:07.000000000 +0200
-+++ vendor/oro/platform/src/Oro/Bundle/DistributionBundle/OroDistributionBundle.php	2020-01-23 16:56:45.084565625 +0200
+--- src/Oro/Bundle/DistributionBundle/OroDistributionBundle.php	2019-12-20 00:35:07.000000000 +0200
++++ src/Oro/Bundle/DistributionBundle/OroDistributionBundle.php	2020-01-23 16:56:45.084565625 +0200
 @@ -2,6 +2,8 @@
  
  namespace Oro\Bundle\DistributionBundle;
