@@ -1,0 +1,96 @@
+Index: vendor/oro/platform/src/Oro/Component/MessageQueue/Job/JobRunner.php
+--- vendor/oro/platform/src/Oro/Component/MessageQueue/Job/JobRunner.php	2019-06-26 13:40:14.000000000 +0300
++++ vendor/oro/platform/src/Oro/Component/MessageQueue/Job/JobRunner.php	2019-07-25 22:18:09.000000000 +0300
+@@ -17,6 +17,15 @@
+     /** @var Job */
+     private $rootJob;
+ 
++    /** @var string */
++    private $reservedMemory;
++
++    /** @var Job */
++    private $callbackResultJob;
++
++    /** @var Job */
++    private $createDelayedJob;
++
+     /**
+      * @param JobProcessor       $jobProcessor
+      * @param ExtensionInterface $jobExtension
+@@ -27,6 +36,10 @@
+         $this->jobProcessor = $jobProcessor;
+         $this->jobExtension = $jobExtension;
+         $this->rootJob = $rootJob;
++
++        $this->reservedMemory = str_repeat('x', 4 * 1024 * 1024);
++
++        register_shutdown_function([$this, 'handleFatalError']);
+     }
+ 
+     /**
+@@ -89,7 +102,9 @@
+         $jobRunner = $this->getJobRunnerForChildJob($this->rootJob);
+ 
+         try {
++            $this->createDelayedJob = $childJob;
+             $createResult = call_user_func($startCallback, $jobRunner, $childJob);
++            $this->createDelayedJob = null;
+         } catch (\Throwable $e) {
+             $this->jobProcessor->failChildJob($childJob);
+ 
+@@ -206,7 +221,9 @@
+     {
+         $jobRunner = $this->getJobRunnerForChildJob($job->getRootJob());
+         try {
++            $this->callbackResultJob = $job;
+             $result = call_user_func($runCallback, $jobRunner, $job);
++            $this->callbackResultJob = null;
+         } catch (\Throwable $e) {
+             $this->jobProcessor->failAndRedeliveryChildJob($job);
+ 
+@@ -222,4 +239,45 @@
+ 
+         return $result;
+     }
++
++    /**
++     * @internal
++     */
++    public function handleFatalError()
++    {
++        if (!$this->reservedMemory) {
++            return;
++        }
++
++        $this->reservedMemory = null;
++
++        $error = error_get_last();
++        if (!$error) {
++            return;
++        }
++
++        if (false === ($error['type'] &= E_PARSE | E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR)) {
++            return;
++        }
++
++        if ($this->callbackResultJob) {
++            $this->jobProcessor->failAndRedeliveryChildJob($this->callbackResultJob);
++
++            if ($this->jobExtension instanceof ChainExtension) {
++                $this->jobExtension->onError($this->callbackResultJob);
++            }
++
++            $this->callbackResultJob = null;
++        }
++
++        if ($this->createDelayedJob) {
++            $this->jobProcessor->failChildJob($this->createDelayedJob);
++
++            if ($this->jobExtension instanceof ChainExtension) {
++                $this->jobExtension->onError($this->createDelayedJob);
++            }
++
++            $this->createDelayedJob = null;
++        }
++    }
+ }

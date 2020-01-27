@@ -49,6 +49,17 @@ composer require "oro/commerce-akeneo:3.1.*"
 
 ** Recommended time limit option values is 30 seconds `--time-limit=+30seconds`
 
+4. Apply patches from patches folder
+
+```
+patch -p0 -i vendor/oro/commerce-akeneo/patches/job_runner_impovement.patch --verbose
+patch -p0 -i vendor/oro/commerce-akeneo/patches/monolog_error_handler_improvement.patch --verbose
+patch -p0 -i vendor/oro/commerce-akeneo/patches/oro_distribution_bundle_improvement.patch --verbose
+patch -p0 -i vendor/oro/commerce-akeneo/patches/symfony_error_handler_improvement.patch --verbose
+```
+
+** For applying patches on OroCloud please follow [How to Apply Patches](https://doc.oroinc.com/cloud/maintenance/patches/)
+
 ## Setting up the Integration on the Oro Side
 
 Create a new integration to start synchronizing data from Akeneo to OroCommerce.

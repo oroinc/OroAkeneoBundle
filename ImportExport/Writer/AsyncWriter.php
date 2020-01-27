@@ -19,6 +19,8 @@ class AsyncWriter implements
     ClosableInterface,
     StepExecutionAwareInterface
 {
+    private const VARIANTS_BATCH_SIZE = 25;
+
     /** @var JobRunner */
     private $jobRunner;
 
@@ -125,8 +127,6 @@ class AsyncWriter implements
             return;
         }
 
-        $jobName = sprintf('oro_integration:sync_integration:%s:variants', $channelId);
-
         $setRootJob = \Closure::bind(
             function ($property, $value) {
                 $this->{$property} = $value;
@@ -137,28 +137,37 @@ class AsyncWriter implements
 
         try {
             $setRootJob('rootJob', $rootJob);
+            $chunks = array_chunk($variants, self::VARIANTS_BATCH_SIZE, true);
 
-            $this->jobRunner->createDelayed(
-                $jobName,
-                function (JobRunner $jobRunner, Job $child) use ($channelId, $variants) {
-                    $this->messageProducer->send(
-                        Topics::IMPORT_PRODUCTS,
-                        new Message(
-                            [
-                                'integrationId' => $channelId,
-                                'jobId' => $child->getId(),
-                                'connector' => 'product',
-                                'connector_parameters' => [
-                                    'variants' => $variants,
+            foreach ($chunks as $key => $chunk) {
+                $jobName = sprintf(
+                    'oro_integration:sync_integration:%s:variants:%s-%s',
+                    $channelId,
+                    self::VARIANTS_BATCH_SIZE * $key + 1,
+                    self::VARIANTS_BATCH_SIZE * $key + count($chunk)
+                );
+                $this->jobRunner->createDelayed(
+                    $jobName,
+                    function (JobRunner $jobRunner, Job $child) use ($channelId, $chunk) {
+                        $this->messageProducer->send(
+                            Topics::IMPORT_PRODUCTS,
+                            new Message(
+                                [
+                                    'integrationId' => $channelId,
+                                    'jobId' => $child->getId(),
+                                    'connector' => 'product',
+                                    'connector_parameters' => [
+                                        'variants' => $chunk,
+                                    ],
                                 ],
-                            ],
-                            MessagePriority::HIGH
-                        )
-                    );
+                                MessagePriority::HIGH
+                            )
+                        );
 
-                    return true;
-                }
-            );
+                        return true;
+                    }
+                );
+            }
         } finally {
             $setRootJob('rootJob', null);
         }
