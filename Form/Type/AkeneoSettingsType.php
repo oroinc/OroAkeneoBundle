@@ -11,6 +11,7 @@ use Oro\Bundle\AkeneoBundle\Validator\Constraints\JsonConstraint;
 use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\FormBundle\Form\Type\OroEncodedPlaceholderPasswordType;
 use Oro\Bundle\PricingBundle\Form\Type\PriceListSelectType;
+use Oro\Bundle\ProductBundle\Form\Type\ProductUnitsType;
 use Oro\Component\Tree\Entity\Repository\NestedTreeRepository;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -18,6 +19,7 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -140,6 +142,22 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                         );
                     },
                     'label'             => 'oro.akeneo.integration.settings.sync_products.label',
+                    'required'          => true,
+                ]
+            )
+            ->add(
+                'productUnit',
+                ProductUnitsType::class,
+                [
+                    'label'             => 'oro.akeneo.integration.settings.product_unit.label',
+                    'required'          => true,
+                ]
+            )
+            ->add(
+                'productUnitPrecision',
+                IntegerType::class,
+                [
+                    'label'             => 'oro.akeneo.integration.settings.product_unit_precision.label',
                     'required'          => true,
                 ]
             )

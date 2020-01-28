@@ -48,7 +48,7 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
      */
     public function getMigrationVersion()
     {
-        return 'v1_6';
+        return 'v1_7';
     }
 
     /**
@@ -95,6 +95,8 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
         $table->addColumn('akeneo_secret', 'string', ['notnull' => false, 'length' => 100]);
         $table->addColumn('akeneo_url', 'string', ['notnull' => false, 'length' => 100]);
         $table->addColumn('akeneo_sync_products', 'string', ['notnull' => false, 'length' => 255]);
+        $table->addColumn('akeneo_product_unit', 'string', ['notnull' => true, 'default' => 'each']);
+        $table->addColumn('akeneo_product_unit_precision', 'integer', ['notnull' => true, 'default' => 0]);
         $table->addColumn('akeneo_channels', 'array', ['notnull' => false, 'comment' => '(DC2Type:array)']);
         $table->addColumn('akeneo_username', 'string', ['notnull' => false, 'length' => 200]);
         $table->addColumn('akeneo_password', 'string', ['notnull' => false, 'length' => 200]);

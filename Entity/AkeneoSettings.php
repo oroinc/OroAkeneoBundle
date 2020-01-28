@@ -25,6 +25,18 @@ class AkeneoSettings extends Transport
      */
     protected $syncProducts;
     /**
+     * @var string
+     *
+     * @ORM\Column(name="akeneo_product_unit", type="string", length=255, nullable=false)
+     */
+    protected $productUnit;
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="akeneo_product_unit_precision", type="integer", nullable=false)
+     */
+    protected $productUnitPrecision;
+    /**
      * @var string[]
      *
      * @ORM\Column(name="akeneo_channels", type="array", nullable=true)
@@ -250,6 +262,8 @@ class AkeneoSettings extends Transport
                     'token'                  => $this->getToken(),
                     'refreshToken'           => $this->getRefreshToken(),
                     'syncProducts'           => $this->getSyncProducts(),
+                    'productUnit'            => $this->getProductUnit(),
+                    'productUnitPrecision'   => $this->getProductUnitPrecision(),
                     'akeneoCurrencies'       => $this->getAkeneoCurrencies(),
                     'akeneoActiveCurrencies' => $this->getAkeneoActiveCurrencies(),
                     'akeneoLocales'          => $this->getAkeneoLocales()->toArray(),
@@ -434,6 +448,54 @@ class AkeneoSettings extends Transport
     public function setSyncProducts($syncProducts)
     {
         $this->syncProducts = $syncProducts;
+
+        return $this;
+    }
+
+    /**
+     * Get productUnit.
+     *
+     * @return string
+     */
+    public function getProductUnit()
+    {
+        return $this->productUnit;
+    }
+
+    /**
+     * Set productUnit.
+     *
+     * @param string $productUnit
+     *
+     * @return AkeneoSettings
+     */
+    public function setProductUnit($productUnit)
+    {
+        $this->productUnit = $productUnit;
+
+        return $this;
+    }
+
+    /**
+     * Get productUnitPrecision.
+     *
+     * @return int
+     */
+    public function getProductUnitPrecision()
+    {
+        return $this->productUnitPrecision;
+    }
+
+    /**
+     * Set productUnitPrecision.
+     *
+     * @param int $productUnitPrecision
+     *
+     * @return  AkeneoSettings
+     */
+    public function setProductUnitPrecision($productUnitPrecision)
+    {
+        $this->productUnitPrecision = $productUnitPrecision;
 
         return $this;
     }

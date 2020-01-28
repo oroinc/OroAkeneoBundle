@@ -74,8 +74,8 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
         $importedRecord['sku'] = $importedRecord['identifier'] ?? $importedRecord['code'];
         $importedRecord['primaryUnitPrecision'] = [
-            'unit' => ['code' => $this->configManager->get('oro_product.default_unit')],
-            'precision' => $this->configManager->get('oro_product.default_unit_precision'),
+            'unit' => ['code' => $this->getTransport()->getProductUnit()],
+            'precision' => $this->getTransport()->getProductUnitPrecision(),
             'sell' => 1,
         ];
 

@@ -13,5 +13,7 @@ Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings:
       - NotBlank: ~
     akeneoActiveChannel:
       - NotBlank: ~
-
-
+    productUnit:
+      - NotBlank: ~
+    productUnitPrecision:
+      - NotBlank: ~
