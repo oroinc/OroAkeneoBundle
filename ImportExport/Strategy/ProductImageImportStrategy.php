@@ -14,8 +14,6 @@ class ProductImageImportStrategy extends ConfigurableAddOrReplaceStrategy implem
 {
     use ImportStrategyAwareHelperTrait;
 
-    const DUPLICATED_IMAGES = 'duplicated_images';
-
     /**
      * @var array
      */
