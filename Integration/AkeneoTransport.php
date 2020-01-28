@@ -266,7 +266,7 @@ class AkeneoTransport implements AkeneoTransportInterface
             return;
         }
 
-        $this->filesystem->write($path, $content);
+        $this->filesystem->write($path, $content, true);
     }
 
     protected function getFilePath(string $type, string $code): string
