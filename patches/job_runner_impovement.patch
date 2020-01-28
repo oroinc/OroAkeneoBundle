@@ -1,5 +1,5 @@
 --- src/Oro/Component/MessageQueue/Job/JobRunner.php	2019-08-08 19:23:39.756000000 +0300
-+++ src/Oro/Component/MessageQueue/Job/JobRunner.php	2020-01-28 00:51:17.686117975 +0200
++++ src/Oro/Component/MessageQueue/Job/JobRunner.php	2020-01-28 13:05:37.066401955 +0200
 @@ -21,6 +21,15 @@
      /** @var Job */
      private $rootJob;
@@ -48,7 +48,7 @@
          } catch (\Throwable $e) {
              $this->jobProcessor->failAndRedeliveryChildJob($job);
              $this->jobExtension->onError($job);
-@@ -217,4 +235,48 @@
+@@ -217,4 +235,54 @@
  
          return $result;
      }
@@ -83,17 +83,23 @@
 +        }
 +
 +        if (self::$callbackResultJob) {
-+            $this->jobProcessor->failAndRedeliveryChildJob(self::$callbackResultJob);
-+            $this->jobExtension->onError(self::$callbackResultJob);
-+
-+            self::$callbackResultJob = null;
++            try {
++                $this->jobProcessor->failAndRedeliveryChildJob(self::$callbackResultJob);
++                $this->jobExtension->onError(self::$callbackResultJob);
++            } catch (\Exception $e) {
++            } finally {
++                self::$callbackResultJob = null;
++            }
 +        }
 +
 +        if (self::$createDelayedJob) {
-+            $this->jobProcessor->failChildJob(self::$createDelayedJob);
-+            $this->jobExtension->onError(self::$createDelayedJob);
-+
-+            self::$createDelayedJob = null;
++            try {
++                $this->jobProcessor->failChildJob(self::$createDelayedJob);
++                $this->jobExtension->onError(self::$createDelayedJob);
++            } catch (\Exception $e) {
++            } finally {
++                self::$createDelayedJob = null;
++            }
 +        }
 +    }
  }
