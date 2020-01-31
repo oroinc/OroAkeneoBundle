@@ -157,7 +157,7 @@ class AkeneoSettings extends Transport
     /**
      * @var boolean
      *
-     * @ORM\Column(name="akeneo_merge_image_to_parent", type="boolean", options={"default"="false"})
+     * @ORM\Column(name="akeneo_merge_image_to_parent", type="boolean", options={"default"=false})
      */
     private $akeneoMergeImageToParent = false;
 
