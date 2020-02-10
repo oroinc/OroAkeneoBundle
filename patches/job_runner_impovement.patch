@@ -1,0 +1,105 @@
+--- src/Oro/Component/MessageQueue/Job/JobRunner.php	2019-08-08 19:23:39.756000000 +0300
++++ src/Oro/Component/MessageQueue/Job/JobRunner.php	2020-01-28 13:05:37.066401955 +0200
+@@ -21,6 +21,15 @@
+     /** @var Job */
+     private $rootJob;
+ 
++    /** @var string */
++    private static $reservedMemory;
++
++    /** @var Job */
++    private static $callbackResultJob;
++
++    /** @var Job */
++    private static $createDelayedJob;
++
+     /**
+      * @param JobProcessor       $jobProcessor
+      * @param ExtensionInterface $jobExtension
+@@ -31,6 +40,11 @@
+         $this->jobProcessor = $jobProcessor;
+         $this->jobExtension = $jobExtension;
+         $this->rootJob = $rootJob;
++
++        if (!self::$reservedMemory) {
++            self::$reservedMemory = str_repeat('x', 32 * 1024 * 1024);
++            register_shutdown_function([$this, 'handleFatalError']);
++        }
+     }
+ 
+     /**
+@@ -91,7 +105,9 @@
+         $jobRunner = $this->getJobRunnerForChildJob($this->rootJob);
+ 
+         try {
++            self::$createDelayedJob = $childJob;
+             $createResult = call_user_func($startCallback, $jobRunner, $childJob);
++            self::$createDelayedJob = null;
+         } catch (\Throwable $e) {
+             $this->jobProcessor->failChildJob($childJob);
+             $this->jobExtension->onError($childJob);
+@@ -204,7 +220,9 @@
+     {
+         $jobRunner = $this->getJobRunnerForChildJob($job->getRootJob());
+         try {
++            self::$callbackResultJob = $job;
+             $result = call_user_func($runCallback, $jobRunner, $job);
++            self::$callbackResultJob = $job;
+         } catch (\Throwable $e) {
+             $this->jobProcessor->failAndRedeliveryChildJob($job);
+             $this->jobExtension->onError($job);
+@@ -217,4 +235,54 @@
+ 
+         return $result;
+     }
++
++    /**
++     * @internal
++     */
++    public function handleFatalError()
++    {
++        if (!self::$reservedMemory) {
++            self::$callbackResultJob = null;
++            self::$createDelayedJob = null;
++
++            return;
++        }
++
++        self::$reservedMemory = 'x';
++
++        $error = error_get_last();
++        if (!$error) {
++            self::$callbackResultJob = null;
++            self::$createDelayedJob = null;
++
++            return;
++        }
++
++        if (false === ($error['type'] &= E_PARSE | E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR)) {
++            self::$callbackResultJob = null;
++            self::$createDelayedJob = null;
++
++            return;
++        }
++
++        if (self::$callbackResultJob) {
++            try {
++                $this->jobProcessor->failAndRedeliveryChildJob(self::$callbackResultJob);
++                $this->jobExtension->onError(self::$callbackResultJob);
++            } catch (\Exception $e) {
++            } finally {
++                self::$callbackResultJob = null;
++            }
++        }
++
++        if (self::$createDelayedJob) {
++            try {
++                $this->jobProcessor->failChildJob(self::$createDelayedJob);
++                $this->jobExtension->onError(self::$createDelayedJob);
++            } catch (\Exception $e) {
++            } finally {
++                self::$createDelayedJob = null;
++            }
++        }
++    }
+ }

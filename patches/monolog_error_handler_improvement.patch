@@ -1,0 +1,11 @@
+--- src/Monolog/ErrorHandler.php	2017-03-13 09:08:03.000000000 +0200
++++ src/Monolog/ErrorHandler.php	2019-07-16 19:31:06.000000000 +0300
+@@ -99,7 +99,7 @@
+     {
+         register_shutdown_function(array($this, 'handleFatalError'));
+ 
+-        $this->reservedMemory = str_repeat(' ', 1024 * $reservedMemorySize);
++        $this->reservedMemory = str_repeat(' ', 32 * 1024 * 1024);
+         $this->fatalLevel = $level;
+         $this->hasFatalErrorHandler = true;
+     }

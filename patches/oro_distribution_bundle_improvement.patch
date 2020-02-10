@@ -1,0 +1,21 @@
+--- src/Oro/Bundle/DistributionBundle/OroDistributionBundle.php	2019-12-20 00:35:07.000000000 +0200
++++ src/Oro/Bundle/DistributionBundle/OroDistributionBundle.php	2020-01-23 16:56:45.084565625 +0200
+@@ -2,6 +2,8 @@
+ 
+ namespace Oro\Bundle\DistributionBundle;
+ 
++use Monolog\ErrorHandler;
++use Psr\Log\LogLevel;
+ use Oro\Bundle\DistributionBundle\DependencyInjection\Compiler\CacheConfigurationPass;
+ use Oro\Bundle\DistributionBundle\DependencyInjection\Compiler\HiddenRoutesPass;
+ use Oro\Bundle\DistributionBundle\DependencyInjection\Compiler\RoutingOptionsResolverPass;
+@@ -24,4 +26,9 @@
+         $container->addCompilerPass(new RoutingOptionsResolverPass());
+         $container->addCompilerPass(new HiddenRoutesPass());
+     }
++
++    public function boot()
++    {
++        ErrorHandler::register($this->container->get('logger'), false, false, LogLevel::CRITICAL);
++    }
+ }

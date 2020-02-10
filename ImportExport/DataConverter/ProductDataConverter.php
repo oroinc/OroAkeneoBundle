@@ -416,7 +416,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
      */
     private function setCategory(array &$importedRecord)
     {
-        $categories = (array)$importedRecord['categories'] ?? [];
+        $categories = array_filter((array)$importedRecord['categories'] ?? []);
         unset($importedRecord['categories']);
         if (!$categories) {
             return;

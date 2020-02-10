@@ -37,15 +37,27 @@ Connector supports and tested on the next dataset:
 
 ## Installation
 
-1. Add composer package
+1. To apply patches you must have the following in your composer file:
+```
+{
+  "require": {
+      "cweagans/composer-patches": "~1.6"
+  },
+  "extra": {
+      "enable-patching": true
+  }
+}
+```
+
+2. Add composer package
 
 ```
 composer require "oro/commerce-akeneo:3.1.*"
 ```
 
-2. Follow [Setup Guide](https://doc.oroinc.com/backend/setup/upgrade-to-new-version)
+3. Follow [Setup Guide](https://doc.oroinc.com/backend/setup/upgrade-to-new-version)
 
-3. Configure [Message Queue](https://doc.oroinc.com/backend/mq/consumer/#options)
+4. Configure [Message Queue](https://doc.oroinc.com/backend/mq/consumer/#options)
 
 ** Recommended time limit option values is 30 seconds `--time-limit=+30seconds`
 
