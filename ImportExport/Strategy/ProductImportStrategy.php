@@ -18,14 +18,8 @@ class ProductImportStrategy extends ProductStrategy
 {
     use ImportStrategyAwareHelperTrait;
 
-    /**
-     * @var array
-     */
-    protected $subclassCache = [];
-
     public function close()
     {
-        $this->subclassCache = [];
         $this->reflectionProperties = [];
         $this->cachedEntities = [];
         $this->cachedInverseSingleRelations = [];
@@ -216,18 +210,8 @@ class ProductImportStrategy extends ProductStrategy
     protected function importExistingEntity($entity, $existingEntity, $itemData = null, array $excludedFields = [])
     {
         // Existing enum values shouldn't be modified. Just added to entity (collection).
-        $entityClass = ClassUtils::getClass($entity);
-
-        if (true === isset($this->subclassCache[$entityClass]) && true === $this->subclassCache[$entityClass]) {
+        if (is_a($entity, AbstractEnumValue::class)) {
             return;
-        }
-        if (false === isset($this->subclassCache[$entityClass])) {
-            $reflectionClass = new \ReflectionClass($entity);
-            $this->subclassCache[$entityClass] = $reflectionClass->isSubclassOf(AbstractEnumValue::class);
-
-            if (true === $this->subclassCache[$entityClass]) {
-                return;
-            }
         }
 
         parent::importExistingEntity($entity, $existingEntity, $itemData, $excludedFields);
