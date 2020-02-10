@@ -223,6 +223,7 @@ class AttributeWriter extends BaseAttributeWriter
             $attachmentProvider = $this->configManager->getProvider('attachment');
             $attachmentConfig = $attachmentProvider->getConfig($className, $fieldName);
             $attachmentConfig->set('mimetypes', implode("\n", ['application/*', 'image/*', 'text/*']));
+            $attachmentConfig->set('file_applications', ['default', 'commerce']);
             $this->configManager->persist($attachmentConfig);
         }
 
