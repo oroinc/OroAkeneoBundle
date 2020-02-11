@@ -61,10 +61,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     /** @var ProductUnitsProvider */
     protected $productUnitsProvider;
 
-    /**
-     * @param ProductUnitsProvider $productUnitsProvider
-     */
-    public function setProductUnitsProvider(ProductUnitsProvider $productUnitsProvider)
+    public function setProductUnitsProvider(ProductUnitsProvider $productUnitsProvider): void
     {
         $this->productUnitsProvider = $productUnitsProvider;
     }
@@ -472,13 +469,16 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         throw new \Exception('Normalization is not implemented!');
     }
 
-    protected function getPrimaryUnitPrecision($importedRecord): array
+    protected function getPrimaryUnitPrecision(array $importedRecord): array
     {
         $unit = $this->configManager->get('oro_product.default_unit');
         $precision = $this->configManager->get('oro_product.default_unit_precision');
+
         $unitAttribute = $this->getTransport()->getProductUnitAttribute();
         $unitPrecisionAttribute = $this->getTransport()->getProductUnitPrecisionAttribute();
+
         $availableUnits = $this->productUnitsProvider->getAvailableProductUnits();
+
         if (isset($importedRecord['values'][$unitAttribute])) {
             $unitData = reset($importedRecord['values'][$unitAttribute]);
             if (isset($unitData['data']) && in_array($unitData['data'], $availableUnits)) {
@@ -488,14 +488,14 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         if (isset($importedRecord['values'][$unitPrecisionAttribute])) {
             $unitPrecisionData = reset($importedRecord['values'][$unitPrecisionAttribute]);
             if (isset($unitPrecisionData['data'])) {
-                $precision = (integer)$unitPrecisionData['data'];
+                $precision = (int)$unitPrecisionData['data'];
             }
         }
 
         return [
             'unit' => ['code' => $unit],
             'precision' =>  $precision,
-            'sell' => 1,
+            'sell' => true,
         ];
     }
 }
