@@ -49,6 +49,10 @@ oro:
         merge_image:
           label: 'Merge images from simple products to configurable product'
           tooltip: 'Add all images from the children to the configurable product'
+        product_unit_attribute:
+          label: 'Product Unit Attribute Name'
+        product_unit_precision_attribute:
+          label: 'Product Unit Precision Attribute Name'
       popup:
         channel: 'This is a list of channels configured for the current Akeneo PIM instance. Select the required channel for product and category import. To refresh the list, click Refresh Channels'
         currencies: 'The control configures mapping between the currencies enabled in the current Akeneo PIM instance and the currencies enabled in this application. To skip price import for a specific currency, do not add mapping to it. To refresh the list, click Refresh Currencies'

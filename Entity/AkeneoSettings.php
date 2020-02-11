@@ -25,6 +25,18 @@ class AkeneoSettings extends Transport
      */
     protected $syncProducts;
     /**
+     * @var string
+     *
+     * @ORM\Column(name="akeneo_product_unit_attribute", type="string", length=255, nullable=true)
+     */
+    protected $productUnitAttribute;
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="akeneo_unit_precision_attr", type="string", length=255, nullable=true)
+     */
+    protected $productUnitPrecisionAttribute;
+    /**
      * @var string[]
      *
      * @ORM\Column(name="akeneo_channels", type="array", nullable=true)
@@ -241,20 +253,22 @@ class AkeneoSettings extends Transport
         if (null === $this->settings) {
             $this->settings = new ParameterBag(
                 [
-                    'clientId'               => $this->getClientId(),
-                    'secret'                 => $this->getSecret(),
-                    'akeneoChannels'         => $this->getAkeneoChannels(),
-                    'akeneoActiveChannel'    => $this->getAkeneoActiveChannel(),
-                    'username'               => $this->getUsername(),
-                    'password'               => $this->getPassword(),
-                    'token'                  => $this->getToken(),
-                    'refreshToken'           => $this->getRefreshToken(),
-                    'syncProducts'           => $this->getSyncProducts(),
-                    'akeneoCurrencies'       => $this->getAkeneoCurrencies(),
-                    'akeneoActiveCurrencies' => $this->getAkeneoActiveCurrencies(),
-                    'akeneoLocales'          => $this->getAkeneoLocales()->toArray(),
-                    'akeneoLocalesList'      => $this->getAkeneoLocalesList(),
-                    'akeneoAttributesList'   => $this->getAkeneoAttributesList(),
+                    'clientId'                      => $this->getClientId(),
+                    'secret'                        => $this->getSecret(),
+                    'akeneoChannels'                => $this->getAkeneoChannels(),
+                    'akeneoActiveChannel'           => $this->getAkeneoActiveChannel(),
+                    'username'                      => $this->getUsername(),
+                    'password'                      => $this->getPassword(),
+                    'token'                         => $this->getToken(),
+                    'refreshToken'                  => $this->getRefreshToken(),
+                    'syncProducts'                  => $this->getSyncProducts(),
+                    'productUnitAttribute'          => $this->getProductUnitAttribute(),
+                    'productUnitPrecisionAttribute' => $this->getProductUnitPrecisionAttribute(),
+                    'akeneoCurrencies'              => $this->getAkeneoCurrencies(),
+                    'akeneoActiveCurrencies'        => $this->getAkeneoActiveCurrencies(),
+                    'akeneoLocales'                 => $this->getAkeneoLocales()->toArray(),
+                    'akeneoLocalesList'             => $this->getAkeneoLocalesList(),
+                    'akeneoAttributesList'          => $this->getAkeneoAttributesList(),
                 ]
             );
         }
@@ -434,6 +448,42 @@ class AkeneoSettings extends Transport
     public function setSyncProducts($syncProducts)
     {
         $this->syncProducts = $syncProducts;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getProductUnitAttribute()
+    {
+        return $this->productUnitAttribute;
+    }
+
+    /**
+     * @param string $productUnitAttribute
+     */
+    public function setProductUnitAttribute($productUnitAttribute)
+    {
+        $this->productUnitAttribute = $productUnitAttribute;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getProductUnitPrecisionAttribute()
+    {
+        return $this->productUnitPrecisionAttribute;
+    }
+
+    /**
+     * @param string $productUnitPrecisionAttribute
+     */
+    public function setProductUnitPrecisionAttribute($productUnitPrecisionAttribute)
+    {
+        $this->productUnitPrecisionAttribute = $productUnitPrecisionAttribute;
 
         return $this;
     }
