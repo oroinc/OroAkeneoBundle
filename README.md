@@ -16,10 +16,21 @@ With this extension, you will be able to sync the following data from Akeneo to 
 
 ## Compatibility
 
-| Connector  | OroCommerce |   Akeneo   | Build |
-|------------|-------------|------------|-------|
-|    v1.6    |    v1.6     | v2.3, v3.2 | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=1.6)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
-|    v3.1    |    v3.1     | v2.3, v3.2 | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=3.1)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
+| Connector  | OroCommerce |      Akeneo      | Build |
+|------------|-------------|------------------|-------|
+|    v1.6    |    v1.6     | v2.3, v3.2, v4.0 | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=1.6)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
+|    v3.1    |    v3.1     | v2.3, v3.2, v4.0 | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=3.1)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
+
+## Schema
+
+**Make sure you don't have any pending Schema Update changes or entity and migration inconsistencies:**
+
+```
+> php bin/console --env=prod doctrine:schema:update --dump-sql
+
+[OK] Nothing to update - your database is already in sync with the current entity metadata.
+
+```
 
 ## Dataset
 
