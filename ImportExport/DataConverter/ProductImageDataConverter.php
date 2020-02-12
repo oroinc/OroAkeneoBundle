@@ -12,8 +12,8 @@ class ProductImageDataConverter extends BaseProductImageDataConverter
      */
     public function convertToImportFormat(array $importedRecord, $skipNullValues = true)
     {
-        $importedRecord['types'][ProductImageType::TYPE_MAIN] = true;
-        $importedRecord['types'][ProductImageType::TYPE_LISTING] = true;
+        $importedRecord['types'][ProductImageType::TYPE_MAIN] = false;
+        $importedRecord['types'][ProductImageType::TYPE_LISTING] = false;
         $importedRecord['types'][ProductImageType::TYPE_ADDITIONAL] = true;
 
         return parent::convertToImportFormat($importedRecord, $skipNullValues);
