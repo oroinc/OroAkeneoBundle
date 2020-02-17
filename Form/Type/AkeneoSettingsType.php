@@ -145,6 +145,22 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 ]
             )
             ->add(
+                'productUnitAttribute',
+                TextType::class,
+                [
+                    'label' => 'oro.akeneo.integration.settings.product_unit_attribute.label',
+                    'required' => false,
+                ]
+            )
+            ->add(
+                'productUnitPrecisionAttribute',
+                TextType::class,
+                [
+                    'label' => 'oro.akeneo.integration.settings.product_unit_precision_attribute.label',
+                    'required' => false,
+                ]
+            )
+            ->add(
                 'akeneoActiveCurrencies',
                 ChoiceType::class,
                 [
