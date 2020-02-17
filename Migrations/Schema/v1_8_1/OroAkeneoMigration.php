@@ -17,7 +17,7 @@ class OroAkeneoMigration implements Migration
      */
     public function getMigrationVersion()
     {
-        return 'v1_7';
+        return 'v1_8_1';
     }
 
     /**
