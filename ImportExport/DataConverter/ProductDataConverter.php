@@ -19,7 +19,6 @@ use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\Formatter\DateTimeFormatter;
 use Oro\Bundle\ProductBundle\Entity\Product;
 use Oro\Bundle\ProductBundle\ImportExport\DataConverter\ProductDataConverter as BaseProductDataConverter;
-use Oro\Bundle\ProductBundle\Provider\ProductUnitsProvider;
 
 /**
  * Converts data for imported row.
@@ -58,14 +57,6 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     /** @var array */
     protected $fieldMapping = [];
 
-    /** @var ProductUnitsProvider */
-    protected $productUnitsProvider;
-
-    public function setProductUnitsProvider(ProductUnitsProvider $productUnitsProvider): void
-    {
-        $this->productUnitsProvider = $productUnitsProvider;
-    }
-
     /** @var string */
     private $codePrefix;
 
@@ -85,7 +76,11 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         unset($importedRecord['_links']);
 
         $importedRecord['sku'] = $importedRecord['identifier'] ?? $importedRecord['code'];
-        $importedRecord['primaryUnitPrecision'] = $this->getPrimaryUnitPrecision($importedRecord);
+        $importedRecord['primaryUnitPrecision'] = [
+            'unit' => ['code' => $this->configManager->get('oro_product.default_unit')],
+            'precision' => $this->configManager->get('oro_product.default_unit_precision'),
+            'sell' => 1,
+        ];
 
         if (!empty($importedRecord['family'])) {
             $importedRecord['attributeFamily'] = [
@@ -470,36 +465,6 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     protected function getBackendHeader()
     {
         throw new \Exception('Normalization is not implemented!');
-    }
-
-    protected function getPrimaryUnitPrecision(array $importedRecord): array
-    {
-        $unit = $this->configManager->get('oro_product.default_unit');
-        $precision = $this->configManager->get('oro_product.default_unit_precision');
-
-        $unitAttribute = $this->getTransport()->getProductUnitAttribute();
-        $unitPrecisionAttribute = $this->getTransport()->getProductUnitPrecisionAttribute();
-
-        $availableUnits = $this->productUnitsProvider->getAvailableProductUnits();
-
-        if (isset($importedRecord['values'][$unitAttribute])) {
-            $unitData = reset($importedRecord['values'][$unitAttribute]);
-            if (isset($unitData['data']) && in_array($unitData['data'], $availableUnits)) {
-                $unit = $unitData['data'];
-            }
-        }
-        if (isset($importedRecord['values'][$unitPrecisionAttribute])) {
-            $unitPrecisionData = reset($importedRecord['values'][$unitPrecisionAttribute]);
-            if (isset($unitPrecisionData['data'])) {
-                $precision = (int)$unitPrecisionData['data'];
-            }
-        }
-
-        return [
-            'unit' => ['code' => $unit],
-            'precision' =>  $precision,
-            'sell' => true,
-        ];
     }
 
     public function setCodePrefix(string $codePrefix): void
