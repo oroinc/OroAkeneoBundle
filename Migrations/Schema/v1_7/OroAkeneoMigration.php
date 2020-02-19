@@ -36,5 +36,7 @@ class OroAkeneoMigration implements Migration
     {
         $table = $schema->getTable('oro_integration_transport');
         $table->addColumn('akeneo_alternative_identifier', 'string', ['notnull' => false,'length' => 255]);
+        $table->addColumn('akeneo_product_unit_attribute', 'string', ['notnull' => false, 'length' => 255]);
+        $table->addColumn('akeneo_unit_precision_attr', 'string', ['notnull' => false, 'length' => 255]);
     }
 }

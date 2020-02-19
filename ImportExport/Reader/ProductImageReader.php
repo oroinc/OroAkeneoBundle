@@ -53,16 +53,13 @@ class ProductImageReader extends IteratorBasedReader
                             continue;
                         }
 
-                        $images[] = [
-                            'SKU'  => $item['identifier'] ?? $item['code'],
-                            'Name' => basename($value['data']),
-                        ];
+                        $identifier = $item['identifier'] ?? $item['code'];
+                        $basename = basename($value['data']);
+                        $images[$identifier][$basename] = ['SKU' => $identifier, 'Name' => $basename];
 
                         if ($this->getTransport()->isAkeneoMergeImageToParent() && !empty($item['parent'])) {
-                            $images[] = [
-                                'SKU'  => $item['parent'],
-                                'Name' => basename($value['data']),
-                            ];
+                            $identifier = $item['parent'];
+                            $images[$identifier][$basename] = ['SKU' => $identifier, 'Name' => $basename];
                         }
                     }
                 }
@@ -109,13 +106,15 @@ class ProductImageReader extends IteratorBasedReader
     protected function processImagesDownload(array $items, ContextInterface $context)
     {
         foreach ($items as $item) {
-            foreach ($item['values'] as $values) {
-                foreach ($values as $value) {
-                    if ('pim_catalog_image' !== $value['type'] || empty($value['data'])) {
-                        continue;
-                    }
+            foreach ($item['values'] as $code => $values) {
+                if (empty($this->attributesImageFilter) || in_array($code, $this->attributesImageFilter)) {
+                    foreach ($values as $value) {
+                        if ('pim_catalog_image' !== $value['type'] || empty($value['data'])) {
+                            continue;
+                        }
 
-                    $this->getAkeneoTransport($context)->downloadAndSaveMediaFile('product_images', $value['data']);
+                        $this->getAkeneoTransport($context)->downloadAndSaveMediaFile('product_images', $value['data']);
+                    }
                 }
             }
         }

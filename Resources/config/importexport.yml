@@ -195,6 +195,7 @@ services:
       - [setEntityConfigManager, ["@oro_entity_config.config_manager"]]
       - [setDateTimeFormatter, ["@oro_locale.formatter.date_time"]]
       - [setAttachmentsDir, ["%kernel.project_dir%/var/import_export/attachments/"]]
+      - [setProductUnitsProvider, ["@oro_product.provider.product_units_provider"]]
       - [setCodePrefix, ['%oro_akeneo.importexport.code_prefix%']]
 
   oro_akeneo.importexport.strategy.product:
@@ -256,10 +257,6 @@ services:
     calls:
       - [setImportStrategyHelper, ['@oro_akeneo.strategy.import.helper']]
 
-  oro_akeneo.importexport.writer.product_image:
-    class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\ProductImageWriter'
-    parent: oro_integration.writer.persistent_batch_writer
-
   oro_akeneo.importexport.writer.attribute:
     class:  '%oro_akeneo.importexport.writer.attribute.class%'
     parent: oro_entity_config.importexport.writer.attribute
@@ -281,7 +278,7 @@ services:
   oro_akeneo.importexport.writer.cumulative.product_image:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\CumulativeWriter'
     arguments:
-      - '@oro_akeneo.importexport.writer.product_image'
+      - '@oro_integration.writer.persistent_batch_writer'
       - '@oro_platform.optional_listeners.manager'
       - '@doctrine'
       - '@oro_entity_config.config_manager'

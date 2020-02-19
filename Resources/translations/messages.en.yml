@@ -52,6 +52,10 @@ oro:
         alternative_identifier:
           label: 'Alternative identifier'
           tooltip: 'Use a different attribute as the original identifier attribute provided by Akeneo. Set the attribute code name of Akeneo here. e.g. "my_sku". If you want to keep the old identifier, provide is Akeneo code like this: new_identifier:old_identifier. The old identifier code must be the same code existing in Akeneo and must be present into the Attribute filter list if any.'
+        product_unit_attribute:
+          label: 'Product Unit Attribute Name'
+        product_unit_precision_attribute:
+          label: 'Product Unit Precision Attribute Name'
       popup:
         channel: 'This is a list of channels configured for the current Akeneo PIM instance. Select the required channel for product and category import. To refresh the list, click Refresh Channels'
         currencies: 'The control configures mapping between the currencies enabled in the current Akeneo PIM instance and the currencies enabled in this application. To skip price import for a specific currency, do not add mapping to it. To refresh the list, click Refresh Currencies'

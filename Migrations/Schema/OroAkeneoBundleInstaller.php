@@ -95,6 +95,8 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
         $table->addColumn('akeneo_secret', 'string', ['notnull' => false, 'length' => 100]);
         $table->addColumn('akeneo_url', 'string', ['notnull' => false, 'length' => 100]);
         $table->addColumn('akeneo_sync_products', 'string', ['notnull' => false, 'length' => 255]);
+        $table->addColumn('akeneo_product_unit_attribute', 'string', ['notnull' => false, 'length' => 255]);
+        $table->addColumn('akeneo_unit_precision_attr', 'string', ['notnull' => false, 'length' => 255]);
         $table->addColumn('akeneo_channels', 'array', ['notnull' => false, 'comment' => '(DC2Type:array)']);
         $table->addColumn('akeneo_username', 'string', ['notnull' => false, 'length' => 200]);
         $table->addColumn('akeneo_password', 'string', ['notnull' => false, 'length' => 200]);
@@ -116,7 +118,7 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
         $table->addColumn('pricelist_id', 'integer', ['notnull' => false]);
         $table->addColumn('akeneo_alternative_identifier', 'string', ['notnull' => false,'length' => 255]);
         $table->addColumn('akeneo_attributes_image_list', 'text', ['notnull' => false]);
-        $table->addColumn('akeneo_merge_image_to_parent', 'boolean', ['notnull' => false]);
+        $table->addColumn('akeneo_merge_image_to_parent', 'boolean', ['notnull' => false, 'default' => false]);
         $table->addIndex(['rootcategory_id'], 'idx_d7a389a852d2453c', []);
         $table->addIndex(['pricelist_id'], 'idx_d7a389a846b960c4', []);
     }
