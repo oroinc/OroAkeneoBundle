@@ -20,6 +20,18 @@ use Symfony\Component\Intl\Intl;
 
 class AkeneoTransport implements AkeneoTransportInterface
 {
+    const PAGE_SIZE = 100;
+
+    /**
+     * @var array
+     */
+    private $attributes = [];
+
+    /**
+     * @var array
+     */
+    private $familyVariants = [];
+
     /**
      * @var AkeneoClientFactory
      */
@@ -205,6 +217,8 @@ class AkeneoTransport implements AkeneoTransportInterface
      */
     public function getProducts(int $pageSize)
     {
+        $this->initAttributesList();
+
         $searchFilters = $this->akeneoSearchBuilder->getFilters($this->transportEntity->getProductFilter());
 
         return new ProductIterator(
@@ -214,7 +228,8 @@ class AkeneoTransport implements AkeneoTransportInterface
             ),
             $this->client,
             $this->logger,
-            $this->getAttributes($pageSize),
+            $this->attributes,
+            [],
             $this->getAlternativeIdentifier()
         );
     }
@@ -224,6 +239,9 @@ class AkeneoTransport implements AkeneoTransportInterface
      */
     public function getProductModels(int $pageSize)
     {
+        $this->initAttributesList();
+        $this->initFamilyVariants();
+
         $searchFilters = $this->akeneoSearchBuilder->getFilters($this->transportEntity->getProductFilter());
 
         return new ProductIterator(
@@ -233,7 +251,8 @@ class AkeneoTransport implements AkeneoTransportInterface
             ),
             $this->client,
             $this->logger,
-            $this->getAttributes($pageSize)
+            $this->familyVariants,
+            $this->attributes
         );
     }
 
@@ -311,5 +330,30 @@ class AkeneoTransport implements AkeneoTransportInterface
     protected function getFilePath(string $type, string $code): string
     {
         return sprintf('%s/%s', $type, basename($code));
+    }
+
+    protected function initAttributesList()
+    {
+        if (empty($this->attributes)) {
+            foreach ($this->getAttributes(self::PAGE_SIZE) as $attribute) {
+                if (null === $attribute) {
+                    continue;
+                }
+
+                $this->attributes[$attribute['code']] = $attribute;
+            }
+        }
+    }
+
+    protected function initFamilyVariants()
+    {
+        if (empty($this->familyVariants)) {
+            foreach ($this->client->getFamilyApi()->all(self::PAGE_SIZE) as $family) {
+                foreach ($this->client->getFamilyVariantApi()->all($family['code'], self::PAGE_SIZE) as $variant) {
+                    $variant['family'] = $family['code'];
+                    $this->familyVariants[$variant['code']] = $variant;
+                }
+            }
+        }
     }
 }
