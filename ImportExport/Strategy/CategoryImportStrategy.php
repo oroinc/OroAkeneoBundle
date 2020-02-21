@@ -15,6 +15,7 @@ use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStr
 class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy
 {
     use ImportStrategyAwareHelperTrait;
+    use OwnerTrait;
 
     protected function beforeProcessEntity($entity)
     {
@@ -49,6 +50,8 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy
         if ($entity instanceof Category && !$entity->getMaterializedPath()) {
             $entity->setMaterializedPath('');
         }
+
+        $this->setOwner($entity);
 
         return parent::afterProcessEntity($entity);
     }

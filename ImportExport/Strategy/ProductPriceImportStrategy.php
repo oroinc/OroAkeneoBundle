@@ -12,6 +12,7 @@ use Oro\Bundle\PricingBundle\ImportExport\Strategy\ProductPriceImportStrategy as
 class ProductPriceImportStrategy extends BaseStrategy
 {
     use ImportStrategyAwareHelperTrait;
+    use OwnerTrait;
 
     /**
      * {@inheritdoc}
@@ -26,6 +27,13 @@ class ProductPriceImportStrategy extends BaseStrategy
         }
 
         return parent::beforeProcessEntity($entity);
+    }
+
+    protected function afterProcessEntity($entity)
+    {
+        $this->setOwner($entity);
+
+        return parent::afterProcessEntity($entity);
     }
 
     /**

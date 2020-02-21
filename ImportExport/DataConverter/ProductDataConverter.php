@@ -16,7 +16,7 @@ use Oro\Bundle\ImportExportBundle\Context\ContextAwareInterface;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 use Oro\Bundle\LocaleBundle\Entity\Localization;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
-use Oro\Bundle\LocaleBundle\Formatter\DateTimeFormatter;
+use Oro\Bundle\LocaleBundle\Formatter\DateTimeFormatterInterface;
 use Oro\Bundle\ProductBundle\Entity\Product;
 use Oro\Bundle\ProductBundle\ImportExport\DataConverter\ProductDataConverter as BaseProductDataConverter;
 use Oro\Bundle\ProductBundle\Provider\ProductUnitsProvider;
@@ -46,7 +46,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     protected $entityConfigManager;
 
     /**
-     * @var DateTimeFormatter
+     * @var DateTimeFormatterInterface
      */
     protected $dateTimeFormatter;
 
@@ -438,7 +438,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         $this->slugGenerator = $slugGenerator;
     }
 
-    public function setDateTimeFormatter(DateTimeFormatter $dateTimeFormatter): void
+    public function setDateTimeFormatter(DateTimeFormatterInterface $dateTimeFormatter): void
     {
         $this->dateTimeFormatter = $dateTimeFormatter;
     }

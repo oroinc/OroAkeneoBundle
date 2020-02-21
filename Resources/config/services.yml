@@ -18,7 +18,7 @@ services:
     arguments:
       - "@oro_entity.doctrine_helper"
     calls:
-      - [setClassName, ['%oro_catalog.entity.category.class%']]
+      - [setClassName, ['Oro\Bundle\CatalogBundle\Entity\Category']]
   #        tags:
   #            - { name: security.voter}
 
@@ -29,6 +29,7 @@ services:
 
   oro_akeneo.placeholder.schema_update_filter:
     class: Oro\Bundle\AkeneoBundle\Placeholder\SchemaUpdateFilter
+    public: true
     arguments:
       - "@oro_entity_config.config_manager"
       - "@oro_entity_config.helper.entity_config_provider_helper"

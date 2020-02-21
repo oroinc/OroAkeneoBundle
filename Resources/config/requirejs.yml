@@ -1,3 +1,0 @@
-config:
-  paths:
-    'oroakeneo/js/app/components/akeneo-transport-settings-component': 'bundles/oroakeneo/js/app/components/akeneo-transport-settings-component.js'

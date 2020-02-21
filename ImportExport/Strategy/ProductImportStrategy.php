@@ -17,14 +17,13 @@ use Oro\Bundle\ProductBundle\ImportExport\Strategy\ProductStrategy;
 class ProductImportStrategy extends ProductStrategy
 {
     use ImportStrategyAwareHelperTrait;
+    use OwnerTrait;
 
     public function close()
     {
         $this->reflectionProperties = [];
         $this->cachedEntities = [];
-        $this->cachedInverseSingleRelations = [];
-        $this->cachedExistingEntities = [];
-        $this->cachedInverseMultipleRelations = [];
+        $this->owner = null;
 
         $this->databaseHelper->onClear();
 
@@ -69,6 +68,13 @@ class ProductImportStrategy extends ProductStrategy
         }
 
         return parent::beforeProcessEntity($entity);
+    }
+
+    protected function afterProcessEntity($entity)
+    {
+        $this->setOwner($entity);
+
+        return parent::afterProcessEntity($entity);
     }
 
     protected function mapCollections(Collection $importedCollection, Collection $sourceCollection)

@@ -12,8 +12,6 @@ use Oro\Bundle\EntityConfigBundle\Entity\FieldConfigModel;
 use Oro\Bundle\EntityConfigBundle\Manager\AttributeManager;
 use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
 use Oro\Bundle\ImportExportBundle\Strategy\Import\ConfigurableAddOrReplaceStrategy;
-use Oro\Bundle\IntegrationBundle\Entity\Channel;
-use Oro\Bundle\IntegrationBundle\ImportExport\Helper\DefaultOwnerHelper;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\ImportExport\Normalizer\LocalizationCodeFormatter;
 use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStrategy;
@@ -27,13 +25,9 @@ use Oro\Bundle\ProductBundle\Entity\Product;
 class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
 {
     use ImportStrategyAwareHelperTrait;
+    use OwnerTrait;
 
     private const GROUP_CODE_GENERAL = 'general';
-
-    /**
-     * @var DefaultOwnerHelper
-     */
-    protected $ownerHelper;
 
     /**
      * @var AttributeManager
@@ -44,14 +38,6 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
      * @var ConfigManager
      */
     protected $configManager;
-
-    /**
-     * @param DefaultOwnerHelper $ownerHelper
-     */
-    public function setOwnerHelper($ownerHelper)
-    {
-        $this->ownerHelper = $ownerHelper;
-    }
 
     public function setConfigManager(ConfigManager $configManager): void
     {
@@ -72,7 +58,6 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
     {
         $this->removeInactiveAttributes($entity);
         $this->setSystemAttributes($entity);
-        $this->setOwner($entity);
 
         /** @var AttributeFamily $existingEntity */
         $existingEntity = $this->findExistingEntity($entity);
@@ -115,6 +100,13 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
         }
 
         return parent::beforeProcessEntity($entity);
+    }
+
+    protected function afterProcessEntity($entity)
+    {
+        $this->setOwner($entity);
+
+        return parent::afterProcessEntity($entity);
     }
 
     protected function generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation)
@@ -193,20 +185,6 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
         }
 
         return false;
-    }
-
-    /**
-     * Sets owner.
-     */
-    private function setOwner(AttributeFamily $entity)
-    {
-        if (false === $this->ownerChecker->isOwnerCanBeSet($entity)) {
-            return;
-        }
-
-        $channelId = $this->context->getOption('channel');
-        $channel = $this->doctrineHelper->getEntityRepository(Channel::class)->find($channelId);
-        $this->ownerHelper->populateChannelOwner($entity, $channel);
     }
 
     protected function mapCollections(Collection $importedCollection, Collection $sourceCollection)
