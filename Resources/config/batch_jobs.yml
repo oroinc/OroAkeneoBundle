@@ -37,7 +37,7 @@ connector:
           services:
             reader: oro_akeneo.integration.connector.attribute_family
             processor: oro_akeneo.importexport.processor.attribute_family
-            writer: oro_akeneo.importexport.writer.cumulative.persistent_batch_writer
+            writer: oro_akeneo.importexport.writer.cumulative.family
         status:
           title: import
           class: Oro\Bundle\AkeneoBundle\ImportExport\Step\ItemStep

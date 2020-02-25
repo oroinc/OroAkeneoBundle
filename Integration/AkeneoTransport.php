@@ -184,7 +184,8 @@ class AkeneoTransport implements AkeneoTransportInterface
             ),
             $this->client,
             $this->logger,
-            $this->getAttributes($pageSize)
+            $this->transportEntity->getAkeneoAttributesTypeMapping(),
+            $this->transportEntity->getAkeneoFamilyVariantMapping()
         );
     }
 
@@ -202,7 +203,8 @@ class AkeneoTransport implements AkeneoTransportInterface
             ),
             $this->client,
             $this->logger,
-            $this->getAttributes($pageSize)
+            $this->transportEntity->getAkeneoAttributesTypeMapping(),
+            $this->transportEntity->getAkeneoFamilyVariantMapping()
         );
     }
 

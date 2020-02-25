@@ -38,11 +38,19 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
     /** @var array */
     private $fieldTypeMapping = [];
 
+    /** @var array */
+    private $fieldsMapping = [];
+
     /**
      * {@inheritdoc}
      */
     public function process($item)
     {
+        $originalCode = $item['code'];
+        $originalType = $item['type'];
+
+        $this->fieldsMapping[$originalCode] = $originalType;
+
         if ($this->dataConverter) {
             $item = $this->dataConverter->convertToImportFormat($item, false);
         }
@@ -65,8 +73,8 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
         }
 
         if ($object instanceof FieldConfigModel) {
-            $this->fieldNameMapping[$object->getFieldName()] = $item['code'];
-            $this->fieldTypeMapping[$object->getFieldName()] = $item['type'];
+            $this->fieldNameMapping[$object->getFieldName()] = $originalCode;
+            $this->fieldTypeMapping[$object->getFieldName()] = $originalType;
             $this->cacheProvider->save('attribute_fieldNameMapping', $this->fieldNameMapping);
             $this->cacheProvider->save('attribute_fieldTypeMapping', $this->fieldTypeMapping);
 
@@ -119,6 +127,7 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
         $this->optionLabels = [];
         $this->fieldNameMapping = [];
         $this->fieldTypeMapping = [];
+        $this->fieldsMapping = [];
     }
 
     public function flush()
@@ -129,10 +138,12 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
         $this->cacheProvider->save('attribute_optionLabels', $this->optionLabels);
         $this->cacheProvider->save('attribute_fieldNameMapping', $this->fieldNameMapping);
         $this->cacheProvider->save('attribute_fieldTypeMapping', $this->fieldTypeMapping);
+        $this->cacheProvider->save('attribute_fieldsMapping', $this->fieldsMapping);
         $this->attributeLabels = null;
         $this->optionLabels = null;
         $this->fieldNameMapping = null;
         $this->fieldTypeMapping = null;
+        $this->fieldsMapping = null;
     }
 
     protected function removeUnprocessed()

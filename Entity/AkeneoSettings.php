@@ -174,6 +174,20 @@ class AkeneoSettings extends Transport
     private $akeneoMergeImageToParent = false;
 
     /**
+     * @var array
+     *
+     * @ORM\Column(name="akeneo_attr_type_mapping", type="json", nullable=true)
+     */
+    private $akeneoAttributesTypeMapping;
+
+    /**
+     * @var array
+     *
+     * @ORM\Column(name="akeneo_family_variant_mapping", type="json", nullable=true)
+     */
+    private $akeneoFamilyVariantMapping;
+
+    /**
      * @var ParameterBag
      */
     private $settings;
@@ -702,6 +716,42 @@ class AkeneoSettings extends Transport
     public function setAkeneoMergeImageToParent(bool $akeneoMergeImageToParent)
     {
         $this->akeneoMergeImageToParent = $akeneoMergeImageToParent;
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAkeneoAttributesTypeMapping()
+    {
+        return $this->akeneoAttributesTypeMapping;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setAkeneoAttributesTypeMapping(array $akeneoAttributesTypeMapping)
+    {
+        $this->akeneoAttributesTypeMapping = $akeneoAttributesTypeMapping;
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAkeneoFamilyVariantMapping()
+    {
+        return $this->akeneoFamilyVariantMapping;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setAkeneoFamilyVariantMapping(array $akeneoFamilyVariantMapping)
+    {
+        $this->akeneoFamilyVariantMapping = $akeneoFamilyVariantMapping;
 
         return $this;
     }

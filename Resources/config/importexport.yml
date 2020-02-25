@@ -412,3 +412,17 @@ services:
     class: 'Oro\Bundle\AkeneoBundle\EventListener\DeletedAttributeRelationListener'
     decorates: oro_serialized_fields.event_listener.deleted_attribute_relation_serialized
     parent: oro_serialized_fields.event_listener.deleted_attribute_relation_serialized
+
+  oro_akeneo.importexport.writer.family:
+    class:  'Oro\Bundle\AkeneoBundle\ImportExport\Writer\FamilyWriter'
+    parent: oro_integration.writer.persistent_batch_writer
+    calls:
+      - [setCacheProvider, ['@oro_akeneo.importexport.cache']]
+
+  oro_akeneo.importexport.writer.cumulative.family:
+    class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\CumulativeWriter'
+    arguments:
+      - '@oro_akeneo.importexport.writer.family'
+      - '@oro_platform.optional_listeners.manager'
+      - '@doctrine'
+      - '@oro_entity_config.config_manager'

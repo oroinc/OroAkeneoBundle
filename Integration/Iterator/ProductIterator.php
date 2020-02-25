@@ -9,41 +9,25 @@ use Psr\Log\LoggerInterface;
 class ProductIterator extends AbstractIterator
 {
     /**
-     * @var bool
-     */
-    private $attributesInitialized = false;
-
-    /**
      * @var array
      */
-    private $attributes = [];
-
-    /**
-     * @var bool
-     */
-    private $familyVariantsInitialized = false;
+    private $attributesTypeMapping;
 
     /**
      * @var array
      */
     private $familyVariants = [];
 
-    /**
-     * @var AttributeIterator
-     */
-    private $attributesList;
-
-    /**
-     * AttributeIterator constructor.
-     */
     public function __construct(
         ResourceCursorInterface $resourceCursor,
         AkeneoPimEnterpriseClientInterface $client,
         LoggerInterface $logger,
-        AttributeIterator $attributeList
+        array $attributesTypeMapping,
+        array $familyVariants
     ) {
         parent::__construct($resourceCursor, $client, $logger);
-        $this->attributesList = $attributeList;
+        $this->attributesTypeMapping = $attributesTypeMapping;
+        $this->familyVariants = $familyVariants;
     }
 
     /**
@@ -64,21 +48,10 @@ class ProductIterator extends AbstractIterator
      */
     protected function setValueAttributeTypes(array &$product)
     {
-        if (false === $this->attributesInitialized) {
-            foreach ($this->attributesList as $attribute) {
-                if (null === $attribute) {
-                    continue;
-                }
-
-                $this->attributes[$attribute['code']] = $attribute;
-            }
-            $this->attributesInitialized = true;
-        }
-
         foreach ($product['values'] as $code => $values) {
-            if (isset($this->attributes[$code])) {
+            if (isset($this->attributesTypeMapping[$code])) {
                 foreach ($values as $key => $value) {
-                    $product['values'][$code][$key]['type'] = $this->attributes[$code]['type'];
+                    $product['values'][$code][$key]['type'] = $this->attributesTypeMapping[$code];
                 }
             } else {
                 unset($product['values'][$code]);
@@ -91,16 +64,6 @@ class ProductIterator extends AbstractIterator
      */
     private function setFamilyVariant(array &$model)
     {
-        if (false === $this->familyVariantsInitialized) {
-            foreach ($this->client->getFamilyApi()->all(self::PAGE_SIZE) as $family) {
-                foreach ($this->client->getFamilyVariantApi()->all($family['code'], self::PAGE_SIZE) as $variant) {
-                    $variant['family'] = $family['code'];
-                    $this->familyVariants[$variant['code']] = $variant;
-                }
-            }
-            $this->familyVariantsInitialized = true;
-        }
-
         if (empty($model['family_variant'])) {
             return;
         }

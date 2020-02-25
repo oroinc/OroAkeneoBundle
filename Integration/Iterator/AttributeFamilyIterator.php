@@ -22,6 +22,7 @@ class AttributeFamilyIterator extends AbstractIterator
         $family = $this->resourceCursor->current();
 
         $this->setGroups($family);
+        $this->setVariants($family);
 
         return $family;
     }
@@ -39,5 +40,17 @@ class AttributeFamilyIterator extends AbstractIterator
         }
 
         $family['groups'] = $this->groups;
+    }
+
+    private function setVariants(array &$family)
+    {
+        $variants = [];
+        foreach ($this->client->getFamilyVariantApi()->all($family['code'], self::PAGE_SIZE) as $variant) {
+            $data['family'] = $family['code'];
+            $data['variant_attribute_sets'] = $variant['variant_attribute_sets'];
+            $variants[$variant['code']] = $data;
+        }
+
+        $family['variants'] = $variants;
     }
 }

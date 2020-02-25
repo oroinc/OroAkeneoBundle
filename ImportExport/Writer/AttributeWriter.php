@@ -2,8 +2,11 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Writer;
 
+use Akeneo\Bundle\BatchBundle\Entity\StepExecution;
+use Akeneo\Bundle\BatchBundle\Step\StepExecutionAwareInterface;
 use Doctrine\Common\Cache\CacheProvider;
 use Oro\Bundle\AkeneoBundle\Config\ChangesAwareInterface;
+use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\Tools\EnumSynchronizer;
 use Oro\Bundle\EntityBundle\EntityConfig\DatagridScope;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
@@ -15,6 +18,7 @@ use Oro\Bundle\EntityExtendBundle\Entity\EnumValueTranslation;
 use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
 use Oro\Bundle\EntityExtendBundle\Extend\RelationType;
 use Oro\Bundle\EntityExtendBundle\Tools\ExtendHelper;
+use Oro\Bundle\IntegrationBundle\Entity\Channel;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\ProductBundle\Entity\Product;
 use Oro\Bundle\TranslationBundle\Entity\Translation;
@@ -23,7 +27,7 @@ use Oro\Bundle\TranslationBundle\Manager\TranslationManager;
 /**
  * Import writer for product attributes.
  */
-class AttributeWriter extends BaseAttributeWriter
+class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareInterface
 {
     const ATTRIBUTE_LABELS_CONTEXT_KEY = 'attributeLabels';
 
@@ -51,6 +55,9 @@ class AttributeWriter extends BaseAttributeWriter
     /** @var array */
     private $fieldTypeMapping = [];
 
+    /** @var StepExecution */
+    private $stepExecution;
+
     public function initialize()
     {
         $this->attributeLabels = [];
@@ -61,14 +68,27 @@ class AttributeWriter extends BaseAttributeWriter
 
     public function flush()
     {
+        $fieldsMapping = $this->cacheProvider->fetch('attribute_fieldsMapping') ?? [];
         $this->cacheProvider->delete('attribute_attributeLabels');
         $this->cacheProvider->delete('attribute_optionLabels');
         $this->cacheProvider->delete('attribute_fieldNameMapping');
         $this->cacheProvider->delete('attribute_fieldTypeMapping');
+        $this->cacheProvider->delete('attribute_fieldsMapping');
         $this->attributeLabels = null;
         $this->optionLabels = null;
         $this->fieldNameMapping = null;
         $this->fieldTypeMapping = null;
+        $entityManager = $this->doctrineHelper->getEntityManager(Channel::class);
+        //clear for reseting isReadOnly flag
+        $entityManager->clear(Channel::class);
+        $channelId = $this->stepExecution->getJobExecution()->getExecutionContext()->get('channel');
+        $channel = $entityManager->find(Channel::class, $channelId);
+        if ($channel && $channel->getTransport() instanceof AkeneoSettings) {
+            $channel->getTransport()->setAkeneoAttributesTypeMapping($fieldsMapping);
+            $entityManager->persist($channel);
+            $entityManager->flush();
+            $entityManager->getUnitOfWork()->markReadOnly($channel);
+        }
     }
 
     public function setEnumSynchronizer(EnumSynchronizer $enumSynchronizer): void
@@ -307,5 +327,10 @@ class AttributeWriter extends BaseAttributeWriter
     {
         $searchable = !in_array($importedFieldType, ['pim_catalog_file', 'pim_catalog_date']);
         $searchConfig->set('searchable', $searchable);
+    }
+
+    public function setStepExecution(StepExecution $stepExecution)
+    {
+        $this->stepExecution = $stepExecution;
     }
 }
