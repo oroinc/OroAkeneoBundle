@@ -97,3 +97,8 @@ services:
     class: 'Oro\Bundle\AkeneoBundle\Config\ConfigManager'
     decorates: oro_entity_config.config_manager
     parent: oro_entity_config.config_manager
+
+  oro_akeneo.job.context.aggregator.simple:
+    class: 'Oro\Bundle\AkeneoBundle\Job\Context\SimpleContextAggregator'
+    parent: oro_importexport.job.context.aggregator.simple
+    decorates: oro_importexport.job.context.aggregator.simple

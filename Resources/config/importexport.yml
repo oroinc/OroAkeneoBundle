@@ -79,6 +79,8 @@ services:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Processor\ProductVariantProcessor'
     arguments:
       - '@doctrine'
+      - '@oro_importexport.strategy.import.helper'
+      - '@oro_importexport.context_registry'
 
   oro_akeneo.importexport.processor.async:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Processor\AsyncProcessor'
