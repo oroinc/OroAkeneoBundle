@@ -98,3 +98,37 @@ services:
     class: 'Oro\Bundle\AkeneoBundle\Config\ConfigManager'
     decorates: oro_entity_config.config_manager
     parent: oro_entity_config.config_manager
+
+  oro_akeneo.event_listener.doctrine_tag.decorator:
+    class: Oro\Bundle\AkeneoBundle\EventListener\DoctrineTagEventListenerDecorator
+    decorates: oro_sync.event_listener.doctrine_tag
+    decoration_priority: -255
+    public: true
+    arguments:
+      - '@oro_akeneo.event_listener.doctrine_tag.decorator.inner'
+
+  oro_akeneo.event_listener.import_export_tags_subscriber.decorator:
+    class: Oro\Bundle\AkeneoBundle\EventListener\ImportExportTagsSubscriberDecorator
+    decorates: oro_tag.event_listener.import_export_tags_subscriber
+    decoration_priority: -255
+    public: true
+    arguments:
+      - '@oro_akeneo.event_listener.import_export_tags_subscriber.decorator.inner'
+
+  oro_akeneo.event_listener.product_collection_variant_reindex_message_send_listener.decorator:
+    class: Oro\Bundle\AkeneoBundle\EventListener\ProductCollectionVariantReindexMessageSendListenerDecorator
+    decorates: oro_product.entity.event_listener.product_collection_variant_reindex_message_send_listener
+    decoration_priority: -255
+    public: true
+    arguments:
+      - '@oro_akeneo.event_listener.product_collection_variant_reindex_message_send_listener.decorator.inner'
+
+#  oro_akeneo.event_listener.reindex_parent_configurable_product.decorator:
+#    class: Oro\Bundle\AkeneoBundle\EventListener\ReindexParentConfigurableProductListenerDecorator
+#    decorates: oro_product.event_listener.reindex_parent_configurable_product
+#    decoration_priority: -255
+#    arguments:
+#      - '@oro_akeneo.event_listener.reindex_parent_configurable_product.decorator.inner'
+
+  oro_akeneo.event_listener.additional_optional_listeners_manager:
+    class: Oro\Bundle\AkeneoBundle\EventListener\AdditionalOptionalListenerManager
