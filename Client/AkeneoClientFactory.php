@@ -92,10 +92,10 @@ class AkeneoClientFactory
         $this->initProperties($akeneoSettings);
 
         if (
+            $tokensEnabled &&
             $akeneoSettings->getToken() &&
             $akeneoSettings->getTokenExpiryDateTime() &&
-            $akeneoSettings->getTokenExpiryDateTime() > new \DateTime('now') &&
-            true === $tokensEnabled
+            $akeneoSettings->getTokenExpiryDateTime() > new \DateTime('now', new \DateTimeZone('UTC'))
         ) {
             $this->createClientByToken();
         } else {
@@ -167,11 +167,15 @@ class AkeneoClientFactory
     private function persistTokens()
     {
         $this->client->getCurrencyApi()->all();
-        $this->akeneoSettings->setToken($this->client->getToken());
-        $this->akeneoSettings->setRefreshToken($this->client->getRefreshToken());
-        $this->akeneoSettings->setTokenExpiryDateTime(new \DateTime('now +3590 seconds'));
         $em = $this->doctrineHelper->getEntityManager($this->akeneoSettings);
-        $em->persist($this->akeneoSettings);
+        $em->getUnitOfWork()->scheduleExtraUpdate(
+            $this->akeneoSettings,
+            [
+                'token' => [null, $this->client->getToken()],
+                'refreshToken' => [null, $this->client->getRefreshToken()],
+                'tokenExpiryDateTime' => [null, new \DateTime('now +3500 seconds')],
+            ]
+        );
         $em->flush();
     }
 }
