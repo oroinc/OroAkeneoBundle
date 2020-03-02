@@ -269,7 +269,7 @@ services:
       - '@oro_integration.writer.persistent_batch_writer'
       - '@oro_platform.optional_listeners.manager'
       - '@doctrine'
-      - '@oro_entity_config.config_manager'
+      - '@oro_akeneo.event_listener.additional_optional_listeners_manager'
 
   oro_akeneo.importexport.writer.cumulative.product_image:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\CumulativeWriter'
@@ -277,7 +277,7 @@ services:
       - '@oro_integration.writer.persistent_batch_writer'
       - '@oro_platform.optional_listeners.manager'
       - '@doctrine'
-      - '@oro_entity_config.config_manager'
+      - '@oro_akeneo.event_listener.additional_optional_listeners_manager'
 
   oro_akeneo.importexport.writer.cumulative.attribute:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\CumulativeWriter'
@@ -285,7 +285,7 @@ services:
       - '@oro_akeneo.importexport.writer.attribute'
       - '@oro_platform.optional_listeners.manager'
       - '@doctrine'
-      - '@oro_entity_config.config_manager'
+      - '@oro_akeneo.event_listener.additional_optional_listeners_manager'
 
   oro_akeneo.importexport.writer.cumulative.category_remove:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\CumulativeWriter'
@@ -293,7 +293,7 @@ services:
       - '@oro_akeneo.importexport.writer.category_remove'
       - '@oro_platform.optional_listeners.manager'
       - '@doctrine'
-      - '@oro_entity_config.config_manager'
+      - '@oro_akeneo.event_listener.additional_optional_listeners_manager'
 
   oro_akeneo.importexport.writer.cumulative.category:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\CumulativeWriter'
@@ -301,7 +301,7 @@ services:
       - '@oro_akeneo.importexport.writer.category'
       - '@oro_platform.optional_listeners.manager'
       - '@doctrine'
-      - '@oro_entity_config.config_manager'
+      - '@oro_akeneo.event_listener.additional_optional_listeners_manager'
 
   oro_akeneo.importexport.writer.cumulative.category_parent:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\CumulativeWriter'
@@ -309,7 +309,7 @@ services:
       - '@oro_akeneo.importexport.writer.category_parent'
       - '@oro_platform.optional_listeners.manager'
       - '@doctrine'
-      - '@oro_entity_config.config_manager'
+      - '@oro_akeneo.event_listener.additional_optional_listeners_manager'
 
   oro_akeneo.importexport.writer.category_remove:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\CategoryRemoveWriter'

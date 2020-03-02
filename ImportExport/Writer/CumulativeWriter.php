@@ -9,9 +9,9 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\UnitOfWork;
+use Oro\Bundle\AkeneoBundle\EventListener\AdditionalOptionalListenerManager;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\BatchBundle\Step\StepExecutionRestoreInterface;
-use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\PlatformBundle\Manager\OptionalListenerManager;
 
 class CumulativeWriter implements
@@ -38,8 +38,8 @@ class CumulativeWriter implements
     /** @var ManagerRegistry */
     private $registry;
 
-    /** @var ConfigManager */
-    private $configManager;
+    /** @var AdditionalOptionalListenerManager */
+    private $additionalOptionalListenerManager;
 
     /** @var array */
     private $items = [];
@@ -50,12 +50,12 @@ class CumulativeWriter implements
         ItemWriterInterface $writer,
         OptionalListenerManager $optionalListenerManager,
         ManagerRegistry $registry,
-        ConfigManager $configManager
+        AdditionalOptionalListenerManager $additionalOptionalListenerManager
     ) {
         $this->writer = $writer;
         $this->optionalListenerManager = $optionalListenerManager;
         $this->registry = $registry;
-        $this->configManager = $configManager;
+        $this->additionalOptionalListenerManager = $additionalOptionalListenerManager;
     }
 
     /**
@@ -97,6 +97,7 @@ class CumulativeWriter implements
     private function doWrite(array &$items)
     {
         try {
+            $this->additionalOptionalListenerManager->disableListeners();
             $this->optionalListenerManager->disableListeners(
                 $this->optionalListenerManager->getListeners()
             );
@@ -115,6 +116,7 @@ class CumulativeWriter implements
             $this->optionalListenerManager->enableListeners(
                 $this->optionalListenerManager->getListeners()
             );
+            $this->additionalOptionalListenerManager->enableListeners();
         }
     }
 
