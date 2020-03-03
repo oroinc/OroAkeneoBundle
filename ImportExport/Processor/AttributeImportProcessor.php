@@ -43,15 +43,18 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
      */
     public function process($item)
     {
+        $code = $item['code'];
+        $type = $item['type'];
+
         if ($this->dataConverter) {
             $item = $this->dataConverter->convertToImportFormat($item, false);
         }
 
-        if (null === $item['type']) {
+        if (null === $type) {
             return null;
         }
 
-        $this->context->setValue('originalFieldName', $item['code']);
+        $this->context->setValue('originalFieldName', $code);
 
         $object = $this->serializer->deserialize(
             $item,
@@ -65,8 +68,8 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
         }
 
         if ($object instanceof FieldConfigModel) {
-            $this->fieldNameMapping[$object->getFieldName()] = $item['code'];
-            $this->fieldTypeMapping[$object->getFieldName()] = $item['type'];
+            $this->fieldNameMapping[$object->getFieldName()] = $code;
+            $this->fieldTypeMapping[$object->getFieldName()] = $type;
             $this->cacheProvider->save('attribute_fieldNameMapping', $this->fieldNameMapping);
             $this->cacheProvider->save('attribute_fieldTypeMapping', $this->fieldTypeMapping);
 
