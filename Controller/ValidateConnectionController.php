@@ -7,22 +7,20 @@ use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\IntegrationBundle\Entity\Channel;
 use Oro\Bundle\IntegrationBundle\Form\Type\ChannelType;
 use Oro\Bundle\SecurityBundle\Annotation\Acl;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
-class ValidateConnectionController extends Controller
+class ValidateConnectionController extends AbstractController
 {
     const CONNECTION_SUCCESSFUL_MESSAGE = 'oro.akeneo.connection.successfull';
     const CONNECTION_ERROR_MESSAGE = 'oro.akeneo.connection.error';
 
     /**
-     * @Route("/validate-akeneo-connection/{channelId}/", name="oro_akeneo_validate_connection")
+     * @Route(path="/validate-akeneo-connection/{channelId}/", name="oro_akeneo_validate_connection", methods={"POST"})
      * @ParamConverter("channel", class="OroIntegrationBundle:Channel", options={"id"="channelId"})
-     * @Method("POST")
      *
      * @Acl(
      *      id="oro_integration_channel",
