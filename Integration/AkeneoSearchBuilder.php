@@ -34,7 +34,11 @@ class AkeneoSearchBuilder
                             $filterName,
                             $option['operator'],
                             $option['value'],
-                            (isset($option['scope'])) ? ['scope' => $option['scope']] : []
+                            array_merge(
+                                (isset($option['scope']) ? ['scope' => $option['scope']] : []),
+                                (isset($option['locale']) ? ['locale' => $option['locale']] : []),
+                                (isset($option['locales']) ? ['locales' => $option['locales']] : [])
+                            )
                         );
                 }
             }
