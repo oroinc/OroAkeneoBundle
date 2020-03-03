@@ -122,12 +122,12 @@ services:
     arguments:
       - '@oro_akeneo.event_listener.product_collection_variant_reindex_message_send_listener.decorator.inner'
 
-#  oro_akeneo.event_listener.reindex_parent_configurable_product.decorator:
-#    class: Oro\Bundle\AkeneoBundle\EventListener\ReindexParentConfigurableProductListenerDecorator
-#    decorates: oro_product.event_listener.reindex_parent_configurable_product
-#    decoration_priority: -255
-#    arguments:
-#      - '@oro_akeneo.event_listener.reindex_parent_configurable_product.decorator.inner'
+  oro_akeneo.event_listener.reindex_parent_configurable_product.decorator:
+    class: Oro\Bundle\AkeneoBundle\EventListener\ReindexParentConfigurableProductListenerDecorator
+    decorates: oro_product.event_listener.reindex_parent_configurable_product
+    decoration_priority: -255
+    arguments:
+      - '@oro_akeneo.event_listener.reindex_parent_configurable_product.decorator.inner'
 
   oro_akeneo.event_listener.additional_optional_listeners_manager:
     class: Oro\Bundle\AkeneoBundle\EventListener\AdditionalOptionalListenerManager
