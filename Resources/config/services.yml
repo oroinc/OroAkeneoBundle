@@ -132,3 +132,8 @@ services:
 
   oro_akeneo.event_listener.additional_optional_listeners_manager:
     class: Oro\Bundle\AkeneoBundle\EventListener\AdditionalOptionalListenerManager
+
+  oro_akeneo.job.context.aggregator.simple:
+    class: 'Oro\Bundle\AkeneoBundle\Job\Context\SimpleContextAggregator'
+    parent: oro_importexport.job.context.aggregator.simple
+    decorates: oro_importexport.job.context.aggregator.simple
