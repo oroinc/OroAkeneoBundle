@@ -88,14 +88,14 @@ class ProductImageImportProcessor extends StepExecutionAwareImportProcessor
         }
 
         if (!$hasMain) {
-            if ($product->getImages()->last()) {
-                $product->getImages()->last()->addType(ProductImageType::TYPE_MAIN);
+            if ($product->getImages()->first()) {
+                $product->getImages()->first()->addType(ProductImageType::TYPE_MAIN);
             }
         }
 
         if (!$hasListing) {
-            if ($product->getImages()->last()) {
-                $product->getImages()->last()->addType(ProductImageType::TYPE_LISTING);
+            if ($product->getImages()->first()) {
+                $product->getImages()->first()->addType(ProductImageType::TYPE_LISTING);
             }
         }
 
