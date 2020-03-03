@@ -1,3 +1,3 @@
 dynamic-imports:
-  oromarketinglist:
+  oroakeneo:
     - oroakeneo/js/app/components/akeneo-transport-settings-component
