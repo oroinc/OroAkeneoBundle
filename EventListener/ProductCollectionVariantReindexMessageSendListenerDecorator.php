@@ -35,7 +35,7 @@ class ProductCollectionVariantReindexMessageSendListenerDecorator extends BaseLi
     /**
      * @param bool $isFull
      */
-    public function scheduleSegment(Segment $segment, $isFull = false): void
+    public function scheduleSegment(Segment $segment, $isFull = false, array $additionalProducts = []): void
     {
         if (!$this->enabled) {
             return;
@@ -43,15 +43,6 @@ class ProductCollectionVariantReindexMessageSendListenerDecorator extends BaseLi
 
         $this->innerListener->scheduleSegment($segment, $isFull);
     }
-
-//    public function scheduleAdditionalProductsBySegment(Segment $segment, array $additionalProducts = []): void
-//    {
-//        if (!$this->enabled) {
-//            return;
-//        }
-//
-//        $this->innerListener->scheduleAdditionalProductsBySegment($segment, $additionalProducts);
-//    }
 
     public function scheduleMessageBySegmentDefinition(Segment $segment): void
     {

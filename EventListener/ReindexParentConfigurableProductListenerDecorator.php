@@ -3,8 +3,7 @@
 namespace Oro\Bundle\AkeneoBundle\EventListener;
 
 use Oro\Bundle\ProductBundle\Entity\Product;
-
-//use Oro\Bundle\ProductBundle\EventListener\Search\ReindexParentConfigurableProductListener;
+use Oro\Bundle\ProductBundle\EventListener\Search\ReindexParentConfigurableProductListener;
 
 /**
  * Product variants lazy processing
@@ -13,13 +12,13 @@ class ReindexParentConfigurableProductListenerDecorator implements AdditionalOpt
 {
     use AdditionalOptionalListenerTrait;
 
-//    /** @var ReindexParentConfigurableProductListener */
-//    protected $innerListener;
-//
-//    public function __construct(ReindexParentConfigurableProductListener $innerListener)
-//    {
-//        $this->innerListener = $innerListener;
-//    }
+    /** @var ReindexParentConfigurableProductListener */
+    protected $innerListener;
+
+    public function __construct(ReindexParentConfigurableProductListener $innerListener)
+    {
+        $this->innerListener = $innerListener;
+    }
 
     public function postPersist(Product $product): void
     {
