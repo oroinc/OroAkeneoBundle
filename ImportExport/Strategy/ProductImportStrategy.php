@@ -178,7 +178,7 @@ class ProductImportStrategy extends ProductStrategy
     {
         if (
             is_a($entityName, Product::class, true)
-            && in_array($fieldName, ['variantLinks', 'parentVariantLinks', 'category', 'images'])
+            && in_array($fieldName, ['variantLinks', 'parentVariantLinks', 'images'])
         ) {
             return true;
         }
