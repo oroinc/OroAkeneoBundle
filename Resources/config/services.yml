@@ -91,7 +91,7 @@ services:
       - '@logger'
       - '@oro_integration.processor_registry'
     tags:
-      - { name: 'oro_message_queue.client.message_processor', topicName: 'oro_akeneo.importexport.product' }
+      - { name: 'oro_message_queue.client.message_processor', topicName: 'oro.integration.akeneo.product' }
 
   oro_akeneo.config_manager:
     class: 'Oro\Bundle\AkeneoBundle\Config\ConfigManager'
