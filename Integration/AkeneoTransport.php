@@ -254,6 +254,13 @@ class AkeneoTransport implements AkeneoTransportInterface
      */
     public function getAttributes(int $pageSize)
     {
+        $attributeFilter = $this->getAttributeFilter();
+
+        return new AttributeIterator($this->client->getAttributeApi()->all($pageSize), $this->client, $this->logger, $attributeFilter);
+    }
+
+    private function getAttributeFilter(): array
+    {
         $attributeFilter = [];
         $attrList = $this->transportEntity->getAkeneoAttributesList();
         if (!empty($attrList)) {
@@ -263,7 +270,7 @@ class AkeneoTransport implements AkeneoTransportInterface
             );
         }
 
-        return new AttributeIterator($this->client->getAttributeApi()->all($pageSize), $this->client, $this->logger, $attributeFilter);
+        return $attributeFilter;
     }
 
     public function downloadAndSaveMediaFile($type, $code)
@@ -296,8 +303,9 @@ class AkeneoTransport implements AkeneoTransportInterface
     protected function initAttributesList()
     {
         if (empty($this->attributes)) {
-            foreach ($this->getAttributes(self::PAGE_SIZE) as $attribute) {
-                if (null === $attribute) {
+            $attributeFilter = $this->getAttributeFilter();
+            foreach ($this->client->getAttributeApi()->all(self::PAGE_SIZE) as $attribute) {
+                if ($attributeFilter && !in_array($attribute['code'], $attributeFilter)) {
                     continue;
                 }
 
