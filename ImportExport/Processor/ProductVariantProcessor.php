@@ -101,7 +101,7 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
                 $variantProduct->addParentVariantLink($variantLink);
                 $parentProduct->addVariantLink($variantLink);
 
-                $variantLinks = $variantLink;
+                $variantLinks[] = $variantLink;
                 $hasChanges = true;
             }
         }
