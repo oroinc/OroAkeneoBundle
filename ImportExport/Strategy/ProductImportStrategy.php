@@ -3,7 +3,6 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 
 use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Util\ClassUtils;
 use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\EntityExtendBundle\Entity\AbstractEnumValue;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
@@ -31,79 +30,6 @@ class ProductImportStrategy extends ProductStrategy
         parent::close();
     }
 
-    protected function beforeProcessEntity($entity)
-    {
-        if ($entity->getCategory() instanceof Category) {
-            $category = $this->findExistingEntity($entity->getCategory());
-            $entity->setCategory($category);
-        }
-
-        /** @var Product $existingProduct */
-        $existingProduct = $this->findExistingEntity($entity);
-        if ($existingProduct) {
-            $entity->getVariantLinks()->clear();
-            foreach ($existingProduct->getVariantLinks() as $variantLink) {
-                $entity->getVariantLinks()->add($variantLink);
-            }
-            $entity->getParentVariantLinks()->clear();
-            foreach ($existingProduct->getParentVariantLinks() as $variantLink) {
-                $entity->getParentVariantLinks()->add($variantLink);
-            }
-
-            $fields = $this->fieldHelper->getRelations(Product::class);
-            foreach ($fields as $field) {
-                if ($this->isLocalizedFallbackValue($field)) {
-                    $fieldName = $field['name'];
-                    $this->mapCollections(
-                        $this->fieldHelper->getObjectValue($entity, $fieldName),
-                        $this->fieldHelper->getObjectValue($existingProduct, $fieldName)
-                    );
-                }
-            }
-
-            $category = $existingProduct->getCategory();
-            $categories = array_filter((array)$this->context->getValue('rawItemData')['categories'] ?? []);
-            if ($category && $category->getAkeneoCode() && in_array($category->getAkeneoCode(), $categories)) {
-                $entity->setCategory($category);
-            }
-        }
-
-        return parent::beforeProcessEntity($entity);
-    }
-
-    protected function mapCollections(Collection $importedCollection, Collection $sourceCollection)
-    {
-        if ($importedCollection->isEmpty()) {
-            return;
-        }
-
-        if ($sourceCollection->isEmpty()) {
-            return;
-        }
-
-        $sourceCollection = $sourceCollection->toArray();
-        $sourceCollectionArray = [];
-
-        /** @var LocalizedFallbackValue $sourceValue */
-        foreach ($sourceCollection as $sourceValue) {
-            $key = LocalizationCodeFormatter::formatKey($sourceValue->getLocalization()) ??
-                LocalizationCodeFormatter::DEFAULT_LOCALIZATION;
-            $sourceCollectionArray[$key] = $sourceValue->getId();
-        }
-
-        foreach ($importedCollection as $importedValue) {
-            $key = LocalizationCodeFormatter::formatKey($importedValue->getLocalization()) ??
-                LocalizationCodeFormatter::DEFAULT_LOCALIZATION;
-            if (array_key_exists($key, $sourceCollectionArray)) {
-                $this->fieldHelper->setObjectValue($importedValue, 'id', $sourceCollectionArray[$key]);
-            }
-        }
-    }
-
-    protected function setLocalizationKeys($entity, array $field)
-    {
-    }
-
     protected function findExistingEntity($entity, array $searchContext = [])
     {
         if ($entity instanceof Category && $entity->getAkeneoCode()) {
@@ -111,6 +37,13 @@ class ProductImportStrategy extends ProductStrategy
                 Category::class,
                 ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $entity->getChannel()]
             );
+        }
+
+        if (is_a($entity, $this->localizedFallbackValueClass, true)) {
+            $localizationCode = LocalizationCodeFormatter::formatKey($entity->getLocalization());
+            if (array_key_exists($localizationCode, $searchContext)) {
+                return $searchContext[$localizationCode];
+            }
         }
 
         return parent::findExistingEntity($entity, $searchContext);
@@ -123,6 +56,13 @@ class ProductImportStrategy extends ProductStrategy
                 Category::class,
                 ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $entity->getChannel()]
             );
+        }
+
+        if (is_a($entity, $this->localizedFallbackValueClass, true)) {
+            $localizationCode = LocalizationCodeFormatter::formatKey($entity->getLocalization());
+            if (array_key_exists($localizationCode, $searchContext)) {
+                return $searchContext[$localizationCode];
+            }
         }
 
         return parent::findExistingEntityByIdentityFields($entity, $searchContext);
@@ -139,7 +79,7 @@ class ProductImportStrategy extends ProductStrategy
      */
     protected function updateRelations($entity, array $itemData = null)
     {
-        $entityName = ClassUtils::getClass($entity);
+        $entityName = $this->doctrineHelper->getEntityClass($entity);
         $fields = $this->fieldHelper->getFields($entityName, true);
 
         foreach ($fields as $field) {
@@ -210,7 +150,11 @@ class ProductImportStrategy extends ProductStrategy
     protected function importExistingEntity($entity, $existingEntity, $itemData = null, array $excludedFields = [])
     {
         // Existing enum values shouldn't be modified. Just added to entity (collection).
-        if (is_a($entity, AbstractEnumValue::class)) {
+        if (is_a($entity, AbstractEnumValue::class, true)) {
+            return;
+        }
+
+        if (is_a($entity, Category::class, true)) {
             return;
         }
 
@@ -228,5 +172,58 @@ class ProductImportStrategy extends ProductStrategy
         } else {
             $this->context->incrementAddCount();
         }
+    }
+
+    protected function isFieldExcluded($entityName, $fieldName, $itemData = null)
+    {
+        if (
+            is_a($entityName, Product::class, true)
+            && in_array($fieldName, ['variantLinks', 'parentVariantLinks', 'category', 'images'])
+        ) {
+            return true;
+        }
+
+        return parent::isFieldExcluded($entityName, $fieldName, $itemData);
+    }
+
+    protected function mapCollections(Collection $importedCollection, Collection $sourceCollection)
+    {
+    }
+
+    protected function setLocalizationKeys($entity, array $field)
+    {
+    }
+
+    protected function removeNotInitializedEntities($entity, array $field, array $relations)
+    {
+    }
+
+    protected function generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation)
+    {
+        $fields = $this->fieldHelper->getRelations($entityName);
+        if (!$this->isLocalizedFallbackValue($fields[$fieldName])) {
+            return parent::generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation);
+        }
+
+        /** @var Collection $importedCollection */
+        $importedCollection = $this->fieldHelper->getObjectValue($entity, $fieldName);
+        if ($importedCollection->isEmpty()) {
+            return parent::generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation);
+        }
+
+        $existingEntity = $this->findExistingEntity($entity);
+        if ($existingEntity) {
+            $searchContext = [];
+            $sourceCollection = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
+            /** @var LocalizedFallbackValue $sourceValue */
+            foreach ($sourceCollection as $sourceValue) {
+                $localizationCode = LocalizationCodeFormatter::formatKey($sourceValue->getLocalization());
+                $searchContext[$localizationCode] = $sourceValue;
+            }
+
+            return $searchContext;
+        }
+
+        return parent::generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation);
     }
 }
