@@ -285,14 +285,6 @@ services:
       - '@doctrine'
       - '@oro_akeneo.event_listener.additional_optional_listeners_manager'
 
-  oro_akeneo.importexport.writer.cumulative.attribute:
-    class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\CumulativeWriter'
-    arguments:
-      - '@oro_akeneo.importexport.writer.attribute'
-      - '@oro_platform.optional_listeners.manager'
-      - '@doctrine'
-      - '@oro_akeneo.event_listener.additional_optional_listeners_manager'
-
   oro_akeneo.importexport.writer.cumulative.category_remove:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\CumulativeWriter'
     arguments:
