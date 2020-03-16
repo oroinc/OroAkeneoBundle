@@ -56,7 +56,7 @@ connector:
           services:
             reader: oro_akeneo.integration.connector.attribute
             processor: oro_akeneo.importexport.processor.attribute
-            writer: oro_akeneo.importexport.writer.cumulative.attribute
+            writer: oro_akeneo.importexport.writer.attribute
 
     akeneo_product_import:
       title: "Product import from Akeneo"

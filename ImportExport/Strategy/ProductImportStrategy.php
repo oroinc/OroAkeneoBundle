@@ -3,6 +3,7 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 
 use Doctrine\Common\Collections\Collection;
+use Oro\Bundle\AttachmentBundle\Entity\File;
 use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\EntityExtendBundle\Entity\AbstractEnumValue;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
@@ -17,6 +18,13 @@ class ProductImportStrategy extends ProductStrategy
 {
     use ImportStrategyAwareHelperTrait;
 
+    /**
+     * @var Product[]
+     *
+     * Cache existing product request in scope of a single row processing to avoid excess DB queries
+     */
+    private $existingProducts = [];
+
     public function close()
     {
         $this->reflectionProperties = [];
@@ -25,13 +33,32 @@ class ProductImportStrategy extends ProductStrategy
         $this->cachedExistingEntities = [];
         $this->cachedInverseMultipleRelations = [];
 
+        $this->processedProducts = [];
+
         $this->databaseHelper->onClear();
 
         parent::close();
     }
 
+    protected function afterProcessEntity($entity)
+    {
+        if ($entity instanceof Product && $entity->getCategory() instanceof Category) {
+            if (!$entity->getCategory()->getId()) {
+                $entity->setCategory(null);
+            }
+        }
+
+        $this->processedProducts = [];
+
+        return parent::afterProcessEntity($entity);
+    }
+
     protected function findExistingEntity($entity, array $searchContext = [])
     {
+        if ($entity instanceof Product && array_key_exists($entity->getSku(), $this->existingProducts)) {
+            return $this->existingProducts[$entity->getSku()];
+        }
+
         if ($entity instanceof Category && $entity->getAkeneoCode()) {
             return $this->databaseHelper->findOneBy(
                 Category::class,
@@ -39,18 +66,31 @@ class ProductImportStrategy extends ProductStrategy
             );
         }
 
-        if (is_a($entity, $this->localizedFallbackValueClass, true)) {
-            $localizationCode = LocalizationCodeFormatter::formatKey($entity->getLocalization());
-            if (array_key_exists($localizationCode, $searchContext)) {
-                return $searchContext[$localizationCode];
-            }
+        if ($entity instanceof File) {
+            return $searchContext[$entity->getOriginalFilename()] ?? null;
         }
 
-        return parent::findExistingEntity($entity, $searchContext);
+        if (is_a($entity, $this->localizedFallbackValueClass, true)) {
+            $localizationCode = LocalizationCodeFormatter::formatKey($entity->getLocalization());
+
+            return $searchContext[$localizationCode] ?? null;
+        }
+
+        $entity = parent::findExistingEntity($entity, $searchContext);
+
+        if ($entity instanceof Product) {
+            $this->existingProducts[$entity->getSku()] = $entity;
+        }
+
+        return $entity;
     }
 
     protected function findExistingEntityByIdentityFields($entity, array $searchContext = [])
     {
+        if ($entity instanceof Product && array_key_exists($entity->getSku(), $this->existingProducts)) {
+            return $this->existingProducts[$entity->getSku()];
+        }
+
         if ($entity instanceof Category && $entity->getAkeneoCode()) {
             return $this->databaseHelper->findOneBy(
                 Category::class,
@@ -58,14 +98,23 @@ class ProductImportStrategy extends ProductStrategy
             );
         }
 
-        if (is_a($entity, $this->localizedFallbackValueClass, true)) {
-            $localizationCode = LocalizationCodeFormatter::formatKey($entity->getLocalization());
-            if (array_key_exists($localizationCode, $searchContext)) {
-                return $searchContext[$localizationCode];
-            }
+        if ($entity instanceof File) {
+            return $searchContext[$entity->getOriginalFilename()] ?? null;
         }
 
-        return parent::findExistingEntityByIdentityFields($entity, $searchContext);
+        if (is_a($entity, $this->localizedFallbackValueClass, true)) {
+            $localizationCode = LocalizationCodeFormatter::formatKey($entity->getLocalization());
+
+            return $searchContext[$localizationCode] ?? null;
+        }
+
+        $entity = parent::findExistingEntityByIdentityFields($entity, $searchContext);
+
+        if ($entity instanceof Product) {
+            $this->existingProducts[$entity->getSku()] = $entity;
+        }
+
+        return $entity;
     }
 
     /**
@@ -154,10 +203,6 @@ class ProductImportStrategy extends ProductStrategy
             return;
         }
 
-        if (is_a($entity, Category::class, true)) {
-            return;
-        }
-
         parent::importExistingEntity($entity, $existingEntity, $itemData, $excludedFields);
     }
 
@@ -201,6 +246,20 @@ class ProductImportStrategy extends ProductStrategy
     protected function generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation)
     {
         $fields = $this->fieldHelper->getRelations($entityName);
+
+        if ($this->isFileValue($fields[$fieldName])) {
+            $existingEntity = $this->findExistingEntity($entity);
+            if ($existingEntity instanceof Product) {
+                $file = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
+
+                if ($file instanceof File && $file->getOriginalFilename()) {
+                    return [$file->getOriginalFilename() => $file];
+                }
+            }
+
+            return parent::generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation);
+        }
+
         if (!$this->isLocalizedFallbackValue($fields[$fieldName])) {
             return parent::generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation);
         }
@@ -225,5 +284,10 @@ class ProductImportStrategy extends ProductStrategy
         }
 
         return parent::generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation);
+    }
+
+    private function isFileValue(array $field): bool
+    {
+        return $this->fieldHelper->isRelation($field) && is_a($field['related_entity_name'], File::class, true);
     }
 }
