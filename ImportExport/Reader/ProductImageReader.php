@@ -54,12 +54,12 @@ class ProductImageReader extends IteratorBasedReader
                         }
 
                         $identifier = $item['identifier'] ?? $item['code'];
-                        $basename = basename($value['data']);
-                        $images[$identifier][$basename] = ['SKU' => $identifier, 'Name' => $basename];
+                        $path = $value['data'];
+                        $images[$identifier][$path] = ['SKU' => $identifier, 'Name' => $path];
 
                         if ($this->getTransport()->isAkeneoMergeImageToParent() && !empty($item['parent'])) {
                             $identifier = $item['parent'];
-                            $images[$identifier][$basename] = ['SKU' => $identifier, 'Name' => $basename];
+                            $images[$identifier][$path] = ['SKU' => $identifier, 'Name' => $path];
                         }
                     }
                 }

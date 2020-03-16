@@ -281,6 +281,13 @@ class AkeneoTransport implements AkeneoTransportInterface
             return;
         }
 
+        $oldPath = $this->getOldFilePath($type, $code);
+        if ($this->filesystem->has($oldPath)) {
+            $this->filesystem->rename($oldPath, $path);
+
+            return;
+        }
+
         try {
             $content = $this->client->getProductMediaFileApi()->download($code)->getContents();
         } catch (NotFoundHttpException $e) {
@@ -296,6 +303,14 @@ class AkeneoTransport implements AkeneoTransportInterface
     }
 
     protected function getFilePath(string $type, string $code): string
+    {
+        return sprintf('%s/%s', $type, $code);
+    }
+
+    /**
+     * @internal BC layer
+     */
+    protected function getOldFilePath(string $type, string $code): string
     {
         return sprintf('%s/%s', $type, basename($code));
     }
