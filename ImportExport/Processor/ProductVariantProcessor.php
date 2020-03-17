@@ -2,20 +2,43 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Processor;
 
+use Akeneo\Bundle\BatchBundle\Entity\StepExecution;
+use Akeneo\Bundle\BatchBundle\Step\StepExecutionAwareInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Oro\Bundle\ImportExportBundle\Context\ContextRegistry;
 use Oro\Bundle\ImportExportBundle\Processor\ProcessorInterface;
+use Oro\Bundle\ImportExportBundle\Strategy\Import\ImportStrategyHelper;
 use Oro\Bundle\ProductBundle\Entity\Product;
 use Oro\Bundle\ProductBundle\Entity\ProductVariantLink;
 use Oro\Bundle\ProductBundle\Entity\Repository\ProductRepository;
 
-class ProductVariantProcessor implements ProcessorInterface
+class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareInterface
 {
     /** @var ManagerRegistry */
     private $registry;
 
-    public function __construct(ManagerRegistry $registry)
-    {
+    /** @var ImportStrategyHelper */
+    private $strategyHelper;
+
+    /** @var StepExecution */
+    private $stepExecution;
+
+    /** @var ContextRegistry */
+    private $contextRegistry;
+
+    public function __construct(
+        ManagerRegistry $registry,
+        ImportStrategyHelper $strategyHelper,
+        ContextRegistry $contextRegistry
+    ) {
         $this->registry = $registry;
+        $this->strategyHelper = $strategyHelper;
+        $this->contextRegistry = $contextRegistry;
+    }
+
+    public function setStepExecution(StepExecution $stepExecution)
+    {
+        $this->stepExecution = $stepExecution;
     }
 
     /**
@@ -61,11 +84,13 @@ class ProductVariantProcessor implements ProcessorInterface
                 $parentProduct->removeVariantLink($variantLink);
                 $objectManager->remove($variantLink);
                 $hasChanges = true;
+                continue;
             }
 
             unset($variantSkusUppercase[$variantLink->getProduct()->getSkuUppercase()]);
         }
 
+        $variantLinks = [];
         foreach ($variantSkusUppercase as $variantSku) {
             $variantProduct = $productRepository->findOneBySku($variantSku);
             if ($variantProduct instanceof Product && $variantProduct->getId()) {
@@ -76,12 +101,30 @@ class ProductVariantProcessor implements ProcessorInterface
                 $variantProduct->addParentVariantLink($variantLink);
                 $parentProduct->addVariantLink($variantLink);
 
-                $objectManager->persist($variantLink);
+                $variantLinks[] = $variantLink;
                 $hasChanges = true;
             }
         }
 
+        $validationErrors = $this->strategyHelper->validateEntity($parentProduct);
+        if ($validationErrors) {
+            $context = $this->contextRegistry->getByStepExecution($this->stepExecution);
+            $context->incrementErrorEntriesCount();
+            $this->strategyHelper->addValidationErrors($validationErrors, $context);
+
+            foreach ($parentProduct->getVariantLinks() as $variantLink) {
+                $parentProduct->removeVariantLink($variantLink);
+                $objectManager->remove($variantLink);
+            }
+
+            return $parentProduct;
+        }
+
         if ($hasChanges) {
+            foreach ($variantLinks as $item) {
+                $objectManager->persist($item);
+            }
+
             return $parentProduct;
         }
 

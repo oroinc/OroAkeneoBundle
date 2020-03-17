@@ -388,7 +388,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
     protected function getAttachmentPath(string $code): string
     {
-        return sprintf('%s/%s', rtrim($this->attachmentsDir, '/'), basename($code));
+        return sprintf('%s/%s', rtrim($this->attachmentsDir, '/'), $code);
     }
 
     /**

@@ -9,9 +9,9 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\UnitOfWork;
+use Oro\Bundle\AkeneoBundle\EventListener\AdditionalOptionalListenerManager;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\BatchBundle\Step\StepExecutionRestoreInterface;
-use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\PlatformBundle\Manager\OptionalListenerManager;
 
 class CumulativeWriter implements
@@ -24,11 +24,6 @@ class CumulativeWriter implements
     const MAX_UOW_OBJECTS_WITHOUT_CHANGES = 200;
     const MAX_UOW_OPERATIONS = 100;
 
-    protected static $usage = [];
-
-    /** @var int */
-    protected $batchSize = self::MAX_UOW_OPERATIONS;
-
     /** @var ItemWriterInterface */
     private $writer;
 
@@ -38,24 +33,22 @@ class CumulativeWriter implements
     /** @var ManagerRegistry */
     private $registry;
 
-    /** @var ConfigManager */
-    private $configManager;
+    /** @var AdditionalOptionalListenerManager */
+    private $additionalOptionalListenerManager;
 
     /** @var array */
     private $items = [];
-
-    private $read = 0;
 
     public function __construct(
         ItemWriterInterface $writer,
         OptionalListenerManager $optionalListenerManager,
         ManagerRegistry $registry,
-        ConfigManager $configManager
+        AdditionalOptionalListenerManager $additionalOptionalListenerManager
     ) {
         $this->writer = $writer;
         $this->optionalListenerManager = $optionalListenerManager;
         $this->registry = $registry;
-        $this->configManager = $configManager;
+        $this->additionalOptionalListenerManager = $additionalOptionalListenerManager;
     }
 
     /**
@@ -63,49 +56,29 @@ class CumulativeWriter implements
      */
     public function write(array $items)
     {
-        $entityManager = $this->registry->getManager();
-
-        $class = null;
-
-        $this->read += count($items);
-
-        $item = reset($items);
-        if ($item) {
-            $class = ClassUtils::getClass($item);
-
-            $itemEntityManager = $this->registry->getManagerForClass($class);
-            if ($itemEntityManager !== $entityManager) {
-                $this->doWrite($items);
-
-                return;
-            }
-        }
-
         foreach ($items as $item) {
             $this->items[] = $item;
-
-            $entityManager->persist($item);
         }
 
         if ($this->skipFlush($items)) {
             return;
         }
 
-        $this->doWrite($this->items);
+        $this->doWrite();
     }
 
-    private function doWrite(array &$items)
+    private function doWrite()
     {
         try {
+            $this->additionalOptionalListenerManager->disableListeners();
             $this->optionalListenerManager->disableListeners(
                 $this->optionalListenerManager->getListeners()
             );
             $this->optionalListenerManager
                 ->enableListener('oro_entity.event_listener.entity_modify_created_updated_properties_listener');
 
-            $this->writer->write($items);
+            $this->writer->write($this->items);
         } finally {
-            unset($items);
             $this->items = [];
 
             $entityManager = $this->registry->getManager();
@@ -115,6 +88,7 @@ class CumulativeWriter implements
             $this->optionalListenerManager->enableListeners(
                 $this->optionalListenerManager->getListeners()
             );
+            $this->additionalOptionalListenerManager->enableListeners();
         }
     }
 
@@ -129,10 +103,15 @@ class CumulativeWriter implements
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->registry->getManager();
+
+        foreach ($items as $item) {
+            $entityManager->persist($item);
+        }
+
         $unitOfWork = $entityManager->getUnitOfWork();
 
         $count = $this->getUnitOfWorkChangesCount($unitOfWork);
-        if ($count > $this->batchSize) {
+        if ($count > self::MAX_UOW_OPERATIONS) {
             return $letsWrite;
         }
 
@@ -154,7 +133,7 @@ class CumulativeWriter implements
         }
 
         $count = $this->getUnitOfWorkChangesCount($unitOfWork);
-        if ($count > $this->batchSize) {
+        if ($count > self::MAX_UOW_OPERATIONS) {
             return $letsWrite;
         }
 
@@ -195,11 +174,6 @@ class CumulativeWriter implements
         return count($entityStates);
     }
 
-    public function setOptionalListenerManager(OptionalListenerManager $optionalListenerManager)
-    {
-        $this->optionalListenerManager = $optionalListenerManager;
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -223,7 +197,7 @@ class CumulativeWriter implements
     /** {@inheritdoc} */
     public function close()
     {
-        $this->doWrite($this->items);
+        $this->doWrite();
 
         if ($this->writer instanceof ClosableInterface) {
             $this->writer->close();
@@ -242,10 +216,5 @@ class CumulativeWriter implements
         if (method_exists($this->writer, 'flush')) {
             $this->writer->flush();
         }
-    }
-
-    public function setBatchSize(int $batchSize)
-    {
-        $this->batchSize = $batchSize;
     }
 }

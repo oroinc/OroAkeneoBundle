@@ -4,6 +4,7 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Util\ClassUtils;
+use Doctrine\ORM\PersistentCollection;
 use Oro\Bundle\ImportExportBundle\Exception\InvalidArgumentException;
 use Oro\Bundle\ImportExportBundle\Strategy\Import\ImportStrategyHelper as BaseImportStrategyHelper;
 
@@ -41,6 +42,10 @@ class ImportStrategyHelper extends BaseImportStrategyHelper
             $basicValue = $this->fieldHelper->getObjectValue($basicEntity, $propertyName);
 
             if ($importedValue instanceof Collection && $basicValue instanceof Collection) {
+                if ($basicValue instanceof PersistentCollection && !$basicValue->isInitialized() && !$basicValue->isDirty()) {
+                    continue;
+                }
+
                 if ($importedValue->isEmpty()) {
                     $basicValue->clear();
 

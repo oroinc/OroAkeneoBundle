@@ -251,8 +251,8 @@ class AkeneoTransport implements AkeneoTransportInterface
             ),
             $this->client,
             $this->logger,
-            $this->familyVariants,
-            $this->attributes
+            $this->attributes,
+            $this->familyVariants
         );
     }
 
@@ -285,6 +285,13 @@ class AkeneoTransport implements AkeneoTransportInterface
      */
     public function getAttributes(int $pageSize)
     {
+        $attributeFilter = $this->getAttributeFilter();
+
+        return new AttributeIterator($this->client->getAttributeApi()->all($pageSize), $this->client, $this->logger, $attributeFilter);
+    }
+
+    private function getAttributeFilter(): array
+    {
         $attributeFilter = [];
         $attrList = $this->transportEntity->getAkeneoAttributesList();
         if (!empty($attrList)) {
@@ -294,7 +301,7 @@ class AkeneoTransport implements AkeneoTransportInterface
             );
         }
 
-        return new AttributeIterator($this->client->getAttributeApi()->all($pageSize), $this->client, $this->logger, $attributeFilter);
+        return $attributeFilter;
     }
 
     /**
@@ -310,6 +317,13 @@ class AkeneoTransport implements AkeneoTransportInterface
         $path = $this->getFilePath($type, $code);
 
         if ($this->filesystem->has($path)) {
+            return;
+        }
+
+        $oldPath = $this->getOldFilePath($type, $code);
+        if ($this->filesystem->has($oldPath)) {
+            $this->filesystem->rename($oldPath, $path);
+
             return;
         }
 
@@ -329,14 +343,23 @@ class AkeneoTransport implements AkeneoTransportInterface
 
     protected function getFilePath(string $type, string $code): string
     {
+        return sprintf('%s/%s', $type, $code);
+    }
+
+    /**
+     * @internal BC layer
+     */
+    protected function getOldFilePath(string $type, string $code): string
+    {
         return sprintf('%s/%s', $type, basename($code));
     }
 
     protected function initAttributesList()
     {
         if (empty($this->attributes)) {
-            foreach ($this->getAttributes(self::PAGE_SIZE) as $attribute) {
-                if (null === $attribute) {
+            $attributeFilter = $this->getAttributeFilter();
+            foreach ($this->client->getAttributeApi()->all(self::PAGE_SIZE) as $attribute) {
+                if ($attributeFilter && !in_array($attribute['code'], $attributeFilter)) {
                     continue;
                 }
 
