@@ -2,6 +2,8 @@
 
 namespace Oro\Bundle\AkeneoBundle\Integration;
 
+use Akeneo\Pim\ApiClient\Search\SearchBuilder;
+
 class AkeneoSearchBuilder
 {
     /**
@@ -23,7 +25,7 @@ class AkeneoSearchBuilder
             return [];
         }
 
-        $searchBuilder = new \Akeneo\Pim\ApiClient\Search\SearchBuilder();
+        $searchBuilder = new SearchBuilder();
         $productFilter = json_decode($json, true);
 
         foreach ($productFilter as $filterName => $options) {

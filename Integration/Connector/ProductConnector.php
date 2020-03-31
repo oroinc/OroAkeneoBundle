@@ -4,7 +4,6 @@ namespace Oro\Bundle\AkeneoBundle\Integration\Connector;
 
 use Oro\Bundle\AkeneoBundle\Placeholder\SchemaUpdateFilter;
 use Oro\Bundle\IntegrationBundle\Entity\Channel;
-use Oro\Bundle\IntegrationBundle\Provider\AbstractConnector;
 use Oro\Bundle\IntegrationBundle\Provider\AllowedConnectorInterface;
 use Oro\Bundle\IntegrationBundle\Provider\ConnectorInterface;
 use Oro\Bundle\ProductBundle\Entity\Product;
@@ -12,7 +11,7 @@ use Oro\Bundle\ProductBundle\Entity\Product;
 /**
  * Integration product connector.
  */
-class ProductConnector extends AbstractConnector implements ConnectorInterface, AllowedConnectorInterface
+class ProductConnector extends AbstractOroAkeneoConnector implements ConnectorInterface, AllowedConnectorInterface
 {
     const IMPORT_JOB_NAME = 'akeneo_product_import';
     const PAGE_SIZE = 100;
@@ -92,8 +91,8 @@ class ProductConnector extends AbstractConnector implements ConnectorInterface, 
         }
 
         $iterator = new \AppendIterator();
-        $iterator->append($this->transport->getProducts(self::PAGE_SIZE));
-        $iterator->append($this->transport->getProductModels(self::PAGE_SIZE));
+        $iterator->append($this->transport->getProducts(self::PAGE_SIZE, $this->getLastSyncDate()));
+        $iterator->append($this->transport->getProductModels(self::PAGE_SIZE, $this->getLastSyncDate()));
 
         return $iterator;
     }
@@ -104,5 +103,10 @@ class ProductConnector extends AbstractConnector implements ConnectorInterface, 
     private function needToUpdateSchema(Channel $integration): bool
     {
         return $this->schemaUpdateFilter->isApplicable($integration, Product::class);
+    }
+
+    private function getLastSyncDate(): ?\DateTime
+    {
+        return ($this->getStatusData(self::LAST_SYNC_KEY)) ? new \DateTime($this->getStatusData(self::LAST_SYNC_KEY), new \DateTimeZone('UTC')) : null;
     }
 }

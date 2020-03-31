@@ -4,12 +4,11 @@ namespace Oro\Bundle\AkeneoBundle\Integration\Connector;
 
 use Oro\Bundle\AkeneoBundle\Integration\AkeneoTransportInterface;
 use Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeFamily;
-use Oro\Bundle\IntegrationBundle\Provider\AbstractConnector;
 
 /**
  * @property AkeneoTransportInterface $transport
  */
-class AttributeFamilyConnector extends AbstractConnector
+class AttributeFamilyConnector extends AbstractOroAkeneoConnector
 {
     const IMPORT_JOB_NAME = 'akeneo_attribute_family_import';
 

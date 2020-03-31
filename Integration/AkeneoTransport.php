@@ -13,6 +13,7 @@ use Oro\Bundle\AkeneoBundle\Integration\Iterator\AttributeFamilyIterator;
 use Oro\Bundle\AkeneoBundle\Integration\Iterator\AttributeIterator;
 use Oro\Bundle\AkeneoBundle\Integration\Iterator\CategoryIterator;
 use Oro\Bundle\AkeneoBundle\Integration\Iterator\ProductIterator;
+use Oro\Bundle\AkeneoBundle\Tools\ParseUpdatedPlaceholder;
 use Oro\Bundle\IntegrationBundle\Entity\Transport;
 use Oro\Bundle\MultiCurrencyBundle\Config\MultiCurrencyConfigProvider;
 use Psr\Log\LoggerInterface;
@@ -215,11 +216,11 @@ class AkeneoTransport implements AkeneoTransportInterface
      *
      * @return \Iterator
      */
-    public function getProducts(int $pageSize)
+    public function getProducts(int $pageSize, ?string $updatedAt = null)
     {
         $this->initAttributesList();
 
-        $searchFilters = $this->akeneoSearchBuilder->getFilters($this->transportEntity->getProductFilter());
+        $searchFilters = $this->akeneoSearchBuilder->getFilters((new ParseUpdatedPlaceholder($this->transportEntity->getProductFilter(), $updatedAt))());
 
         return new ProductIterator(
             $this->client->getProductApi()->all(
@@ -237,12 +238,12 @@ class AkeneoTransport implements AkeneoTransportInterface
     /**
      * @return \Iterator
      */
-    public function getProductModels(int $pageSize)
+    public function getProductModels(int $pageSize, ?string $updatedAt = null)
     {
         $this->initAttributesList();
         $this->initFamilyVariants();
 
-        $searchFilters = $this->akeneoSearchBuilder->getFilters($this->transportEntity->getProductFilter());
+        $searchFilters = $this->akeneoSearchBuilder->getFilters((new ParseUpdatedPlaceholder($this->transportEntity->getProductFilter(), $updatedAt))());
 
         return new ProductIterator(
             $this->client->getProductModelApi()->all(
