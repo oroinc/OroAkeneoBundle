@@ -4,7 +4,8 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Util\ClassUtils;
-use Doctrine\ORM\PersistentCollection;
+use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
+use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 use Oro\Bundle\ImportExportBundle\Exception\InvalidArgumentException;
 use Oro\Bundle\ImportExportBundle\Strategy\Import\ImportStrategyHelper as BaseImportStrategyHelper;
 
@@ -13,6 +14,9 @@ use Oro\Bundle\ImportExportBundle\Strategy\Import\ImportStrategyHelper as BaseIm
  */
 class ImportStrategyHelper extends BaseImportStrategyHelper
 {
+    /** @var DoctrineHelper */
+    private $doctrineHelper;
+
     /**
      * {@inheritdoc}
      *
@@ -22,105 +26,66 @@ class ImportStrategyHelper extends BaseImportStrategyHelper
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
-    public function importEntity($basicEntity, $importedEntity, array $excludedProperties = [])
+    public function importEntity($databaseEntity, $importedEntity, array $excludedProperties = [])
     {
-        $basicEntityClass = ClassUtils::getClass($basicEntity);
-        if ($basicEntityClass != ClassUtils::getClass($importedEntity)) {
-            throw new InvalidArgumentException('Basic and imported entities must be instances of the same class');
+        $databaseEntityClass = ClassUtils::getClass($databaseEntity);
+        if ($databaseEntityClass != ClassUtils::getClass($importedEntity)) {
+            throw new InvalidArgumentException('database and imported entities must be instances of the same class');
         }
 
-        $entityProperties = $this->getEntityPropertiesByClassName($basicEntityClass);
+        $entityProperties = $this->getEntityPropertiesByClassName($databaseEntityClass);
         $importedEntityProperties = array_diff($entityProperties, $excludedProperties);
 
         foreach ($importedEntityProperties as $propertyName) {
             // we should not overwrite deleted fields
-            if ($this->isDeletedField($basicEntityClass, $propertyName)) {
+            if ($this->isDeletedField($databaseEntityClass, $propertyName)) {
                 continue;
             }
 
             $importedValue = $this->fieldHelper->getObjectValue($importedEntity, $propertyName);
-            $basicValue = $this->fieldHelper->getObjectValue($basicEntity, $propertyName);
+            $databaseValue = $this->fieldHelper->getObjectValue($databaseEntity, $propertyName);
 
-            if ($importedValue instanceof Collection && $basicValue instanceof Collection) {
-                if ($basicValue instanceof PersistentCollection && !$basicValue->isInitialized() && !$basicValue->isDirty()) {
-                    continue;
-                }
-
-                if ($importedValue->isEmpty()) {
-                    $basicValue->clear();
-
-                    continue;
-                }
-
-                if ($basicValue->isEmpty()) {
-                    foreach ($importedValue as $importedValueEntity) {
-                        $basicValue->add($importedValueEntity);
-                    }
-
-                    continue;
-                }
-
-                $toAdd = [];
-                $toRemove = [];
-                $toReplace = [];
-                $map = [];
-
-                $basicValueEntitiesIds = [];
-                foreach ($basicValue as $basicValueEntityKey => $basicValueEntity) {
-                    $basicValueEntityIds = $this->getIdentityValues($basicValueEntity);
-                    if (!$basicValueEntityIds) {
-                        $toRemove[$basicValueEntityKey] = $basicValueEntityKey;
+            if ($importedValue instanceof Collection && $databaseValue instanceof Collection) {
+                $databaseValueEntitiesIds = [];
+                foreach ($databaseValue as $databaseValueEntityKey => $databaseValueEntity) {
+                    $databaseValueEntityIds = (string)$this->doctrineHelper
+                        ->getSingleEntityIdentifier($databaseValueEntity);
+                    if (!$databaseValueEntityIds) {
+                        $databaseValue->removeElement($databaseValueEntity);
 
                         continue;
                     }
 
-                    $basicValueEntityId = md5(json_encode($basicValueEntityIds));
-                    $basicValueEntitiesIds[$basicValueEntityId] = $basicValueEntity;
-                    $map[$basicValueEntityId] = $basicValueEntityKey;
+                    $databaseValueEntitiesIds[$databaseValueEntityIds] = $databaseValueEntity;
                 }
 
-                $importedValueEntitiesIds = [];
                 foreach ($importedValue as $importedValueEntityKey => $importedValueEntity) {
-                    $importedValueEntityIds = $this->getIdentityValues($importedValueEntity);
+                    $importedValueEntityIds = (string)$this->doctrineHelper
+                        ->getSingleEntityIdentifier($importedValueEntity);
                     if (!$importedValueEntityIds) {
-                        $toAdd[] = $importedValueEntity;
+                        $databaseValue->add($importedValueEntity);
 
                         continue;
                     }
 
-                    $importedValueEntityId = md5(json_encode($importedValueEntityIds));
-                    $importedValueEntitiesIds[$importedValueEntityId] = $importedValueEntity;
-                    if (array_key_exists($importedValueEntityId, $map)) {
-                        $toReplace[$map[$importedValueEntityId]] = $importedValueEntity;
-
+                    unset($databaseValueEntitiesIds[$importedValueEntityIds]);
+                    if ($databaseValue->contains($importedValueEntity)) {
                         continue;
                     }
 
-                    $toAdd[] = $importedValueEntity;
+                    $databaseValue->add($importedValueEntity);
                 }
 
-                foreach ($basicValueEntitiesIds as $basicValueEntitiesId => $basicValueEntity) {
-                    if (!array_key_exists($basicValueEntitiesId, $importedValueEntitiesIds)) {
-                        $toRemove[] = $basicValueEntity;
-                    }
-                }
+                foreach ($databaseValueEntitiesIds as $databaseValueEntityIds => $databaseValueEntity) {
+                    unset($databaseValueEntitiesIds[$databaseValueEntityIds]);
 
-                foreach ($toRemove as $entity) {
-                    $basicValue->removeElement($entity);
-                }
-
-                foreach ($toAdd as $entity) {
-                    $basicValue->add($entity);
-                }
-
-                foreach ($toReplace as $key => $entity) {
-                    $basicValue->set($key, $entity);
+                    $databaseValue->removeElement($databaseValueEntity);
                 }
 
                 continue;
             }
 
-            $this->fieldHelper->setObjectValue($basicEntity, $propertyName, $importedValue);
+            $this->fieldHelper->setObjectValue($databaseEntity, $propertyName, $importedValue);
         }
     }
 
@@ -153,29 +118,26 @@ class ImportStrategyHelper extends BaseImportStrategyHelper
         );
     }
 
-    /**
-     * Gets identity values for entity.
-     *
-     * @param $entity
-     */
-    private function getIdentityValues($entity): array
+    public function addValidationErrors(array $validationErrors, ContextInterface $context, $errorPrefix = null)
     {
-        $identityValues = [];
-        $identityFields = $this->fieldHelper->getIdentityValues($entity);
-
-        foreach ($identityFields as $identityFieldName => $identityField) {
-            if ($identityField instanceof Collection) {
-                foreach ($identityField as $identityFieldCollectionItem) {
-                    $identityValues[$identityFieldName][] = $this->fieldHelper
-                        ->getIdentityValues($identityFieldCollectionItem);
-                }
-            } elseif (is_object($identityField)) {
-                $identityValues[$identityFieldName] = $this->fieldHelper->getIdentityValues($identityField);
-            } else {
-                $identityValues[$identityFieldName] = $identityField;
-            }
+        foreach ($validationErrors as $validationError) {
+            $context->addError(
+                $this->translator->trans(
+                    'oro.akeneo.error',
+                    [
+                        '%error%' => $validationError,
+                        '%item%' => json_encode(
+                            $context->getValue('rawItemData'),
+                            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+                        )
+                    ]
+                )
+            );
         }
+    }
 
-        return $identityValues;
+    public function setDoctrineHelper(DoctrineHelper $doctrineHelper): void
+    {
+        $this->doctrineHelper = $doctrineHelper;
     }
 }

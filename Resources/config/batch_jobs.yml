@@ -11,21 +11,21 @@ connector:
           services:
             reader: oro_akeneo.integration.connector.category
             processor: oro_akeneo.importexport.processor.category
-            writer: oro_akeneo.importexport.writer.cumulative.category
+            writer: oro_akeneo.importexport.writer.cumulative.persistent_batch_writer
         remove:
           title: import
           class: Oro\Bundle\AkeneoBundle\ImportExport\Step\ItemStep
           services:
             reader: oro_akeneo.importexport.reader.category
             processor: oro_akeneo.importexport.processor.category_remove
-            writer: oro_akeneo.importexport.writer.cumulative.category_remove
+            writer: oro_akeneo.importexport.writer.cumulative.persistent_batch_writer
         parent:
           title: import
           class: Oro\Bundle\AkeneoBundle\ImportExport\Step\ItemStep
           services:
             reader: oro_akeneo.importexport.reader.category_parent
             processor: oro_akeneo.importexport.processor.category_parent
-            writer: oro_akeneo.importexport.writer.cumulative.category_parent
+            writer: oro_akeneo.importexport.writer.cumulative.persistent_batch_writer
 
     akeneo_attribute_family_import:
       title: "Attribute family import from Akeneo"
@@ -84,7 +84,7 @@ connector:
           services:
             reader: oro_akeneo.importexport.reader.product_image
             processor: oro_akeneo.importexport.processor.product_image
-            writer: oro_akeneo.importexport.writer.cumulative.product_image
+            writer: oro_akeneo.importexport.writer.cumulative.persistent_batch_writer
         import_prices:
           title: import
           class: Oro\Bundle\BatchBundle\Step\ItemStep

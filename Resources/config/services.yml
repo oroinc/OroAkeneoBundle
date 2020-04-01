@@ -73,6 +73,8 @@ services:
   oro_akeneo.strategy.import.helper:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Strategy\ImportStrategyHelper'
     parent: oro_importexport.strategy.import.helper
+    calls:
+      - [setDoctrineHelper, ['@oro_entity.doctrine_helper']]
 
   oro_akeneo.integration.sync_processor:
     class: 'Oro\Bundle\AkeneoBundle\Integration\SyncProcessor'

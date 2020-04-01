@@ -181,13 +181,26 @@ class AttributeWriter extends BaseAttributeWriter
                     }
 
                     foreach ($label['translations'] as $locale => $value) {
-                        $translation = new EnumValueTranslation();
-                        $translation->setLocale($locale)
-                            ->setObjectClass($enumValueClassName)
-                            ->setContent($value)
-                            ->setForeignKey($option['id'])
-                            ->setField('name');
-                        $manager->persist($translation);
+                        $translation = $this->doctrineHelper
+                            ->getEntityRepository(EnumValueTranslation::class)
+                            ->findOneBy(
+                                [
+                                    'locale' => $locale,
+                                    'objectClass' => $enumValueClassName,
+                                    'foreignKey' => $option['id'],
+                                    'field' => 'name'
+                                ]
+                            );
+                        if (!$translation) {
+                            $translation = new EnumValueTranslation();
+                            $translation
+                                ->setLocale($locale)
+                                ->setObjectClass($enumValueClassName)
+                                ->setForeignKey($option['id'])
+                                ->setField('name');
+                            $manager->persist($translation);
+                        }
+                        $translation->setContent($value);
                     }
                 }
             }
