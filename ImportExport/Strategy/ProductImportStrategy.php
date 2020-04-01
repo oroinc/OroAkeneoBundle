@@ -39,6 +39,17 @@ class ProductImportStrategy extends ProductStrategy
         parent::close();
     }
 
+    protected function beforeProcessEntity($entity)
+    {
+        $existingProduct = $this->findExistingEntity($entity);
+        if ($existingProduct instanceof Product) {
+            $entity->setStatus($existingProduct->getStatus());
+            $entity->setInventoryStatus($existingProduct->getInventoryStatus());
+        }
+
+        return parent::beforeProcessEntity($entity);
+    }
+
     protected function afterProcessEntity($entity)
     {
         $this->setOwner($entity);
