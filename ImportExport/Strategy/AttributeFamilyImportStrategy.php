@@ -3,7 +3,6 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 
 use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Util\ClassUtils;
 use Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeFamily;
 use Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeGroup;
 use Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeGroupRelation;
@@ -11,7 +10,6 @@ use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityConfigBundle\Entity\FieldConfigModel;
 use Oro\Bundle\EntityConfigBundle\Manager\AttributeManager;
 use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
-use Oro\Bundle\ImportExportBundle\Strategy\Import\ConfigurableAddOrReplaceStrategy;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\ImportExport\Normalizer\LocalizationCodeFormatter;
 use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStrategy;
@@ -49,55 +47,10 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
         $this->attributeManager = $attributeManager;
     }
 
-    /**
-     * @param AttributeFamily $entity
-     *
-     * @return object
-     */
     public function beforeProcessEntity($entity)
     {
         $this->removeInactiveAttributes($entity);
         $this->setSystemAttributes($entity);
-
-        /** @var AttributeFamily $existingEntity */
-        $existingEntity = $this->findExistingEntity($entity);
-        if (!$existingEntity) {
-            return parent::beforeProcessEntity($entity);
-        }
-
-        $fields = $this->fieldHelper->getRelations(AttributeFamily::class);
-        foreach ($fields as $field) {
-            if ($this->isLocalizedFallbackValue($field)) {
-                $fieldName = $field['name'];
-                $this->mapCollections(
-                    $this->fieldHelper->getObjectValue($entity, $fieldName),
-                    $this->fieldHelper->getObjectValue($existingEntity, $fieldName)
-                );
-            }
-        }
-
-        $fields = $this->fieldHelper->getRelations(AttributeGroup::class);
-        foreach ($entity->getAttributeGroups() as $attributeGroup) {
-            $existingAttributeGroup = null;
-            foreach ($existingEntity->getAttributeGroups() as $possibleAttributeGroup) {
-                if ($possibleAttributeGroup->getCode() === $attributeGroup->getCode()) {
-                    $existingAttributeGroup = $possibleAttributeGroup;
-                }
-            }
-            if (!$existingAttributeGroup) {
-                continue;
-            }
-
-            foreach ($fields as $field) {
-                if ($this->isLocalizedFallbackValue($field)) {
-                    $fieldName = $field['name'];
-                    $this->mapCollections(
-                        $this->fieldHelper->getObjectValue($attributeGroup, $fieldName),
-                        $this->fieldHelper->getObjectValue($existingAttributeGroup, $fieldName)
-                    );
-                }
-            }
-        }
 
         return parent::beforeProcessEntity($entity);
     }
@@ -109,19 +62,52 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
         return parent::afterProcessEntity($entity);
     }
 
-    protected function generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation)
-    {
-        return ConfigurableAddOrReplaceStrategy::generateSearchContextForRelationsUpdate(
-            $entity,
-            $entityName,
-            $fieldName,
-            $isPersistRelation
-        );
-    }
-
     protected function findExistingEntity($entity, array $searchContext = [])
     {
-        return ConfigurableAddOrReplaceStrategy::findExistingEntity($entity, $searchContext);
+        if (is_a($entity, $this->localizedFallbackValueClass, true)) {
+            $localizationCode = LocalizationCodeFormatter::formatName($entity->getLocalization());
+
+            return $searchContext[$localizationCode] ?? null;
+        }
+
+        if (is_a($entity, AttributeGroup::class)) {
+            $family = $this->findExistingEntity($entity->getAttributeFamily());
+            if ($family instanceof AttributeFamily) {
+                foreach ($family->getAttributeGroups() as $attributeGroup) {
+                    if ($attributeGroup->getCode() === $entity->getCode()) {
+                        return $attributeGroup;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        return parent::findExistingEntity($entity, $searchContext);
+    }
+
+    protected function findExistingEntityByIdentityFields($entity, array $searchContext = [])
+    {
+        if (is_a($entity, $this->localizedFallbackValueClass, true)) {
+            $localizationCode = LocalizationCodeFormatter::formatName($entity->getLocalization());
+
+            return $searchContext[$localizationCode] ?? null;
+        }
+
+        if (is_a($entity, AttributeGroup::class)) {
+            $family = $this->findExistingEntity($entity->getAttributeFamily());
+            if ($family instanceof AttributeFamily) {
+                foreach ($family->getAttributeGroups() as $attributeGroup) {
+                    if ($attributeGroup->getCode() === $entity->getCode()) {
+                        return $attributeGroup;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        return parent::findExistingEntityByIdentityFields($entity, $searchContext);
     }
 
     private function removeInactiveAttributes(AttributeFamily $entity)
@@ -187,39 +173,6 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
         return false;
     }
 
-    protected function mapCollections(Collection $importedCollection, Collection $sourceCollection)
-    {
-        if ($importedCollection->isEmpty()) {
-            return;
-        }
-
-        if ($sourceCollection->isEmpty()) {
-            return;
-        }
-
-        $sourceCollection = $sourceCollection->toArray();
-        $sourceCollectionArray = [];
-
-        /** @var LocalizedFallbackValue $sourceValue */
-        foreach ($sourceCollection as $sourceValue) {
-            $key = LocalizationCodeFormatter::formatKey($sourceValue->getLocalization()) ??
-                LocalizationCodeFormatter::DEFAULT_LOCALIZATION;
-            $sourceCollectionArray[$key] = $sourceValue->getId();
-        }
-
-        foreach ($importedCollection as $importedValue) {
-            $key = LocalizationCodeFormatter::formatKey($importedValue->getLocalization()) ??
-                LocalizationCodeFormatter::DEFAULT_LOCALIZATION;
-            if (array_key_exists($key, $sourceCollectionArray)) {
-                $this->fieldHelper->setObjectValue($importedValue, 'id', $sourceCollectionArray[$key]);
-            }
-        }
-    }
-
-    protected function setLocalizationKeys($entity, array $field)
-    {
-    }
-
     /**
      * @param object $entity
      *
@@ -231,7 +184,7 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
      */
     protected function updateRelations($entity, array $itemData = null)
     {
-        $entityName = ClassUtils::getClass($entity);
+        $entityName = $this->doctrineHelper->getEntityClass($entity);
         $fields = $this->fieldHelper->getFields($entityName, true);
 
         foreach ($fields as $field) {
@@ -267,10 +220,9 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
                     $relationCollection = $this->getObjectValue($entity, $fieldName);
                     if ($relationCollection instanceof Collection) {
                         $collectionItemData = $this->fieldHelper->getItemData($itemData, $fieldName);
-                        $keysToRemove = [];
-                        foreach ($relationCollection as $key => $collectionEntity) {
+                        foreach ($relationCollection as $collectionEntity) {
                             $entityItemData = $this->fieldHelper->getItemData(array_shift($collectionItemData));
-                            $collectionEntity = $this->processEntity(
+                            $existingCollectionEntity = $this->processEntity(
                                 $collectionEntity,
                                 $isFullRelation,
                                 $isPersistRelation,
@@ -279,16 +231,14 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
                                 true
                             );
 
-                            if ($collectionEntity) {
-                                $relationCollection->set($key, $collectionEntity);
-                                $this->cacheInverseFieldRelation($entityName, $fieldName, $collectionEntity);
-                            } else {
-                                $keysToRemove[] = $key;
-                            }
-                        }
+                            if ($existingCollectionEntity) {
+                                if (!$relationCollection->contains($existingCollectionEntity)) {
+                                    $relationCollection->removeElement($collectionEntity);
+                                    $relationCollection->add($existingCollectionEntity);
+                                }
 
-                        foreach ($keysToRemove as $key) {
-                            $relationCollection->remove($key);
+                                $this->cacheInverseFieldRelation($entityName, $fieldName, $existingCollectionEntity);
+                            }
                         }
                     }
                 }
@@ -375,9 +325,52 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
 
         if (!$defaultGroup) {
             $defaultGroup = new AttributeGroup();
+            $defaultGroup->setCode(self::GROUP_CODE_GENERAL);
             $defaultGroup->setAkeneoCode('default');
         }
 
         return $defaultGroup;
+    }
+
+    protected function mapCollections(Collection $importedCollection, Collection $sourceCollection)
+    {
+    }
+
+    protected function setLocalizationKeys($entity, array $field)
+    {
+    }
+
+    protected function removeNotInitializedEntities($entity, array $field, array $relations)
+    {
+    }
+
+    protected function generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation)
+    {
+        $fields = $this->fieldHelper->getRelations($entityName);
+
+        if (!$this->isLocalizedFallbackValue($fields[$fieldName])) {
+            return parent::generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation);
+        }
+
+        /** @var Collection $importedCollection */
+        $importedCollection = $this->fieldHelper->getObjectValue($entity, $fieldName);
+        if ($importedCollection->isEmpty()) {
+            return parent::generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation);
+        }
+
+        $existingEntity = $this->findExistingEntity($entity);
+        if ($existingEntity) {
+            $searchContext = [];
+            $sourceCollection = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
+            /** @var LocalizedFallbackValue $sourceValue */
+            foreach ($sourceCollection as $sourceValue) {
+                $localizationCode = LocalizationCodeFormatter::formatName($sourceValue->getLocalization());
+                $searchContext[$localizationCode] = $sourceValue;
+            }
+
+            return $searchContext;
+        }
+
+        return parent::generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation);
     }
 }

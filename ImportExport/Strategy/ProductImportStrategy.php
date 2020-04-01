@@ -32,7 +32,7 @@ class ProductImportStrategy extends ProductStrategy
         $this->cachedEntities = [];
         $this->owner = null;
 
-        $this->processedProducts = [];
+        $this->existingProducts = [];
 
         $this->databaseHelper->onClear();
 
@@ -60,7 +60,7 @@ class ProductImportStrategy extends ProductStrategy
             }
         }
 
-        $this->processedProducts = [];
+        $this->existingProducts = [];
 
         return parent::afterProcessEntity($entity);
     }
@@ -83,7 +83,7 @@ class ProductImportStrategy extends ProductStrategy
         }
 
         if (is_a($entity, $this->localizedFallbackValueClass, true)) {
-            $localizationCode = LocalizationCodeFormatter::formatKey($entity->getLocalization());
+            $localizationCode = LocalizationCodeFormatter::formatName($entity->getLocalization());
 
             return $searchContext[$localizationCode] ?? null;
         }
@@ -115,7 +115,7 @@ class ProductImportStrategy extends ProductStrategy
         }
 
         if (is_a($entity, $this->localizedFallbackValueClass, true)) {
-            $localizationCode = LocalizationCodeFormatter::formatKey($entity->getLocalization());
+            $localizationCode = LocalizationCodeFormatter::formatName($entity->getLocalization());
 
             return $searchContext[$localizationCode] ?? null;
         }
@@ -176,10 +176,9 @@ class ProductImportStrategy extends ProductStrategy
                     $relationCollection = $this->getObjectValue($entity, $fieldName);
                     if ($relationCollection instanceof Collection) {
                         $collectionItemData = $this->fieldHelper->getItemData($itemData, $fieldName);
-                        $keysToRemove = [];
-                        foreach ($relationCollection as $key => $collectionEntity) {
+                        foreach ($relationCollection as $collectionEntity) {
                             $entityItemData = $this->fieldHelper->getItemData(array_shift($collectionItemData));
-                            $collectionEntity = $this->processEntity(
+                            $existingCollectionEntity = $this->processEntity(
                                 $collectionEntity,
                                 $isFullRelation,
                                 $isPersistRelation,
@@ -188,16 +187,14 @@ class ProductImportStrategy extends ProductStrategy
                                 true
                             );
 
-                            if ($collectionEntity) {
-                                $relationCollection->set($key, $collectionEntity);
-                                $this->cacheInverseFieldRelation($entityName, $fieldName, $collectionEntity);
-                            } else {
-                                $keysToRemove[] = $key;
-                            }
-                        }
+                            if ($existingCollectionEntity) {
+                                if (!$relationCollection->contains($existingCollectionEntity)) {
+                                    $relationCollection->removeElement($collectionEntity);
+                                    $relationCollection->add($existingCollectionEntity);
+                                }
 
-                        foreach ($keysToRemove as $key) {
-                            $relationCollection->remove($key);
+                                $this->cacheInverseFieldRelation($entityName, $fieldName, $existingCollectionEntity);
+                            }
                         }
                     }
                 }
@@ -288,7 +285,7 @@ class ProductImportStrategy extends ProductStrategy
             $sourceCollection = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
             /** @var LocalizedFallbackValue $sourceValue */
             foreach ($sourceCollection as $sourceValue) {
-                $localizationCode = LocalizationCodeFormatter::formatKey($sourceValue->getLocalization());
+                $localizationCode = LocalizationCodeFormatter::formatName($sourceValue->getLocalization());
                 $searchContext[$localizationCode] = $sourceValue;
             }
 
