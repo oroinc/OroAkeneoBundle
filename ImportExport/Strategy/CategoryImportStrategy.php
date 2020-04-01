@@ -3,7 +3,6 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 
 use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Util\ClassUtils;
 use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\ImportExport\Normalizer\LocalizationCodeFormatter;
@@ -25,32 +24,9 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy
                 $parent = $this->findExistingEntity($parent);
                 $entity->setParentCategory($parent);
             }
-
-            $existingEntity = $this->findExistingEntity($entity);
-            if ($existingEntity) {
-                $fields = $this->fieldHelper->getRelations(Category::class);
-                foreach ($fields as $field) {
-                    if ($this->isLocalizedFallbackValue($field)) {
-                        $fieldName = $field['name'];
-                        $this->mapCollections(
-                            $this->fieldHelper->getObjectValue($entity, $fieldName),
-                            $this->fieldHelper->getObjectValue($existingEntity, $fieldName)
-                        );
-                    }
-                }
-            }
         }
 
         return parent::beforeProcessEntity($entity);
-    }
-
-    protected function afterProcessEntity($entity)
-    {
-        if ($entity instanceof Category && !$entity->getMaterializedPath()) {
-            $entity->setMaterializedPath('');
-        }
-
-        return parent::afterProcessEntity($entity);
     }
 
     protected function findExistingEntity($entity, array $searchContext = [])
@@ -62,40 +38,13 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy
             );
         }
 
+        if (is_a($entity, $this->localizedFallbackValueClass, true)) {
+            $localizationCode = LocalizationCodeFormatter::formatName($entity->getLocalization());
+
+            return $searchContext[$localizationCode] ?? null;
+        }
+
         return parent::findExistingEntity($entity, $searchContext);
-    }
-
-    protected function mapCollections(Collection $importedCollection, Collection $sourceCollection)
-    {
-        if ($importedCollection->isEmpty()) {
-            return;
-        }
-
-        if ($sourceCollection->isEmpty()) {
-            return;
-        }
-
-        $sourceCollection = $sourceCollection->toArray();
-        $sourceCollectionArray = [];
-
-        /** @var LocalizedFallbackValue $sourceValue */
-        foreach ($sourceCollection as $sourceValue) {
-            $key = LocalizationCodeFormatter::formatKey($sourceValue->getLocalization()) ??
-                LocalizationCodeFormatter::DEFAULT_LOCALIZATION;
-            $sourceCollectionArray[$key] = $sourceValue->getId();
-        }
-
-        foreach ($importedCollection as $importedValue) {
-            $key = LocalizationCodeFormatter::formatKey($importedValue->getLocalization()) ??
-                LocalizationCodeFormatter::DEFAULT_LOCALIZATION;
-            if (array_key_exists($key, $sourceCollectionArray)) {
-                $this->fieldHelper->setObjectValue($importedValue, 'id', $sourceCollectionArray[$key]);
-            }
-        }
-    }
-
-    protected function setLocalizationKeys($entity, array $field)
-    {
     }
 
     protected function findExistingEntityByIdentityFields($entity, array $searchContext = [])
@@ -105,6 +54,12 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy
                 Category::class,
                 ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $entity->getChannel()]
             );
+        }
+
+        if (is_a($entity, $this->localizedFallbackValueClass, true)) {
+            $localizationCode = LocalizationCodeFormatter::formatName($entity->getLocalization());
+
+            return $searchContext[$localizationCode] ?? null;
         }
 
         return parent::findExistingEntityByIdentityFields($entity, $searchContext);
@@ -121,7 +76,7 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy
      */
     protected function updateRelations($entity, array $itemData = null)
     {
-        $entityName = ClassUtils::getClass($entity);
+        $entityName = $this->doctrineHelper->getEntityClass($entity);
         $fields = $this->fieldHelper->getFields($entityName, true);
 
         foreach ($fields as $field) {
@@ -157,10 +112,9 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy
                     $relationCollection = $this->getObjectValue($entity, $fieldName);
                     if ($relationCollection instanceof Collection) {
                         $collectionItemData = $this->fieldHelper->getItemData($itemData, $fieldName);
-                        $keysToRemove = [];
-                        foreach ($relationCollection as $key => $collectionEntity) {
+                        foreach ($relationCollection as $collectionEntity) {
                             $entityItemData = $this->fieldHelper->getItemData(array_shift($collectionItemData));
-                            $collectionEntity = $this->processEntity(
+                            $existingCollectionEntity = $this->processEntity(
                                 $collectionEntity,
                                 $isFullRelation,
                                 $isPersistRelation,
@@ -169,16 +123,14 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy
                                 true
                             );
 
-                            if ($collectionEntity) {
-                                $relationCollection->set($key, $collectionEntity);
-                                $this->cacheInverseFieldRelation($entityName, $fieldName, $collectionEntity);
-                            } else {
-                                $keysToRemove[] = $key;
-                            }
-                        }
+                            if ($existingCollectionEntity) {
+                                if (!$relationCollection->contains($existingCollectionEntity)) {
+                                    $relationCollection->removeElement($collectionEntity);
+                                    $relationCollection->add($existingCollectionEntity);
+                                }
 
-                        foreach ($keysToRemove as $key) {
-                            $relationCollection->remove($key);
+                                $this->cacheInverseFieldRelation($entityName, $fieldName, $existingCollectionEntity);
+                            }
                         }
                     }
                 }
@@ -197,5 +149,47 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy
         } else {
             $this->context->incrementAddCount();
         }
+    }
+
+    protected function mapCollections(Collection $importedCollection, Collection $sourceCollection)
+    {
+    }
+
+    protected function setLocalizationKeys($entity, array $field)
+    {
+    }
+
+    protected function removeNotInitializedEntities($entity, array $field, array $relations)
+    {
+    }
+
+    protected function generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation)
+    {
+        $fields = $this->fieldHelper->getRelations($entityName);
+
+        if (!$this->isLocalizedFallbackValue($fields[$fieldName])) {
+            return parent::generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation);
+        }
+
+        /** @var Collection $importedCollection */
+        $importedCollection = $this->fieldHelper->getObjectValue($entity, $fieldName);
+        if ($importedCollection->isEmpty()) {
+            return parent::generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation);
+        }
+
+        $existingEntity = $this->findExistingEntity($entity);
+        if ($existingEntity) {
+            $searchContext = [];
+            $sourceCollection = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
+            /** @var LocalizedFallbackValue $sourceValue */
+            foreach ($sourceCollection as $sourceValue) {
+                $localizationCode = LocalizationCodeFormatter::formatName($sourceValue->getLocalization());
+                $searchContext[$localizationCode] = $sourceValue;
+            }
+
+            return $searchContext;
+        }
+
+        return parent::generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation);
     }
 }

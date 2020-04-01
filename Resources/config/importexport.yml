@@ -273,45 +273,6 @@ services:
       - '@doctrine'
       - '@oro_akeneo.event_listener.additional_optional_listeners_manager'
 
-  oro_akeneo.importexport.writer.cumulative.product_image:
-    class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\CumulativeWriter'
-    arguments:
-      - '@oro_integration.writer.persistent_batch_writer'
-      - '@oro_platform.optional_listeners.manager'
-      - '@doctrine'
-      - '@oro_akeneo.event_listener.additional_optional_listeners_manager'
-
-  oro_akeneo.importexport.writer.cumulative.category_remove:
-    class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\CumulativeWriter'
-    arguments:
-      - '@oro_akeneo.importexport.writer.category_remove'
-      - '@oro_platform.optional_listeners.manager'
-      - '@doctrine'
-      - '@oro_akeneo.event_listener.additional_optional_listeners_manager'
-
-  oro_akeneo.importexport.writer.cumulative.category:
-    class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\CumulativeWriter'
-    arguments:
-      - '@oro_akeneo.importexport.writer.category'
-      - '@oro_platform.optional_listeners.manager'
-      - '@doctrine'
-      - '@oro_akeneo.event_listener.additional_optional_listeners_manager'
-
-  oro_akeneo.importexport.writer.cumulative.category_parent:
-    class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\CumulativeWriter'
-    arguments:
-      - '@oro_akeneo.importexport.writer.category_parent'
-      - '@oro_platform.optional_listeners.manager'
-      - '@doctrine'
-      - '@oro_akeneo.event_listener.additional_optional_listeners_manager'
-
-  oro_akeneo.importexport.writer.category_remove:
-    class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\CategoryRemoveWriter'
-    parent: oro_integration.writer.persistent_batch_writer
-    calls:
-      - [setCategoryMaterializedPathModifier, ["@oro_akeneo.importexport.writer.category_modifier"]]
-      - [setCategoryListener, ["@oro_akeneo.event_listener.category"]]
-
   oro_akeneo.importexport.writer.async_product:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\AsyncWriter'
     arguments:
@@ -320,23 +281,9 @@ services:
     calls:
       - [setCacheProvider, ["@oro_akeneo.importexport.cache"]]
 
-  oro_akeneo.importexport.writer.category:
-    class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\CategoryWriter'
-    parent: oro_integration.writer.persistent_batch_writer
-    calls:
-      - [setCategoryMaterializedPathModifier, ["@oro_akeneo.importexport.writer.category_modifier"]]
-      - [setCategoryListener, ["@oro_akeneo.event_listener.category"]]
-
-  oro_akeneo.importexport.writer.category_parent:
-    class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\CategoryParentWriter'
-    parent: oro_integration.writer.persistent_batch_writer
-    calls:
-      - [setCategoryMaterializedPathModifier, ["@oro_akeneo.importexport.writer.category_modifier"]]
-      - [setCategoryListener, ["@oro_akeneo.event_listener.category"]]
-
   oro_akeneo.importexport.cache:
     public: false
-    parent: oro.cache.abstract
+    parent: doctrine_cache.abstract.array
     calls:
       - [ setNamespace, ['oro_akeneo'] ]
 
@@ -385,17 +332,6 @@ services:
       - "@oro_importexport.context_registry"
     calls:
       - [setDoctrineHelper, ["@oro_entity.doctrine_helper"]]
-
-  oro_akeneo.importexport.writer.category_modifier:
-    class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\CategoryMaterializedPathModifier'
-    parent: oro_catalog.model.category_materialized_path_modifier
-    decorates: oro_catalog.model.category_materialized_path_modifier
-
-  oro_akeneo.event_listener.category:
-    class: 'Oro\Bundle\AkeneoBundle\EventListener\CategoryListener'
-    decorates: oro_catalog.event_listener.orm.category_listener
-    arguments:
-      - '@oro_akeneo.event_listener.category.inner'
 
   oro_akeneo.event_listener.deleted_attribute_relation:
     class: 'Oro\Bundle\AkeneoBundle\EventListener\DeletedAttributeRelationListener'

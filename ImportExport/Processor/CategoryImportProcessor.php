@@ -17,6 +17,7 @@ class CategoryImportProcessor extends StepExecutionAwareImportProcessor
     public function process($item)
     {
         $this->processedIds[$item['code']] = $item['parent'] ?? null;
+//        $this->processedIds[$item['code']] = $this->processedIds[array_rand($this->processedIds)];
 
         return parent::process($item);
     }

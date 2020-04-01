@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Reader;
 
-use Oro\Bundle\BatchBundle\ORM\Query\BufferedQueryResultIterator;
+use Oro\Bundle\BatchBundle\ORM\Query\BufferedIdentityQueryResultIterator;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeFamily;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
@@ -30,7 +30,7 @@ class AttributeFamilyReader extends IteratorBasedReader
             ->where('a.channel = :channelId')
             ->setParameter('channelId', $channelId);
 
-        $iterator = new BufferedQueryResultIterator($qb);
+        $iterator = new BufferedIdentityQueryResultIterator($qb);
         $iterator->setBufferSize(2);
 
         $this->setSourceIterator($iterator);

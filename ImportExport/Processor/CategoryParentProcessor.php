@@ -3,7 +3,7 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Processor;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\UnitOfWork;
+use Doctrine\ORM\EntityManagerInterface;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\ImportExportBundle\Processor\ProcessorInterface;
@@ -38,27 +38,11 @@ class CategoryParentProcessor implements ProcessorInterface
             return null;
         }
 
-        $objectManager = $this->registry->getManagerForClass(Category::class);
-        $entityState = $objectManager
-            ->getUnitOfWork()
-            ->getEntityState($item);
-
         /** @var Channel $channel */
         $channel = $item->getChannel();
 
         /** @var AkeneoSettings $transport */
         $transport = $channel->getTransport();
-
-        if ($entityState !== UnitOfWork::STATE_MANAGED) {
-            $item = $objectManager->merge($item);
-
-            /** @var Channel $channel */
-            $channel = $objectManager->getReference(Channel::class, $item->getChannel()->getId());
-            $item->setChannel($channel);
-
-            /** @var AkeneoSettings $transport */
-            $transport = $channel->getTransport();
-        }
 
         $akeneoCode = $item->getAkeneoCode();
         $parentCode = $this->processedIds[$akeneoCode] ?? null;
@@ -79,7 +63,7 @@ class CategoryParentProcessor implements ProcessorInterface
         }
 
         if (!$parentCode && $parent->getId() === $rootCategory->getId()) {
-            return $item;
+            return null;
         }
 
         $parentId = $this->codeIds[$parentCode] ?? null;
@@ -96,12 +80,15 @@ class CategoryParentProcessor implements ProcessorInterface
         }
 
         if (!$parentId && $parent->getId() === $rootCategory->getId()) {
-            return $item;
+            return null;
         }
+
+        /** @var EntityManagerInterface $objectManager */
+        $objectManager = $this->registry->getManagerForClass(Category::class);
 
         if ($parent && $parentId !== $parent->getId()) {
             /** @var Category $parent */
-            $parent = $objectManager->find(Category::class, $parentId);
+            $parent = $objectManager->getReference(Category::class, $parentId);
             $item->setParentCategory($parent);
 
             return $item;
@@ -109,13 +96,13 @@ class CategoryParentProcessor implements ProcessorInterface
 
         if (!$parent) {
             /** @var Category $parent */
-            $parent = $objectManager->find(Category::class, $parentId);
+            $parent = $objectManager->getReference(Category::class, $parentId);
             $item->setParentCategory($parent);
 
             return $item;
         }
 
-        return $item;
+        return null;
     }
 
     public function initialize()

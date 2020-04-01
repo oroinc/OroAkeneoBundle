@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Reader;
 
-use Oro\Bundle\BatchBundle\ORM\Query\BufferedQueryResultIterator;
+use Oro\Bundle\BatchBundle\ORM\Query\BufferedIdentityQueryResultIterator;
 use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\CatalogBundle\Entity\Repository\CategoryRepository;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
@@ -32,7 +32,7 @@ class CategoryParentReader extends IteratorBasedReader
             ->where('c.channel = :channelId')
             ->setParameter('channelId', $channelId);
 
-        $iterator = new BufferedQueryResultIterator($qb);
+        $iterator = new BufferedIdentityQueryResultIterator($qb);
         $iterator->setBufferSize(10);
 
         $this->setSourceIterator($iterator);
