@@ -7,7 +7,6 @@ use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\CatalogBundle\Entity\Repository\CategoryRepository;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
-use Oro\Bundle\IntegrationBundle\Entity\Channel;
 
 class CategoryParentReader extends BufferedIteratorBasedReader
 {
@@ -25,22 +24,13 @@ class CategoryParentReader extends BufferedIteratorBasedReader
 
         $channelId = $this->getStepExecution()->getJobExecution()->getExecutionContext()->get('channel');
 
-        $channel = $this->doctrineHelper->getEntityRepository(Channel::class)->find($channelId);
-
-        $rootCategoryId = null;
-        if ($channel->getTransport()->getRootCategory()) {
-            $rootCategoryId = $channel->getTransport()->getRootCategory()->getId();
-        }
-
         /** @var CategoryRepository $qb */
         $repo = $this->doctrineHelper->getEntityRepository(Category::class);
 
         $qb = $repo
             ->createQueryBuilder('c')
             ->where('c.channel = :channelId')
-            ->andWhere('c.parentCategory = :parent')
-            ->setParameter('channelId', $channelId)
-            ->setParameter('parent', $rootCategoryId);
+            ->setParameter('channelId', $channelId);
 
         $iterator = new BufferedIdentityQueryResultIterator($qb);
         $iterator->setBufferSize(1);

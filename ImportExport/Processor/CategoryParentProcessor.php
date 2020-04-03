@@ -63,7 +63,7 @@ class CategoryParentProcessor implements ProcessorInterface
         }
 
         if ($rootCategory && !$parentCode && $parent->getId() === $rootCategory->getId()) {
-            return null;
+            return $item;
         }
 
         $parentId = $this->codeIds[$parentCode] ?? null;
@@ -80,7 +80,7 @@ class CategoryParentProcessor implements ProcessorInterface
         }
 
         if ($rootCategory && !$parentId && $parent->getId() === $rootCategory->getId()) {
-            return null;
+            return $item;
         }
 
         /** @var EntityManagerInterface $objectManager */
@@ -102,7 +102,7 @@ class CategoryParentProcessor implements ProcessorInterface
             return $item;
         }
 
-        return null;
+        return $item;
     }
 
     public function initialize()
