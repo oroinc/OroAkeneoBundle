@@ -3,7 +3,9 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 
 use Doctrine\Common\Collections\Collection;
+use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\CatalogBundle\Entity\Category;
+use Oro\Bundle\IntegrationBundle\Entity\Channel;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\ImportExport\Normalizer\LocalizationCodeFormatter;
 use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStrategy;
@@ -11,31 +13,82 @@ use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStr
 /**
  * Strategy to import categories.
  */
-class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy
+class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy implements ClosableInterface
 {
     use ImportStrategyAwareHelperTrait;
 
-    protected function beforeProcessEntity($entity)
+    /**
+     * @var Category[]
+     *
+     * Cache existing category request in scope of a single row processing to avoid excess DB queries
+     */
+    private $existingCategories = [];
+
+    /** @var int */
+    private $rootCategoryId;
+
+    public function close()
+    {
+        $this->reflectionProperties = [];
+        $this->cachedEntities = [];
+        $this->cachedInverseSingleRelations = [];
+        $this->cachedExistingEntities = [];
+        $this->cachedInverseMultipleRelations = [];
+
+        $this->existingCategories = [];
+        $this->rootCategoryId = null;
+
+        $this->databaseHelper->onClear();
+    }
+
+    protected function afterProcessEntity($entity)
     {
         if ($entity instanceof Category) {
             $parent = $entity->getParentCategory();
-            if ($parent instanceof Category) {
-                /** @var Category $parent */
-                $parent = $this->findExistingEntity($parent);
-                $entity->setParentCategory($parent);
+            if ($parent instanceof Category && !$parent->getId()) {
+                $existingParent = $this->findExistingEntity($parent) ?? $this->getRootCategory();
+                $entity->setParentCategory($existingParent);
             }
         }
 
-        return parent::beforeProcessEntity($entity);
+        $this->existingCategories = [];
+
+        return parent::afterProcessEntity($entity);
+    }
+
+    private function getRootCategory()
+    {
+        if (null === $this->rootCategoryId) {
+            $channelId = $this->context->getOption('channel');
+            $channel = $this->doctrineHelper->getEntityRepository(Channel::class)->find($channelId);
+
+            $rootCategoryId = false;
+            if ($channel->getTransport()->getRootCategory()) {
+                $rootCategoryId = $channel->getTransport()->getRootCategory()->getId();
+            }
+            $this->rootCategoryId = $rootCategoryId;
+        }
+
+        if ($this->rootCategoryId) {
+            return $this->doctrineHelper->getEntityReference(Category::class, $this->rootCategoryId);
+        }
+
+        return null;
     }
 
     protected function findExistingEntity($entity, array $searchContext = [])
     {
         if ($entity instanceof Category && $entity->getAkeneoCode()) {
-            return $this->databaseHelper->findOneBy(
+            $category = $this->databaseHelper->findOneBy(
                 Category::class,
                 ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $entity->getChannel()]
             );
+
+            if ($category) {
+                $this->existingCategories[$entity->getAkeneoCode()] = $category;
+            }
+
+            return $category;
         }
 
         if (is_a($entity, $this->localizedFallbackValueClass, true)) {
@@ -50,10 +103,16 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy
     protected function findExistingEntityByIdentityFields($entity, array $searchContext = [])
     {
         if ($entity instanceof Category && $entity->getAkeneoCode()) {
-            return $this->databaseHelper->findOneBy(
+            $category = $this->databaseHelper->findOneBy(
                 Category::class,
                 ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $entity->getChannel()]
             );
+
+            if ($category) {
+                $this->existingCategories[$entity->getAkeneoCode()] = $category;
+            }
+
+            return $category;
         }
 
         if (is_a($entity, $this->localizedFallbackValueClass, true)) {

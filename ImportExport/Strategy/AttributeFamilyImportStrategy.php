@@ -61,11 +61,6 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
         $this->attributeManager = $attributeManager;
     }
 
-    /**
-     * @param AttributeFamily $entity
-     *
-     * @return object
-     */
     public function beforeProcessEntity($entity)
     {
         $this->removeInactiveAttributes($entity);
@@ -83,7 +78,16 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
             return $searchContext[$localizationCode] ?? null;
         }
 
-        if (is_a($entity, AttributeGroup::class) && !$this->processingEntity->getId()) {
+        if (is_a($entity, AttributeGroup::class)) {
+            $family = $this->findExistingEntity($entity->getAttributeFamily());
+            if ($family instanceof AttributeFamily) {
+                foreach ($family->getAttributeGroups() as $attributeGroup) {
+                    if ($attributeGroup->getCode() === $entity->getCode()) {
+                        return $attributeGroup;
+                    }
+                }
+            }
+
             return null;
         }
 
@@ -98,7 +102,16 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
             return $searchContext[$localizationCode] ?? null;
         }
 
-        if (is_a($entity, AttributeGroup::class) && !$this->processingEntity->getId()) {
+        if (is_a($entity, AttributeGroup::class)) {
+            $family = $this->findExistingEntity($entity->getAttributeFamily());
+            if ($family instanceof AttributeFamily) {
+                foreach ($family->getAttributeGroups() as $attributeGroup) {
+                    if ($attributeGroup->getCode() === $entity->getCode()) {
+                        return $attributeGroup;
+                    }
+                }
+            }
+
             return null;
         }
 
@@ -334,6 +347,7 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
 
         if (!$defaultGroup) {
             $defaultGroup = new AttributeGroup();
+            $defaultGroup->setCode(self::GROUP_CODE_GENERAL);
             $defaultGroup->setAkeneoCode('default');
         }
 

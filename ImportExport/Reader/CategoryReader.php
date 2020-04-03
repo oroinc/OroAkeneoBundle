@@ -8,7 +8,7 @@ use Oro\Bundle\CatalogBundle\Entity\Repository\CategoryRepository;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 
-class CategoryReader extends IteratorBasedReader
+class CategoryReader extends BufferedIteratorBasedReader
 {
     /** @var DoctrineHelper */
     private $doctrineHelper;
@@ -33,7 +33,7 @@ class CategoryReader extends IteratorBasedReader
             ->setParameter('channelId', $channelId);
 
         $iterator = new BufferedIdentityQueryResultIterator($qb);
-        $iterator->setBufferSize(10);
+        $iterator->setBufferSize(1);
 
         $this->setSourceIterator($iterator);
     }

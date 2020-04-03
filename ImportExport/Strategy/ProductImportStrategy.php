@@ -33,7 +33,7 @@ class ProductImportStrategy extends ProductStrategy
         $this->cachedExistingEntities = [];
         $this->cachedInverseMultipleRelations = [];
 
-        $this->processedProducts = [];
+        $this->existingProducts = [];
 
         $this->databaseHelper->onClear();
 
@@ -59,7 +59,7 @@ class ProductImportStrategy extends ProductStrategy
             }
         }
 
-        $this->processedProducts = [];
+        $this->existingProducts = [];
 
         return parent::afterProcessEntity($entity);
     }

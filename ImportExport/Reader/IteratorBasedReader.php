@@ -10,12 +10,12 @@ abstract class IteratorBasedReader extends AbstractReader
     /**
      * @var \Iterator
      */
-    private $sourceIterator;
+    protected $sourceIterator;
 
     /**
      * @var bool
      */
-    private $rewound = false;
+    protected $rewound = false;
 
     /**
      * {@inheritdoc}
