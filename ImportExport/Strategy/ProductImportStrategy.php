@@ -230,10 +230,16 @@ class ProductImportStrategy extends ProductStrategy
 
     protected function isFieldExcluded($entityName, $fieldName, $itemData = null)
     {
-        if (
-            is_a($entityName, Product::class, true)
-            && in_array($fieldName, ['variantLinks', 'parentVariantLinks', 'images'])
-        ) {
+        $excludeProductFields = [
+            'variantLinks',
+            'parentVariantLinks',
+            'images',
+            'slugs',
+            'slugPrototypes',
+            'slugPrototypesWithRedirect',
+        ];
+
+        if (is_a($entityName, Product::class, true) && in_array($fieldName, $excludeProductFields)) {
             return true;
         }
 

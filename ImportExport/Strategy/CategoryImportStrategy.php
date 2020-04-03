@@ -213,6 +213,22 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
         }
     }
 
+    protected function isFieldExcluded($entityName, $fieldName, $itemData = null)
+    {
+        $excludeCategoryFields = [
+            'childCategories',
+            'slugs',
+            'slugPrototypes',
+            'slugPrototypesWithRedirect',
+        ];
+
+        if (is_a($entityName, Category::class, true) && in_array($fieldName, $excludeCategoryFields)) {
+            return true;
+        }
+
+        return parent::isFieldExcluded($entityName, $fieldName, $itemData);
+    }
+
     protected function mapCollections(Collection $importedCollection, Collection $sourceCollection)
     {
     }
