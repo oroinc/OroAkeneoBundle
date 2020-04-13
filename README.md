@@ -1,3 +1,4 @@
+
 # Akeneo PIM OroCommerce Connector
 
 ## Short overview
@@ -187,3 +188,4 @@ Because of the differences between Akeneo and OroCommerce, you should take into 
 * FEATURE: filter the attribute list to import, import by consequence only the attributes and the product data while syncing
 * FEATURE: make sure that category of an Akeneo channel is imported only instead of all channels
 * FEATURE: Merge images of children products to the configurable products. Can be configured.
+* FEATURE: backend admin can use a placeholder `<updated_at_placeholder>` into the product filter settings to allow to use the date of the last successful batch as value when using the "updated_at" filter from akeneo. This makes possible to import delta changes only.

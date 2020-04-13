@@ -12,6 +12,7 @@ namespace Oro\Bundle\AkeneoBundle\Tools;
 final class ParseUpdatedPlaceholder
 {
     const UPDATED_PLACEHOLDER = '<updated_at_placeholder>';
+
     /**
      * @var string
      */
@@ -24,7 +25,7 @@ final class ParseUpdatedPlaceholder
     public function __construct(string $input, ?\Datetime $updated = null)
     {
         $this->input = $input;
-        $this->updated = $updated ?? new \DateTime('1970-01-01 00:00:00', new \DateTimeZone('UTC'));
+        $this->updated = $updated ?? new \DateTime('@0');
     }
 
     public function __invoke(): ?string
