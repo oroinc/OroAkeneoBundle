@@ -216,7 +216,7 @@ class AkeneoTransport implements AkeneoTransportInterface
      *
      * @return \Iterator
      */
-    public function getProducts(int $pageSize, ?string $updatedAt = null)
+    public function getProducts(int $pageSize, ?\DateTime $updatedAt = null)
     {
         $this->initAttributesList();
 
@@ -238,7 +238,7 @@ class AkeneoTransport implements AkeneoTransportInterface
     /**
      * @return \Iterator
      */
-    public function getProductModels(int $pageSize, ?string $updatedAt = null)
+    public function getProductModels(int $pageSize, ?\DateTime $updatedAt = null)
     {
         $this->initAttributesList();
         $this->initFamilyVariants();

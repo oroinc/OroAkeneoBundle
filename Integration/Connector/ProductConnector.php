@@ -3,10 +3,12 @@
 namespace Oro\Bundle\AkeneoBundle\Integration\Connector;
 
 use Oro\Bundle\AkeneoBundle\Placeholder\SchemaUpdateFilter;
+use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 use Oro\Bundle\IntegrationBundle\Entity\Channel;
 use Oro\Bundle\IntegrationBundle\Provider\AllowedConnectorInterface;
 use Oro\Bundle\IntegrationBundle\Provider\ConnectorInterface;
 use Oro\Bundle\ProductBundle\Entity\Product;
+use Psr\Log\LoggerAwareInterface;
 
 /**
  * Integration product connector.
@@ -105,8 +107,25 @@ class ProductConnector extends AbstractOroAkeneoConnector implements ConnectorIn
         return $this->schemaUpdateFilter->isApplicable($integration, Product::class);
     }
 
-    private function getLastSyncDate(): ?\DateTime
+    protected function initializeFromContext(ContextInterface $context)
     {
-        return ($this->getStatusData(self::LAST_SYNC_KEY)) ? new \DateTime($this->getStatusData(self::LAST_SYNC_KEY), new \DateTimeZone('UTC')) : null;
+        $this->transport = $this->contextMediator->getTransport($context, true);
+        $this->channel = $this->contextMediator->getChannel($context);
+
+        $status = $this->getLastCompletedIntegrationStatus($this->channel, $this->getType());
+        $this->addStatusData(self::LAST_SYNC_KEY, $status->getData()[self::LAST_SYNC_KEY] ?? null);
+
+        $this->validateConfiguration();
+        $this->transport->init($this->channel->getTransport());
+        $this->setSourceIterator($this->getConnectorSource());
+
+        if ($this->getSourceIterator() instanceof LoggerAwareInterface) {
+            $this->getSourceIterator()->setLogger($this->logger);
+        }
+    }
+
+    public function supportsForceSync()
+    {
+        return true;
     }
 }

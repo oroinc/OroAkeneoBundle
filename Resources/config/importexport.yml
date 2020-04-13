@@ -185,6 +185,7 @@ services:
       - "@oro_integration.provider.connector_context_mediator"
     calls:
       - [setSchemaUpdateFilter, ['@oro_akeneo.placeholder.schema_update_filter']]
+      - [setManagerRegistry, ["@doctrine"]]
     tags:
       - { name: oro_integration.connector, type: product, channel_type: oro_akeneo }
 

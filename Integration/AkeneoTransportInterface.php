@@ -44,12 +44,12 @@ interface AkeneoTransportInterface extends TransportInterface
      *
      * @return \Iterator
      */
-    public function getProducts(int $pageSize);
+    public function getProducts(int $pageSize, ?\DateTime $updatedAt = null);
 
     /**
      * @return \Iterator
      */
-    public function getProductModels(int $pageSize);
+    public function getProductModels(int $pageSize, ?\DateTime $updatedAt = null);
 
     /**
      * @return \Iterator

@@ -4,11 +4,12 @@ namespace Oro\Bundle\AkeneoBundle\Integration\Connector;
 
 use Oro\Bundle\AkeneoBundle\Integration\AkeneoTransportInterface;
 use Oro\Bundle\CatalogBundle\Entity\Category;
+use Oro\Bundle\IntegrationBundle\Provider\AbstractConnector;
 
 /**
  * @property AkeneoTransportInterface $transport
  */
-class CategoryConnector extends AbstractOroAkeneoConnector
+class CategoryConnector extends AbstractConnector
 {
     const IMPORT_JOB_NAME = 'akeneo_category_import';
     const PAGE_SIZE = 25;
