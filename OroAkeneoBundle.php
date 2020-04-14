@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\AkeneoBundle;
 
+use Oro\Bundle\AkeneoBundle\DependencyInjection\CompilerPass\AdditionalApiCompilerPass;
 use Oro\Bundle\AkeneoBundle\DependencyInjection\CompilerPass\AdditionalOptionalListenersCompilerPass;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -14,6 +15,7 @@ class OroAkeneoBundle extends Bundle
      */
     public function build(ContainerBuilder $container)
     {
+        $container->addCompilerPass(new AdditionalApiCompilerPass());
         $container->addCompilerPass(new AdditionalOptionalListenersCompilerPass(), PassConfig::TYPE_AFTER_REMOVING);
     }
 }
