@@ -92,7 +92,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         try {
             $importedRecord['primaryUnitPrecision'] = $this->productUnitDiscovery->discover($this->getTransport(), $importedRecord);
         } catch (IgnoreProductUnitChangesException $e) {
-            $this->logger->error($e->getMessage());
+            $this->logger->info($e->getMessage());
         }
 
 
