@@ -3,7 +3,9 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
+use Oro\Bundle\AkeneoBundle\Exceptions\IgnoreProductUnitChangesException;
 use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
+use Oro\Bundle\AkeneoBundle\ProductUnit\ProductUnitDiscoveryInterface;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeFamilyCodeGenerator;
 use Oro\Bundle\AkeneoBundle\Tools\Generator;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
@@ -18,17 +20,19 @@ use Oro\Bundle\LocaleBundle\Formatter\DateTimeFormatterInterface;
 use Oro\Bundle\ProductBundle\Entity\Product;
 use Oro\Bundle\ProductBundle\ImportExport\DataConverter\ProductDataConverter as BaseProductDataConverter;
 use Oro\Bundle\ProductBundle\ProductVariant\Registry\ProductVariantFieldValueHandlerRegistry;
-use Oro\Bundle\ProductBundle\Provider\ProductUnitsProvider;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 
 /**
  * Converts data for imported row.
  *
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
-class ProductDataConverter extends BaseProductDataConverter implements ContextAwareInterface
+class ProductDataConverter extends BaseProductDataConverter implements ContextAwareInterface, LoggerAwareInterface
 {
     use AkeneoIntegrationTrait;
     use LocalizationAwareTrait;
+    use LoggerAwareTrait;
 
     /** @var ConfigManager */
     protected $entityConfigManager;
@@ -44,8 +48,8 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
     private $mappedAttributes = [];
 
-    /** @var ProductUnitsProvider */
-    protected $productUnitsProvider;
+    /** @var ProductUnitDiscoveryInterface */
+    private $productUnitDiscovery;
 
     /** @var DoctrineHelper */
     protected $doctrineHelper;
@@ -66,9 +70,9 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         $this->doctrineHelper = $doctrineHelper;
     }
 
-    public function setProductUnitsProvider(ProductUnitsProvider $productUnitsProvider): void
+    public function setProductUnitDiscovery(ProductUnitDiscoveryInterface $productUnitDiscovery): void
     {
-        $this->productUnitsProvider = $productUnitsProvider;
+        $this->productUnitDiscovery = $productUnitDiscovery;
     }
 
     /**
@@ -104,7 +108,11 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
     private function setPrimaryUnitPrecision(array &$importedRecord): void
     {
-        $importedRecord['primaryUnitPrecision'] = $this->getPrimaryUnitPrecision($importedRecord);
+        try {
+            $importedRecord['primaryUnitPrecision'] = $this->productUnitDiscovery->discover($this->getTransport(), $importedRecord);
+        } catch (IgnoreProductUnitChangesException $e) {
+            $this->logger->info($e->getMessage());
+        }
     }
 
     private function setNames(array &$importedRecord): void
@@ -517,32 +525,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
     protected function getPrimaryUnitPrecision(array $importedRecord): array
     {
-        $unit = $this->configManager->get('oro_product.default_unit');
-        $precision = $this->configManager->get('oro_product.default_unit_precision');
-
-        $unitAttribute = $this->getTransport()->getProductUnitAttribute();
-        $unitPrecisionAttribute = $this->getTransport()->getProductUnitPrecisionAttribute();
-
-        $availableUnits = $this->productUnitsProvider->getAvailableProductUnits();
-
-        if (isset($importedRecord['values'][$unitAttribute])) {
-            $unitData = reset($importedRecord['values'][$unitAttribute]);
-            if (isset($unitData['data']) && in_array($unitData['data'], $availableUnits)) {
-                $unit = $unitData['data'];
-            }
-        }
-        if (isset($importedRecord['values'][$unitPrecisionAttribute])) {
-            $unitPrecisionData = reset($importedRecord['values'][$unitPrecisionAttribute]);
-            if (isset($unitPrecisionData['data'])) {
-                $precision = (int)$unitPrecisionData['data'];
-            }
-        }
-
-        return [
-            'unit' => ['code' => $unit],
-            'precision' => $precision,
-            'sell' => true,
-        ];
+        return $this->productUnitDiscovery->discover($this->getTransport(), $importedRecord);
     }
 
     public function setProductVariantFieldValueHandlerRegistry(

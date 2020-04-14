@@ -396,3 +396,9 @@ services:
     parent: oro.data.cache
     tags:
       - { name: 'cache.pool', namespace: 'oro_akeneo_configurable_cache' }
+
+  oro_akeneo.product_unit.discovery:
+    class: Oro\Bundle\AkeneoBundle\ProductUnit\ImportFromAkeneoDiscovery
+    arguments:
+      - '@oro_config.manager'
+      - '@oro_product.provider.product_units_provider'
