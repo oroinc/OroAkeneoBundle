@@ -276,6 +276,9 @@ class AkeneoSettings extends Transport
                     'akeneoLocales'                 => $this->getAkeneoLocales()->toArray(),
                     'akeneoLocalesList'             => $this->getAkeneoLocalesList(),
                     'akeneoAttributesList'          => $this->getAkeneoAttributesList(),
+                    'alternativeIdentifier'         => $this->getAlternativeIdentifier(),
+                    'akeneoAttributesImageList'     => $this->getAkeneoAttributesImageList(),
+                    'akeneoMergeImageToParent'      => $this->isAkeneoMergeImageToParent(),
                 ]
             );
         }
