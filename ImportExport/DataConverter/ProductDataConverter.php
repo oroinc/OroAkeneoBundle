@@ -4,16 +4,17 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 
 use Doctrine\Common\Util\Inflector;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
+use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeFamilyCodeGenerator;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeTypeConverter;
 use Oro\Bundle\AkeneoBundle\Tools\Generator;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
+use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityConfigBundle\Generator\SlugGenerator;
 use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
 use Oro\Bundle\EntityExtendBundle\Extend\RelationType;
 use Oro\Bundle\ImportExportBundle\Context\ContextAwareInterface;
-use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 use Oro\Bundle\LocaleBundle\Entity\Localization;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\Formatter\DateTimeFormatter;
@@ -29,6 +30,7 @@ use Oro\Bundle\ProductBundle\Provider\ProductUnitsProvider;
 class ProductDataConverter extends BaseProductDataConverter implements ContextAwareInterface, ClosableInterface
 {
     use AkeneoIntegrationTrait;
+    use LocalizationAwareTrait;
 
     /**
      * @var SlugGenerator
@@ -56,17 +58,17 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     /** @var ProductUnitsProvider */
     protected $productUnitsProvider;
 
+    /** @var DoctrineHelper */
+    protected $doctrineHelper;
+
+    public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
+    {
+        $this->doctrineHelper = $doctrineHelper;
+    }
+
     public function setProductUnitsProvider(ProductUnitsProvider $productUnitsProvider): void
     {
         $this->productUnitsProvider = $productUnitsProvider;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setImportExportContext(ContextInterface $context)
-    {
-        $this->context = $context;
     }
 
     /**

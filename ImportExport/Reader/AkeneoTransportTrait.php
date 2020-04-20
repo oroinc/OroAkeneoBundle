@@ -2,13 +2,13 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Reader;
 
+use Oro\Bundle\AkeneoBundle\Integration\AkeneoTransport;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 use Oro\Bundle\IntegrationBundle\Provider\ConnectorContextMediator;
-use Oro\Bundle\IntegrationBundle\Provider\TransportInterface;
 
 trait AkeneoTransportTrait
 {
-    /** @var TransportInterface */
+    /** @var AkeneoTransport */
     protected $akeneoTransport;
 
     /** @var ConnectorContextMediator */

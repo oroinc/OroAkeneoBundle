@@ -2,9 +2,11 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 
+use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeFamilyCodeGenerator;
 use Oro\Bundle\AkeneoBundle\Tools\FieldConfigModelFieldNameGenerator;
 use Oro\Bundle\AkeneoBundle\Tools\Generator;
+use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager as EntityConfigManager;
 use Oro\Bundle\ImportExportBundle\Context\ContextAwareInterface;
 use Oro\Bundle\LocaleBundle\ImportExport\DataConverter\LocalizedFallbackValueAwareDataConverter;
@@ -13,6 +15,7 @@ use Oro\Bundle\ProductBundle\Entity\Product;
 class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConverter implements ContextAwareInterface
 {
     use AkeneoIntegrationTrait;
+    use LocalizationAwareTrait;
 
     /** @var array */
     protected $fieldMapping = [];
@@ -21,6 +24,14 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
      * @var EntityConfigManager
      */
     protected $entityConfigManager;
+
+    /** @var DoctrineHelper */
+    protected $doctrineHelper;
+
+    public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
+    {
+        $this->doctrineHelper = $doctrineHelper;
+    }
 
     public function setEntityConfigManager(EntityConfigManager $entityConfigManager)
     {
@@ -35,7 +46,7 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
         $importedRecord['code'] = AttributeFamilyCodeGenerator::generate($importedRecord['code']);
         $importedRecord['entityClass'] = Product::class;
         $importedRecord['isEnabled'] = true;
-        $importedRecord['channel:id'] = $this->getContext()->getOption('channel');
+        $importedRecord['channel:id'] = $this->getImportExportContext()->getOption('channel');
 
         $this->setLabels($importedRecord);
 
