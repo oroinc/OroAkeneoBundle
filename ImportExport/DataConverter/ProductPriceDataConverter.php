@@ -2,6 +2,8 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 
+use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
+use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\PricingBundle\ImportExport\DataConverter\ProductPriceDataConverter as BaseProductPriceDataConverter;
 use Oro\Bundle\PricingBundle\Provider\PriceListProvider;
 
@@ -13,6 +15,14 @@ class ProductPriceDataConverter extends BaseProductPriceDataConverter
      * @var PriceListProvider
      */
     protected $priceListProvider;
+
+    /** @var DoctrineHelper */
+    protected $doctrineHelper;
+
+    public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
+    {
+        $this->doctrineHelper = $doctrineHelper;
+    }
 
     /**
      * {@inheritdoc}

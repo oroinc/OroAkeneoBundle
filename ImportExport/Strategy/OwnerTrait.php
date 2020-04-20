@@ -5,7 +5,6 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 use Oro\Bundle\IntegrationBundle\Entity\Channel;
-use Oro\Bundle\IntegrationBundle\ImportExport\Helper\DefaultOwnerHelper;
 
 /**
  * @property DoctrineHelper $doctrineHelper
@@ -17,6 +16,11 @@ trait OwnerTrait
      * @var DefaultOwnerHelper
      */
     protected $ownerHelper;
+
+    /**
+     * @var Channel
+     */
+    protected $channel;
 
     /**
      * @param DefaultOwnerHelper $ownerHelper
@@ -32,8 +36,18 @@ trait OwnerTrait
             return;
         }
 
-        $channelId = $this->context->getOption('channel');
-        $channel = $this->doctrineHelper->getEntityRepository(Channel::class)->find($channelId);
-        $this->ownerHelper->populateChannelOwner($entity, $channel);
+        if (!$this->channel) {
+            $this->channel = $this->doctrineHelper->getEntityReference(
+                Channel::class,
+                $this->context->getOption('channel')
+            );
+        }
+
+        $this->ownerHelper->populateChannelOwner($entity, $this->channel);
+    }
+
+    private function clearOwnerCache()
+    {
+        $this->channel = null;
     }
 }

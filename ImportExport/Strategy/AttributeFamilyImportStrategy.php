@@ -3,6 +3,7 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 
 use Doctrine\Common\Collections\Collection;
+use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeFamily;
 use Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeGroup;
 use Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeGroupRelation;
@@ -20,7 +21,7 @@ use Oro\Bundle\ProductBundle\Entity\Product;
  *
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
-class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
+class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy implements ClosableInterface
 {
     use ImportStrategyAwareHelperTrait;
     use OwnerTrait;
@@ -47,19 +48,18 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
         $this->attributeManager = $attributeManager;
     }
 
+    public function close()
+    {
+        $this->clearOwnerCache();
+    }
+
     public function beforeProcessEntity($entity)
     {
         $this->removeInactiveAttributes($entity);
         $this->setSystemAttributes($entity);
-
-        return parent::beforeProcessEntity($entity);
-    }
-
-    protected function afterProcessEntity($entity)
-    {
         $this->setOwner($entity);
 
-        return parent::afterProcessEntity($entity);
+        return parent::beforeProcessEntity($entity);
     }
 
     protected function findExistingEntity($entity, array $searchContext = [])

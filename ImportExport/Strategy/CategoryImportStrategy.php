@@ -32,14 +32,20 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
     {
         $this->reflectionProperties = [];
         $this->cachedEntities = [];
-        $this->cachedInverseSingleRelations = [];
-        $this->cachedExistingEntities = [];
-        $this->cachedInverseMultipleRelations = [];
 
         $this->existingCategories = [];
         $this->rootCategoryId = null;
 
+        $this->clearOwnerCache();
+
         $this->databaseHelper->onClear();
+    }
+
+    protected function beforeProcessEntity($entity)
+    {
+        $this->setOwner($entity);
+
+        return parent::beforeProcessEntity($entity);
     }
 
     protected function afterProcessEntity($entity)
@@ -51,8 +57,6 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
                 $entity->setParentCategory($existingParent);
             }
         }
-
-        $this->setOwner($entity);
 
         $this->existingCategories = [];
 

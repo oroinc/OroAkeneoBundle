@@ -2,27 +2,22 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Reader;
 
-use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
+use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
-use Oro\Bundle\IntegrationBundle\Entity\Channel;
 
 class ProductImageReader extends IteratorBasedReader
 {
     use AkeneoTransportTrait;
-
-    /** @var DoctrineHelper */
-    private $doctrineHelper;
-
-    /**
-     * @var AkeneoSettings
-     */
-    private $transport;
+    use AkeneoIntegrationTrait;
 
     /**
      * @var array
      */
     private $attributesImageFilter = [];
+
+    /** @var DoctrineHelper */
+    protected $doctrineHelper;
 
     public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
     {
@@ -31,6 +26,7 @@ class ProductImageReader extends IteratorBasedReader
 
     protected function initializeFromContext(ContextInterface $context)
     {
+        $this->setImportExportContext($context);
         parent::initializeFromContext($context);
 
         $this->initAttributesImageList();
@@ -78,29 +74,6 @@ class ProductImageReader extends IteratorBasedReader
         if (!empty($list)) {
             $this->attributesImageFilter = explode(';', $list);
         }
-    }
-
-    /**
-     * @return AkeneoSettings
-     */
-    private function getTransport(): ?AkeneoSettings
-    {
-        if (!$this->transport) {
-            if (!$this->getContext() || false === $this->getContext()->hasOption('channel')) {
-                return null;
-            }
-
-            $channelId = $this->getContext()->getOption('channel');
-            $channel = $this->doctrineHelper->getEntityRepositoryForClass(Channel::class)->find($channelId);
-
-            if (!$channel) {
-                return null;
-            }
-
-            $this->transport = $channel->getTransport();
-        }
-
-        return $this->transport;
     }
 
     protected function processImagesDownload(array $items, ContextInterface $context)

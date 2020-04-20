@@ -2,9 +2,11 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 
+use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeTypeConverter;
 use Oro\Bundle\AkeneoBundle\Tools\FieldConfigModelFieldNameGenerator;
 use Oro\Bundle\AkeneoBundle\Tools\Generator;
+use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityConfigBundle\ImportExport\DataConverter\EntityFieldDataConverter;
 
 /**
@@ -13,8 +15,17 @@ use Oro\Bundle\EntityConfigBundle\ImportExport\DataConverter\EntityFieldDataConv
 class AttributeDataConverter extends EntityFieldDataConverter
 {
     use AkeneoIntegrationTrait;
+    use LocalizationAwareTrait;
 
     private const ENTITY_LABEL_MAX_LENGTH = 50;
+
+    /** @var DoctrineHelper */
+    protected $doctrineHelper;
+
+    public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
+    {
+        $this->doctrineHelper = $doctrineHelper;
+    }
 
     /**
      * {@inheritdoc}
@@ -23,7 +34,7 @@ class AttributeDataConverter extends EntityFieldDataConverter
     {
         $importedRecord['type'] = AttributeTypeConverter::convert($importedRecord['type']);
         $importedRecord['fieldName'] = FieldConfigModelFieldNameGenerator::generate($importedRecord['code']);
-        $importedRecord['entity:id'] = (int)$this->getContext()->getValue('entity_id');
+        $importedRecord['entity:id'] = (int)$this->getImportExportContext()->getValue('entity_id');
         $this->setLabels($importedRecord);
         $this->setEnumOptions($importedRecord);
 

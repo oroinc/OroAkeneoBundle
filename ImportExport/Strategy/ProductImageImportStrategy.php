@@ -11,7 +11,6 @@ use Oro\Bundle\ProductBundle\Entity\ProductImage;
 class ProductImageImportStrategy extends ConfigurableAddOrReplaceStrategy
 {
     use ImportStrategyAwareHelperTrait;
-    use OwnerTrait;
 
     /**
      * @param ProductImage $entity
@@ -25,12 +24,5 @@ class ProductImageImportStrategy extends ConfigurableAddOrReplaceStrategy
         }
 
         return parent::beforeProcessEntity($entity);
-    }
-
-    protected function afterProcessEntity($entity)
-    {
-        $this->setOwner($entity);
-
-        return parent::afterProcessEntity($entity);
     }
 }

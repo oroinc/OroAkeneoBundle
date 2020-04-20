@@ -30,9 +30,10 @@ class ProductImportStrategy extends ProductStrategy
     {
         $this->reflectionProperties = [];
         $this->cachedEntities = [];
-        $this->owner = null;
 
         $this->existingProducts = [];
+
+        $this->clearOwnerCache();
 
         $this->databaseHelper->onClear();
 
@@ -47,13 +48,13 @@ class ProductImportStrategy extends ProductStrategy
             $entity->setInventoryStatus($existingProduct->getInventoryStatus());
         }
 
+        $this->setOwner($entity);
+
         return parent::beforeProcessEntity($entity);
     }
 
     protected function afterProcessEntity($entity)
     {
-        $this->setOwner($entity);
-
         if ($entity instanceof Product && $entity->getCategory() instanceof Category) {
             if (!$entity->getCategory()->getId()) {
                 $entity->setCategory(null);
@@ -63,6 +64,10 @@ class ProductImportStrategy extends ProductStrategy
         $this->existingProducts = [];
 
         return parent::afterProcessEntity($entity);
+    }
+
+    protected function populateOwner(Product $entity)
+    {
     }
 
     protected function findExistingEntity($entity, array $searchContext = [])
