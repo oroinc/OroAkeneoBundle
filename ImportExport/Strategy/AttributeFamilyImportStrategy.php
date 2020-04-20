@@ -3,6 +3,7 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 
 use Doctrine\Common\Collections\Collection;
+use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeFamily;
 use Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeGroup;
 use Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeGroupRelation;
@@ -10,8 +11,6 @@ use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityConfigBundle\Entity\FieldConfigModel;
 use Oro\Bundle\EntityConfigBundle\Manager\AttributeManager;
 use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
-use Oro\Bundle\IntegrationBundle\Entity\Channel;
-use Oro\Bundle\IntegrationBundle\ImportExport\Helper\DefaultOwnerHelper;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\ImportExport\Normalizer\LocalizationCodeFormatter;
 use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStrategy;
@@ -22,16 +21,12 @@ use Oro\Bundle\ProductBundle\Entity\Product;
  *
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
-class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
+class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy implements ClosableInterface
 {
     use ImportStrategyAwareHelperTrait;
+    use OwnerTrait;
 
     private const GROUP_CODE_GENERAL = 'general';
-
-    /**
-     * @var DefaultOwnerHelper
-     */
-    protected $ownerHelper;
 
     /**
      * @var AttributeManager
@@ -43,14 +38,6 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
      */
     protected $configManager;
 
-    /**
-     * @param DefaultOwnerHelper $ownerHelper
-     */
-    public function setOwnerHelper($ownerHelper)
-    {
-        $this->ownerHelper = $ownerHelper;
-    }
-
     public function setConfigManager(ConfigManager $configManager): void
     {
         $this->configManager = $configManager;
@@ -59,6 +46,11 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
     public function setAttributeManager(AttributeManager $attributeManager)
     {
         $this->attributeManager = $attributeManager;
+    }
+
+    public function close()
+    {
+        $this->clearOwnerCache();
     }
 
     public function beforeProcessEntity($entity)
@@ -179,20 +171,6 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy
         }
 
         return false;
-    }
-
-    /**
-     * Sets owner.
-     */
-    private function setOwner(AttributeFamily $entity)
-    {
-        if (false === $this->ownerChecker->isOwnerCanBeSet($entity)) {
-            return;
-        }
-
-        $channelId = $this->context->getOption('channel');
-        $channel = $this->doctrineHelper->getEntityRepository(Channel::class)->find($channelId);
-        $this->ownerHelper->populateChannelOwner($entity, $channel);
     }
 
     /**

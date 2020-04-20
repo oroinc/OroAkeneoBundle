@@ -2,7 +2,9 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 
+use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\AkeneoBundle\Tools\Generator;
+use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityConfigBundle\Generator\SlugGenerator;
 use Oro\Bundle\ImportExportBundle\Context\ContextAwareInterface;
 use Oro\Bundle\LocaleBundle\ImportExport\DataConverter\LocalizedFallbackValueAwareDataConverter;
@@ -10,11 +12,20 @@ use Oro\Bundle\LocaleBundle\ImportExport\DataConverter\LocalizedFallbackValueAwa
 class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter implements ContextAwareInterface
 {
     use AkeneoIntegrationTrait;
+    use LocalizationAwareTrait;
 
     /**
      * @var SlugGenerator
      */
     protected $slugGenerator;
+
+    /** @var DoctrineHelper */
+    protected $doctrineHelper;
+
+    public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
+    {
+        $this->doctrineHelper = $doctrineHelper;
+    }
 
     public function setSlugGenerator(SlugGenerator $slugGenerator)
     {
@@ -30,7 +41,7 @@ class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter imp
         $this->setSlugs($importedRecord);
         $this->setRootCategory($importedRecord);
 
-        $importedRecord['channel:id'] = $this->getContext()->getOption('channel');
+        $importedRecord['channel:id'] = $this->getImportExportContext()->getOption('channel');
 
         return parent::convertToImportFormat($importedRecord, $skipNullValues);
     }
@@ -77,7 +88,7 @@ class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter imp
     private function setRootCategory(array &$importedRecord)
     {
         if ($importedRecord['parent']) {
-            $importedRecord['parentCategory:channel:id'] = $this->getContext()->getOption('channel');
+            $importedRecord['parentCategory:channel:id'] = $this->getImportExportContext()->getOption('channel');
             $importedRecord['parentCategory:akeneo_code'] = $importedRecord['parent'];
 
             return;

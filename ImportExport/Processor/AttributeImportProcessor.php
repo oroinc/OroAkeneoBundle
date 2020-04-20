@@ -59,7 +59,7 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
         $object = $this->serializer->deserialize(
             $item,
             $this->getEntityName(),
-            null,
+            '',
             $this->context->getConfiguration()
         );
 

@@ -2,8 +2,7 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 
-use Oro\Bundle\IntegrationBundle\Entity\Channel;
-use Oro\Bundle\IntegrationBundle\Entity\Transport;
+use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\PricingBundle\ImportExport\Strategy\ProductPriceImportStrategy as BaseStrategy;
 
 /**
@@ -12,6 +11,7 @@ use Oro\Bundle\PricingBundle\ImportExport\Strategy\ProductPriceImportStrategy as
 class ProductPriceImportStrategy extends BaseStrategy
 {
     use ImportStrategyAwareHelperTrait;
+    use AkeneoIntegrationTrait;
 
     /**
      * {@inheritdoc}
@@ -26,24 +26,5 @@ class ProductPriceImportStrategy extends BaseStrategy
         }
 
         return parent::beforeProcessEntity($entity);
-    }
-
-    /**
-     * @return null|Transport
-     */
-    private function getTransport()
-    {
-        if (!$this->context || false === $this->context->hasOption('channel')) {
-            return null;
-        }
-
-        $channelId = $this->context->getOption('channel');
-        $channel = $this->doctrineHelper->getEntityRepository(Channel::class)->find($channelId);
-
-        if (!$channel) {
-            return null;
-        }
-
-        return $channel->getTransport();
     }
 }
