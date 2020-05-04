@@ -3,7 +3,6 @@
 namespace Oro\Bundle\AkeneoBundle\Client;
 
 use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClient;
-use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientBuilder;
 use Oro\Bundle\AkeneoBundle\Encoder\Crypter;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
@@ -62,6 +61,11 @@ class AkeneoClientFactory
     private $client;
 
     /**
+     * @var AkeneoClientBuilder
+     */
+    private $clientBuilder;
+
+    /**
      * @var AkeneoSettings
      */
     private $akeneoSettings;
@@ -74,10 +78,14 @@ class AkeneoClientFactory
     /**
      * AkeneoClientFactory constructor.
      */
-    public function __construct(DoctrineHelper $doctrineHelper, Crypter $crypter)
-    {
+    public function __construct(
+        DoctrineHelper $doctrineHelper,
+        Crypter $crypter,
+        AkeneoClientBuilder $clientBuilder
+    ) {
         $this->doctrineHelper = $doctrineHelper;
         $this->crypter = $crypter;
+        $this->clientBuilder = $clientBuilder;
     }
 
     /**
@@ -127,8 +135,8 @@ class AkeneoClientFactory
      */
     private function createClientByToken()
     {
-        $clientBuilder = new AkeneoPimEnterpriseClientBuilder($this->akeneoUrl);
-        $this->client = $clientBuilder->buildAuthenticatedByToken(
+        $this->clientBuilder->setBaseUri($this->akeneoUrl);
+        $this->client = $this->clientBuilder->buildAuthenticatedByToken(
             $this->clientId,
             $this->secret,
             $this->token,
@@ -145,8 +153,8 @@ class AkeneoClientFactory
      */
     private function createClient()
     {
-        $clientBuilder = new AkeneoPimEnterpriseClientBuilder($this->akeneoUrl);
-        $this->client = $clientBuilder->buildAuthenticatedByPassword(
+        $this->clientBuilder->setBaseUri($this->akeneoUrl);
+        $this->client = $this->clientBuilder->buildAuthenticatedByPassword(
             $this->clientId,
             $this->secret,
             $this->userName,

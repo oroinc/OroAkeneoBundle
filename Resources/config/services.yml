@@ -12,6 +12,7 @@ services:
     arguments:
       - "@oro_entity.doctrine_helper"
       - "@oro_akeneo.encoder.crypter"
+      - "@oro_akeneo.client_builder"
 
   oro_akeneo.security.acl.voter.channel:
     class: Oro\Bundle\AkeneoBundle\Acl\Voter\CategoryVoter
@@ -95,6 +96,9 @@ services:
       - '@oro_integration.processor_registry'
     tags:
       - { name: 'oro_message_queue.client.message_processor', topicName: 'oro.integration.akeneo.product' }
+
+  oro_akeneo.client_builder:
+    class: Oro\Bundle\AkeneoBundle\Client\AkeneoClientBuilder
 
   oro_akeneo.config_manager:
     class: 'Oro\Bundle\AkeneoBundle\Config\ConfigManager'
