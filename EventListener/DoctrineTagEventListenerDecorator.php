@@ -40,4 +40,9 @@ class DoctrineTagEventListenerDecorator implements AdditionalOptionalListenerInt
     {
         $this->innerListener->markSkipped($className);
     }
+
+    public function setEnabled($enabled = true)
+    {
+        $this->innerListener->setEnabled($enabled);
+    }
 }
