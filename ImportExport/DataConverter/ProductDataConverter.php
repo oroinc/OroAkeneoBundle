@@ -5,6 +5,7 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 use Doctrine\Common\Util\Inflector;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
+use Oro\Bundle\AkeneoBundle\ProductUnit\ProductUnitDiscoveryInterface;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeFamilyCodeGenerator;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeTypeConverter;
 use Oro\Bundle\AkeneoBundle\Tools\Generator;
@@ -69,6 +70,11 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
     {
         $this->doctrineHelper = $doctrineHelper;
+    }
+
+    public function setProductUnitDiscovery(ProductUnitDiscoveryInterface $productUnitDiscovery): void
+    {
+        $this->productUnitDiscovery = $productUnitDiscovery;
     }
 
     /**
