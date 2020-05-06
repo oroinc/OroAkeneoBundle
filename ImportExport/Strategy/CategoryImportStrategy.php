@@ -3,8 +3,9 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 
 use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Util\ClassUtils;
+use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\CatalogBundle\Entity\Category;
+use Oro\Bundle\IntegrationBundle\Entity\Channel;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\ImportExport\Normalizer\LocalizationCodeFormatter;
 use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStrategy;
@@ -12,99 +13,112 @@ use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStr
 /**
  * Strategy to import categories.
  */
-class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy
+class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy implements ClosableInterface
 {
     use ImportStrategyAwareHelperTrait;
 
-    protected function beforeProcessEntity($entity)
+    /**
+     * @var Category[]
+     *
+     * Cache existing category request in scope of a single row processing to avoid excess DB queries
+     */
+    private $existingCategories = [];
+
+    /** @var int */
+    private $rootCategoryId;
+
+    public function close()
     {
-        if ($entity instanceof Category) {
-            $parent = $entity->getParentCategory();
-            if ($parent instanceof Category) {
-                /** @var Category $parent */
-                $parent = $this->findExistingEntity($parent);
-                $entity->setParentCategory($parent);
-            }
+        $this->reflectionProperties = [];
+        $this->cachedEntities = [];
+        $this->cachedInverseSingleRelations = [];
+        $this->cachedExistingEntities = [];
+        $this->cachedInverseMultipleRelations = [];
 
-            $existingEntity = $this->findExistingEntity($entity);
-            if ($existingEntity) {
-                $fields = $this->fieldHelper->getRelations(Category::class);
-                foreach ($fields as $field) {
-                    if ($this->isLocalizedFallbackValue($field)) {
-                        $fieldName = $field['name'];
-                        $this->mapCollections(
-                            $this->fieldHelper->getObjectValue($entity, $fieldName),
-                            $this->fieldHelper->getObjectValue($existingEntity, $fieldName)
-                        );
-                    }
-                }
-            }
-        }
+        $this->existingCategories = [];
+        $this->rootCategoryId = null;
 
-        return parent::beforeProcessEntity($entity);
+        $this->databaseHelper->onClear();
     }
 
     protected function afterProcessEntity($entity)
     {
-        if ($entity instanceof Category && !$entity->getMaterializedPath()) {
-            $entity->setMaterializedPath('');
+        if ($entity instanceof Category) {
+            $parent = $entity->getParentCategory();
+            if ($parent instanceof Category && !$parent->getId()) {
+                $existingParent = $this->findExistingEntity($parent) ?? $this->getRootCategory();
+                $entity->setParentCategory($existingParent);
+            }
         }
 
+        $this->existingCategories = [];
+
         return parent::afterProcessEntity($entity);
+    }
+
+    private function getRootCategory()
+    {
+        if (null === $this->rootCategoryId) {
+            $channelId = $this->context->getOption('channel');
+            $channel = $this->doctrineHelper->getEntityRepository(Channel::class)->find($channelId);
+
+            $rootCategoryId = false;
+            if ($channel->getTransport()->getRootCategory()) {
+                $rootCategoryId = $channel->getTransport()->getRootCategory()->getId();
+            }
+            $this->rootCategoryId = $rootCategoryId;
+        }
+
+        if ($this->rootCategoryId) {
+            return $this->doctrineHelper->getEntityReference(Category::class, $this->rootCategoryId);
+        }
+
+        return null;
     }
 
     protected function findExistingEntity($entity, array $searchContext = [])
     {
         if ($entity instanceof Category && $entity->getAkeneoCode()) {
-            return $this->databaseHelper->findOneBy(
+            $category = $this->databaseHelper->findOneBy(
                 Category::class,
                 ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $entity->getChannel()]
             );
+
+            if ($category) {
+                $this->existingCategories[$entity->getAkeneoCode()] = $category;
+            }
+
+            return $category;
+        }
+
+        if (is_a($entity, $this->localizedFallbackValueClass, true)) {
+            $localizationCode = LocalizationCodeFormatter::formatName($entity->getLocalization());
+
+            return $searchContext[$localizationCode] ?? null;
         }
 
         return parent::findExistingEntity($entity, $searchContext);
     }
 
-    protected function mapCollections(Collection $importedCollection, Collection $sourceCollection)
-    {
-        if ($importedCollection->isEmpty()) {
-            return;
-        }
-
-        if ($sourceCollection->isEmpty()) {
-            return;
-        }
-
-        $sourceCollection = $sourceCollection->toArray();
-        $sourceCollectionArray = [];
-
-        /** @var LocalizedFallbackValue $sourceValue */
-        foreach ($sourceCollection as $sourceValue) {
-            $key = LocalizationCodeFormatter::formatKey($sourceValue->getLocalization()) ??
-                LocalizationCodeFormatter::DEFAULT_LOCALIZATION;
-            $sourceCollectionArray[$key] = $sourceValue->getId();
-        }
-
-        foreach ($importedCollection as $importedValue) {
-            $key = LocalizationCodeFormatter::formatKey($importedValue->getLocalization()) ??
-                LocalizationCodeFormatter::DEFAULT_LOCALIZATION;
-            if (array_key_exists($key, $sourceCollectionArray)) {
-                $this->fieldHelper->setObjectValue($importedValue, 'id', $sourceCollectionArray[$key]);
-            }
-        }
-    }
-
-    protected function setLocalizationKeys($entity, array $field)
-    {
-    }
-
     protected function findExistingEntityByIdentityFields($entity, array $searchContext = [])
     {
         if ($entity instanceof Category && $entity->getAkeneoCode()) {
-            return $this->databaseHelper->findOneBy(
+            $category = $this->databaseHelper->findOneBy(
                 Category::class,
                 ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $entity->getChannel()]
             );
+
+            if ($category) {
+                $this->existingCategories[$entity->getAkeneoCode()] = $category;
+            }
+
+            return $category;
+        }
+
+        if (is_a($entity, $this->localizedFallbackValueClass, true)) {
+            $localizationCode = LocalizationCodeFormatter::formatName($entity->getLocalization());
+
+            return $searchContext[$localizationCode] ?? null;
         }
 
         return parent::findExistingEntityByIdentityFields($entity, $searchContext);
@@ -121,7 +135,7 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy
      */
     protected function updateRelations($entity, array $itemData = null)
     {
-        $entityName = ClassUtils::getClass($entity);
+        $entityName = $this->doctrineHelper->getEntityClass($entity);
         $fields = $this->fieldHelper->getFields($entityName, true);
 
         foreach ($fields as $field) {
@@ -157,10 +171,9 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy
                     $relationCollection = $this->getObjectValue($entity, $fieldName);
                     if ($relationCollection instanceof Collection) {
                         $collectionItemData = $this->fieldHelper->getItemData($itemData, $fieldName);
-                        $keysToRemove = [];
-                        foreach ($relationCollection as $key => $collectionEntity) {
+                        foreach ($relationCollection as $collectionEntity) {
                             $entityItemData = $this->fieldHelper->getItemData(array_shift($collectionItemData));
-                            $collectionEntity = $this->processEntity(
+                            $existingCollectionEntity = $this->processEntity(
                                 $collectionEntity,
                                 $isFullRelation,
                                 $isPersistRelation,
@@ -169,16 +182,14 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy
                                 true
                             );
 
-                            if ($collectionEntity) {
-                                $relationCollection->set($key, $collectionEntity);
-                                $this->cacheInverseFieldRelation($entityName, $fieldName, $collectionEntity);
-                            } else {
-                                $keysToRemove[] = $key;
-                            }
-                        }
+                            if ($existingCollectionEntity) {
+                                if (!$relationCollection->contains($existingCollectionEntity)) {
+                                    $relationCollection->removeElement($collectionEntity);
+                                    $relationCollection->add($existingCollectionEntity);
+                                }
 
-                        foreach ($keysToRemove as $key) {
-                            $relationCollection->remove($key);
+                                $this->cacheInverseFieldRelation($entityName, $fieldName, $existingCollectionEntity);
+                            }
                         }
                     }
                 }
@@ -197,5 +208,63 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy
         } else {
             $this->context->incrementAddCount();
         }
+    }
+
+    protected function isFieldExcluded($entityName, $fieldName, $itemData = null)
+    {
+        $excludeCategoryFields = [
+            'childCategories',
+            'slugs',
+            'slugPrototypes',
+            'slugPrototypesWithRedirect',
+        ];
+
+        if (is_a($entityName, Category::class, true) && in_array($fieldName, $excludeCategoryFields)) {
+            return true;
+        }
+
+        return parent::isFieldExcluded($entityName, $fieldName, $itemData);
+    }
+
+    protected function mapCollections(Collection $importedCollection, Collection $sourceCollection)
+    {
+    }
+
+    protected function setLocalizationKeys($entity, array $field)
+    {
+    }
+
+    protected function removeNotInitializedEntities($entity, array $field, array $relations)
+    {
+    }
+
+    protected function generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation)
+    {
+        $fields = $this->fieldHelper->getRelations($entityName);
+
+        if (!$this->isLocalizedFallbackValue($fields[$fieldName])) {
+            return parent::generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation);
+        }
+
+        /** @var Collection $importedCollection */
+        $importedCollection = $this->fieldHelper->getObjectValue($entity, $fieldName);
+        if ($importedCollection->isEmpty()) {
+            return parent::generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation);
+        }
+
+        $existingEntity = $this->findExistingEntity($entity);
+        if ($existingEntity) {
+            $searchContext = [];
+            $sourceCollection = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
+            /** @var LocalizedFallbackValue $sourceValue */
+            foreach ($sourceCollection as $sourceValue) {
+                $localizationCode = LocalizationCodeFormatter::formatName($sourceValue->getLocalization());
+                $searchContext[$localizationCode] = $sourceValue;
+            }
+
+            return $searchContext;
+        }
+
+        return parent::generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation);
     }
 }

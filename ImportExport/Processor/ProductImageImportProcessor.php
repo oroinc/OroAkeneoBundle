@@ -73,6 +73,14 @@ class ProductImageImportProcessor extends StepExecutionAwareImportProcessor
                 continue;
             }
 
+            if ($hasMain && $image->hasType(ProductImageType::TYPE_MAIN)) {
+                $image->removeType(ProductImageType::TYPE_MAIN);
+            }
+
+            if ($hasListing && $image->hasType(ProductImageType::TYPE_LISTING)) {
+                $image->removeType(ProductImageType::TYPE_LISTING);
+            }
+
             $hasMain = $hasMain || $image->hasType(ProductImageType::TYPE_MAIN);
             $hasListing = $hasListing || $image->hasType(ProductImageType::TYPE_LISTING);
 

@@ -90,3 +90,4 @@ oro:
         label: Channel
       akeneo_code:
         label: Akeneo code
+    error: "Error found: %error%; Akeneo record: %item%"

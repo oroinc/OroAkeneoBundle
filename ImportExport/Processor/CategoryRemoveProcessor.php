@@ -3,7 +3,6 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Processor;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\UnitOfWork;
 use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\ImportExportBundle\Processor\ProcessorInterface;
 
@@ -27,6 +26,10 @@ class CategoryRemoveProcessor implements ProcessorInterface
 
     public function process($item)
     {
+        if (!$this->processedIds) {
+            return null;
+        }
+
         if (!$item instanceof Category) {
             return null;
         }
@@ -35,15 +38,6 @@ class CategoryRemoveProcessor implements ProcessorInterface
             $this->codeIds[$item->getAkeneoCode()] = $item->getId();
 
             return null;
-        }
-
-        $objectManager = $this->registry->getManagerForClass(Category::class);
-        $entityState = $objectManager
-            ->getUnitOfWork()
-            ->getEntityState($item);
-
-        if ($entityState !== UnitOfWork::STATE_MANAGED) {
-            $item = $objectManager->merge($item);
         }
 
         return $item;

@@ -2,7 +2,6 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeTypeConverter;
 use Oro\Bundle\AkeneoBundle\Tools\FieldConfigModelFieldNameGenerator;
 use Oro\Bundle\AkeneoBundle\Tools\Generator;
@@ -16,11 +15,6 @@ class AttributeDataConverter extends EntityFieldDataConverter
     use AkeneoIntegrationTrait;
 
     private const ENTITY_LABEL_MAX_LENGTH = 50;
-
-    /**
-     * @var ManagerRegistry
-     */
-    protected $registry;
 
     /** @var string */
     private $codePrefix;

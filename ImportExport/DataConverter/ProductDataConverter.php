@@ -34,11 +34,6 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     use AkeneoIntegrationTrait, LoggerAwareTrait;
 
     /**
-     * @var ContextInterface
-     */
-    protected $context;
-
-    /**
      * @var SlugGenerator
      */
     protected $slugGenerator;
