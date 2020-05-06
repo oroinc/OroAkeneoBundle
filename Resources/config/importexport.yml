@@ -51,12 +51,14 @@ services:
       - [setEntityName, ["%oro_catalog.entity.category.class%"]]
       - [setTranslateUsingLocale, [false]]
       - [setSlugGenerator, ["@oro_entity_config.slug.generator"]]
+      - [setDoctrineHelper, ["@oro_entity.doctrine_helper"]]
 
   oro_akeneo.importexport.strategy.category:
     class: '%oro_akeneo.importexport.strategy.category.class%'
     parent: oro_locale.importexport.strategy.localized_fallback_value_aware
     calls:
       - [setImportStrategyHelper, ['@oro_akeneo.strategy.import.helper']]
+      - [setOwnerHelper, ['@oro_akeneo.importexport.strategy.default_owner_helper']]
 
   oro_akeneo.importexport.processor.category:
     class: Oro\Bundle\AkeneoBundle\ImportExport\Processor\CategoryImportProcessor
@@ -106,7 +108,7 @@ services:
   oro_akeneo.importexport.data_converter.attribute:
     class: '%oro_akeneo.importexport.data_converter.attribute.class%'
     calls:
-      - [setRegistry, ["@doctrine"]]
+      - [setDoctrineHelper, ["@oro_entity.doctrine_helper"]]
       - [setConfigManager, ['@oro_config.manager']]
       - [setCodePrefix, ['%oro_akeneo.importexport.code_prefix%']]
 
@@ -149,13 +151,14 @@ services:
       - [setEntityConfigManager, ['@oro_entity_config.config_manager']]
       - [setTranslateUsingLocale, [false]]
       - [setCodePrefix, ['%oro_akeneo.importexport.code_prefix%']]
+      - [setDoctrineHelper, ["@oro_entity.doctrine_helper"]]
 
   oro_akeneo.importexport.strategy.attribute_family:
     class: '%oro_akeneo.importexport.strategy.attribute_family.class%'
     parent: oro_locale.importexport.strategy.localized_fallback_value_aware
     calls:
       - [setAttributeManager, ['@oro_entity_config.manager.attribute_manager']]
-      - [setOwnerHelper, ['@oro_integration.helper.default_owner_helper']]
+      - [setOwnerHelper, ['@oro_akeneo.importexport.strategy.default_owner_helper']]
       - [setConfigManager, ['@oro_entity_config.config_manager']]
       - [setImportStrategyHelper, ['@oro_akeneo.strategy.import.helper']]
 
@@ -201,12 +204,14 @@ services:
       - [setProductUnitDiscovery, ["@oro_akeneo.product_unit.discovery"]]
       - [setLogger, ["@oro_integration.logger.strategy"]]
       - [setCodePrefix, ['%oro_akeneo.importexport.code_prefix%']]
+      - [setDoctrineHelper, ["@oro_entity.doctrine_helper"]]
 
   oro_akeneo.importexport.strategy.product:
     class: '%oro_akeneo.importexport.strategy.product.class%'
     parent: oro_product.importexport.strategy.product
     calls:
       - [setImportStrategyHelper, ['@oro_akeneo.strategy.import.helper']]
+      - [setOwnerHelper, ['@oro_akeneo.importexport.strategy.default_owner_helper']]
 
   oro_akeneo.importexport.processor.product:
     class: Oro\Bundle\AkeneoBundle\ImportExport\Processor\ProductImportProcessor
@@ -244,7 +249,7 @@ services:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\DataConverter\ProductPriceDataConverter'
     calls:
       - [setPriceListProvider, ['@oro_pricing.provider.price_list_provider']]
-      - [setRegistry, ["@doctrine"]]
+      - [setDoctrineHelper, ["@oro_entity.doctrine_helper"]]
 
   # Import processor Price
   oro_akeneo.importexport.processor.import.product_price:
@@ -348,3 +353,9 @@ services:
     class: 'Oro\Bundle\AkeneoBundle\EventListener\DeletedAttributeRelationListener'
     decorates: oro_serialized_fields.event_listener.deleted_attribute_relation_serialized
     parent: oro_serialized_fields.event_listener.deleted_attribute_relation_serialized
+
+  oro_akeneo.importexport.strategy.default_owner_helper:
+    class: 'Oro\Bundle\AkeneoBundle\ImportExport\Strategy\DefaultOwnerHelper'
+    arguments:
+      - '@oro_entity.doctrine_helper'
+      - '@oro_security.owner.ownership_metadata_provider'

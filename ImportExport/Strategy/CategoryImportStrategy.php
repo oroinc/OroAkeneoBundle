@@ -16,6 +16,7 @@ use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStr
 class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy implements ClosableInterface
 {
     use ImportStrategyAwareHelperTrait;
+    use OwnerTrait;
 
     /**
      * @var Category[]
@@ -38,7 +39,16 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
         $this->existingCategories = [];
         $this->rootCategoryId = null;
 
+        $this->clearOwnerCache();
+
         $this->databaseHelper->onClear();
+    }
+
+    protected function beforeProcessEntity($entity)
+    {
+        $this->setOwner($entity);
+
+        return parent::beforeProcessEntity($entity);
     }
 
     protected function afterProcessEntity($entity)

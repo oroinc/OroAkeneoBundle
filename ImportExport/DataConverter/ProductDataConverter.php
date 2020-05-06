@@ -4,18 +4,17 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 
 use Doctrine\Common\Util\Inflector;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
-use Oro\Bundle\AkeneoBundle\Exceptions\IgnoreProductUnitChangesException;
-use Oro\Bundle\AkeneoBundle\ProductUnit\ProductUnitDiscoveryInterface;
+use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeFamilyCodeGenerator;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeTypeConverter;
 use Oro\Bundle\AkeneoBundle\Tools\Generator;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
+use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityConfigBundle\Generator\SlugGenerator;
 use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
 use Oro\Bundle\EntityExtendBundle\Extend\RelationType;
 use Oro\Bundle\ImportExportBundle\Context\ContextAwareInterface;
-use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 use Oro\Bundle\LocaleBundle\Entity\Localization;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\Formatter\DateTimeFormatter;
@@ -31,7 +30,9 @@ use Psr\Log\LoggerAwareTrait;
  */
 class ProductDataConverter extends BaseProductDataConverter implements ContextAwareInterface, ClosableInterface, LoggerAwareInterface
 {
-    use AkeneoIntegrationTrait, LoggerAwareTrait;
+    use AkeneoIntegrationTrait;
+    use LocalizationAwareTrait;
+    use LoggerAwareTrait;
 
     /**
      * @var SlugGenerator
@@ -62,17 +63,12 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     /** @var string */
     private $codePrefix;
 
-    public function setProductUnitDiscovery(ProductUnitDiscoveryInterface $productUnitDiscovery): void
-    {
-        $this->productUnitDiscovery = $productUnitDiscovery;
-    }
+    /** @var DoctrineHelper */
+    protected $doctrineHelper;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setImportExportContext(ContextInterface $context)
+    public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
     {
-        $this->context = $context;
+        $this->doctrineHelper = $doctrineHelper;
     }
 
     /**

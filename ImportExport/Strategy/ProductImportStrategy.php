@@ -17,6 +17,7 @@ use Oro\Bundle\ProductBundle\ImportExport\Strategy\ProductStrategy;
 class ProductImportStrategy extends ProductStrategy
 {
     use ImportStrategyAwareHelperTrait;
+    use OwnerTrait;
 
     /**
      * @var Product[]
@@ -35,6 +36,8 @@ class ProductImportStrategy extends ProductStrategy
 
         $this->existingProducts = [];
 
+        $this->clearOwnerCache();
+
         $this->databaseHelper->onClear();
 
         parent::close();
@@ -47,6 +50,8 @@ class ProductImportStrategy extends ProductStrategy
             $entity->setStatus($existingProduct->getStatus());
             $entity->setInventoryStatus($existingProduct->getInventoryStatus());
         }
+
+        $this->setOwner($entity);
 
         return parent::beforeProcessEntity($entity);
     }
@@ -62,6 +67,10 @@ class ProductImportStrategy extends ProductStrategy
         $this->existingProducts = [];
 
         return parent::afterProcessEntity($entity);
+    }
+
+    protected function populateOwner(Product $entity)
+    {
     }
 
     protected function findExistingEntity($entity, array $searchContext = [])
