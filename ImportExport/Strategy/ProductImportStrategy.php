@@ -55,9 +55,25 @@ class ProductImportStrategy extends ProductStrategy
 
     protected function afterProcessEntity($entity)
     {
-        if ($entity instanceof Product && $entity->getCategory() instanceof Category) {
-            if (!$entity->getCategory()->getId()) {
-                $entity->setCategory(null);
+        if ($entity instanceof Product && $entity->getCategory() && !$entity->getCategory()->getId()) {
+            $entity->setCategory(null);
+
+            $categoryCodes = (array)$this->fieldHelper->getItemData(
+                $this->context->getValue('rawItemData'),
+                'categories'
+            );
+
+            foreach (array_filter($categoryCodes) as $categoryCode) {
+                $category = $this->databaseHelper->findOneBy(
+                    Category::class,
+                    ['akeneo_code' => $categoryCode, 'channel' => $this->context->getOption('channel')]
+                );
+
+                if ($category instanceof Category) {
+                    $entity->setCategory($category);
+
+                    break;
+                }
             }
         }
 
