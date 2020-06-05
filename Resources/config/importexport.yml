@@ -283,6 +283,7 @@ services:
     arguments:
       - '@oro_message_queue.job.runner'
       - '@oro_message_queue.message_producer'
+      - '@oro_message_queue.job.processor'
     calls:
       - [setCacheProvider, ["@oro_akeneo.importexport.cache"]]
 

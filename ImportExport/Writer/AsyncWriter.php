@@ -8,10 +8,11 @@ use Akeneo\Bundle\BatchBundle\Step\StepExecutionAwareInterface;
 use Doctrine\Common\Cache\CacheProvider;
 use Oro\Bundle\AkeneoBundle\Async\Topics;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
-use Oro\Bundle\MessageQueueBundle\Entity\Job;
 use Oro\Component\MessageQueue\Client\Message;
 use Oro\Component\MessageQueue\Client\MessagePriority;
 use Oro\Component\MessageQueue\Client\MessageProducerInterface;
+use Oro\Component\MessageQueue\Job\Job;
+use Oro\Component\MessageQueue\Job\JobProcessor;
 use Oro\Component\MessageQueue\Job\JobRunner;
 
 class AsyncWriter implements
@@ -39,10 +40,17 @@ class AsyncWriter implements
     /** @var CacheProvider */
     private $cacheProvider;
 
-    public function __construct(JobRunner $jobRunner, MessageProducerInterface $messageProducer)
-    {
+    /** @var JobProcessor */
+    private $jobProcessor;
+
+    public function __construct(
+        JobRunner $jobRunner,
+        MessageProducerInterface $messageProducer,
+        JobProcessor $jobProcessor
+    ) {
         $this->jobRunner = $jobRunner;
         $this->messageProducer = $messageProducer;
+        $this->jobProcessor = $jobProcessor;
     }
 
     public function initialize()
@@ -53,11 +61,6 @@ class AsyncWriter implements
 
     public function write(array $items)
     {
-        $rootJob = $this->stepExecution->getJobExecution()->getExecutionContext()->get('rootJob') ?? null;
-        if (!$rootJob) {
-            throw new \InvalidArgumentException('Root job is empty');
-        }
-
         $channelId = $this->stepExecution->getJobExecution()->getExecutionContext()->get('channel');
 
         $newSize = $this->size + count($items);
@@ -80,7 +83,7 @@ class AsyncWriter implements
         );
 
         try {
-            $setRootJob('rootJob', $rootJob);
+            $setRootJob('rootJob', $this->getRootJob());
 
             $this->jobRunner->createDelayed(
                 $jobName,
@@ -122,10 +125,6 @@ class AsyncWriter implements
         }
 
         $channelId = $this->stepExecution->getJobExecution()->getExecutionContext()->get('channel');
-        $rootJob = $this->stepExecution->getJobExecution()->getExecutionContext()->get('rootJob') ?? null;
-        if (!$rootJob) {
-            return;
-        }
 
         $setRootJob = \Closure::bind(
             function ($property, $value) {
@@ -136,7 +135,7 @@ class AsyncWriter implements
         );
 
         try {
-            $setRootJob('rootJob', $rootJob);
+            $setRootJob('rootJob', $this->getRootJob());
             $chunks = array_chunk($variants, self::VARIANTS_BATCH_SIZE, true);
 
             foreach ($chunks as $key => $chunk) {
@@ -171,6 +170,21 @@ class AsyncWriter implements
         } finally {
             $setRootJob('rootJob', null);
         }
+    }
+
+    private function getRootJob(): Job
+    {
+        $rootJobId = $this->stepExecution->getJobExecution()->getExecutionContext()->get('rootJobId') ?? null;
+        if (!$rootJobId) {
+            throw new \InvalidArgumentException('Root job id is empty');
+        }
+
+        $rootJob = $this->jobProcessor->findJobById($rootJobId);
+        if (!$rootJob) {
+            throw new \InvalidArgumentException('Root job is empty');
+        }
+
+        return $rootJob;
     }
 
     public function close()
