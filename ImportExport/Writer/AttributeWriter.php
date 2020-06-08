@@ -188,7 +188,7 @@ class AttributeWriter extends BaseAttributeWriter
                                     'locale' => $locale,
                                     'objectClass' => $enumValueClassName,
                                     'foreignKey' => $option['id'],
-                                    'field' => 'name'
+                                    'field' => 'name',
                                 ]
                             );
                         if (!$translation) {
@@ -262,6 +262,8 @@ class AttributeWriter extends BaseAttributeWriter
 
         if ($extendConfig->is('state', ExtendScope::STATE_NEW)) {
             $this->saveDatagridConfig($className, $fieldName);
+            $this->saveViewConfig($className, $fieldName);
+            $this->saveFormConfig($className, $fieldName);
             $this->setSearchConfig($searchConfig, $importedFieldType);
         }
 
@@ -314,6 +316,24 @@ class AttributeWriter extends BaseAttributeWriter
         $datagridConfig->set('is_visible', DatagridScope::IS_VISIBLE_FALSE);
 
         $this->configManager->persist($datagridConfig);
+    }
+
+    private function saveFormConfig(string $className, string $fieldName): void
+    {
+        $provider = $this->configManager->getProvider('form');
+        $config = $provider->getConfig($className, $fieldName);
+        $config->set('is_enabled', false);
+
+        $this->configManager->persist($config);
+    }
+
+    private function saveViewConfig(string $className, string $fieldName): void
+    {
+        $provider = $this->configManager->getProvider('view');
+        $config = $provider->getConfig($className, $fieldName);
+        $config->set('is_displayable', false);
+
+        $this->configManager->persist($config);
     }
 
     private function setSearchConfig(ConfigInterface $searchConfig, ?string $importedFieldType): void
