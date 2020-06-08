@@ -95,7 +95,7 @@ class SyncIntegrationProcessor implements MessageProcessorInterface, ContainerAw
             return self::REJECT;
         }
 
-        $jobName = 'oro_integration:sync_integration:'.$body['integration_id'];
+        $jobName = 'oro_integration:sync_integration:' . $body['integration_id'];
         $ownerId = $message->getMessageId();
 
         if (!$ownerId) {
