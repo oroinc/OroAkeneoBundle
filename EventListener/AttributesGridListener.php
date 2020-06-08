@@ -37,8 +37,8 @@ class AttributesGridListener
             if ($organization && $organization->getIsGlobal() === false) {
                 $datasource->getQueryBuilder()
                     ->andWhere(
-                        'cfv_attribute_is_global.value =:isGlobal'.
-                        ' OR cfv_extend_owner.value = :isSystem'.
+                        'cfv_attribute_is_global.value =:isGlobal' .
+                        ' OR cfv_extend_owner.value = :isSystem' .
                         ' OR cfv_attribute_organization_id.value = :organization'
                     )
                     ->setParameter('isGlobal', '1')
@@ -54,7 +54,6 @@ class AttributesGridListener
         if ($organization && $organization->getIsGlobal() === false) {
             /** @var ResultRecord[] $records */
             $records = $event->getRecords();
-
 
             foreach ($records as $record) {
                 $familyIds = array_keys($record->getValue('attributeFamilies'));
