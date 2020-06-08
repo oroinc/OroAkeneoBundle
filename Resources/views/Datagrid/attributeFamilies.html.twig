@@ -1,0 +1,11 @@
+{% import 'OroUIBundle::macros.html.twig' as UI %}
+
+{% if is_granted('oro_attribute_family_view') %}
+<ul class="extra-list">
+    {%- for id, label in record.getValue('attributeFamilies') %}
+        <li class="extra-list-element">
+            {{ UI.renderUrl(path('oro_attribute_family_view', {'id': id}), label) }}
+        </li>
+    {% endfor -%}
+</ul>
+{% endif %}
