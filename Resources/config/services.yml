@@ -77,13 +77,16 @@ services:
     calls:
       - [setDoctrineHelper, ['@oro_entity.doctrine_helper']]
 
-  oro_akeneo.integration.sync_processor:
-    class: 'Oro\Bundle\AkeneoBundle\Integration\SyncProcessor'
+  oro_akeneo.async.sync_integration_processor:
+    class: 'Oro\Bundle\AkeneoBundle\Async\SyncIntegrationProcessor'
+    decorates: oro_integration.async.sync_integration_processor
     arguments:
-      - '@oro_message_queue.job.processor'
-      - '@oro_integration.sync.processor'
-    tags:
-      - { name: oro_integration.sync_processor, integration: oro_akeneo }
+      - '@doctrine'
+      - '@security.token_storage'
+      - '@oro_integration.processor_registry'
+      - '@oro_message_queue.job.runner'
+    calls:
+      - [setLogger, ["@logger"]]
 
   oro_akeneo.async.export_contacts_status_update_processor:
     class: 'Oro\Bundle\AkeneoBundle\Async\ImportProductProcessor'
