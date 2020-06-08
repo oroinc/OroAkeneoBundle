@@ -57,7 +57,7 @@ class AttributesDatagridListener
             ->select('attributeGroupRelation.entityConfigFieldId, attributeFamily.id, labels.string')
             ->innerJoin('attributeGroupRelation.attributeGroup', 'attributeGroup')
             ->innerJoin('attributeGroup.attributeFamily', 'attributeFamily')
-            ->leftJoin('attributeFamily.labels', 'labels', Join::WITH, $qb->expr()->isNull('labels.localization'))
+            ->innerJoin('attributeFamily.labels', 'labels', Join::WITH, $qb->expr()->isNull('labels.localization'))
             ->where($qb->expr()->in('attributeGroupRelation.entityConfigFieldId', ':ids'))
             ->setParameter('ids', $attributeIds)
             ->orderBy($qb->expr()->asc('attributeFamily.id'))
