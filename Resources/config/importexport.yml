@@ -289,6 +289,7 @@ services:
     arguments:
       - '@oro_message_queue.job.runner'
       - '@oro_message_queue.message_producer'
+      - '@oro_message_queue.job.processor'
     calls:
       - [setCacheProvider, ["@oro_akeneo.importexport.cache"]]
 
@@ -359,3 +360,12 @@ services:
     arguments:
       - '@oro_entity.doctrine_helper'
       - '@oro_security.owner.ownership_metadata_provider'
+
+  oro_akeneo.event_listener.attributes_datagrid:
+    class: 'Oro\Bundle\AkeneoBundle\EventListener\AttributesDatagridListener'
+    decorates: oro_entity_config.event_listener.attributes_datagrid
+    arguments:
+      - '@oro_entity.doctrine_helper'
+    tags:
+      - { name: kernel.event_listener, event: oro_datagrid.datagrid.build.before.attributes-grid, method: onBuildBefore }
+      - { name: kernel.event_listener, event: oro_datagrid.orm_datasource.result.after.attributes-grid, method: onResultAfter }

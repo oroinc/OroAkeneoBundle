@@ -56,8 +56,14 @@ class ProductTypeExtension extends AbstractTypeExtension
         $importExportProvider = $this->configManager->getProvider('importexport');
         $extendProvider = $this->configManager->getProvider('extend');
         $entityProvider = $this->configManager->getProvider('entity');
+        $formProvider = $this->configManager->getProvider('form');
 
         foreach ($fields as $field) {
+            $formConfig = $formProvider->getConfig(Product::class, $field['name']);
+            if (!$formConfig->get('is_enabled')) {
+                continue;
+            }
+
             $importExportConfig = $importExportProvider->getConfig(Product::class, $field['name']);
 
             if ('akeneo' !== $importExportConfig->get('source')) {
