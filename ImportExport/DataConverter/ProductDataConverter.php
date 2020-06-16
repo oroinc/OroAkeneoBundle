@@ -4,6 +4,7 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 
 use Doctrine\Common\Util\Inflector;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
+use Oro\Bundle\AkeneoBundle\Exceptions\IgnoreProductUnitChangesException;
 use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\AkeneoBundle\ProductUnit\ProductUnitDiscoveryInterface;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeFamilyCodeGenerator;
