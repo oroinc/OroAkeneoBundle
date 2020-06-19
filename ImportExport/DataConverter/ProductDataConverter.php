@@ -102,12 +102,10 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
         $importedRecord = parent::convertToImportFormat($importedRecord, $skipNullValues);
 
-        if (!isset($importedRecord['names'])) {
-            $importedRecord['names'] = [
-                'default' => [
-                    'fallback' => null,
-                    'string' => $importedRecord['sku'],
-                ],
+        if (empty($importedRecord['names']['default'])) {
+            $importedRecord['names']['default'] = [
+                'fallback' => null,
+                'string' => $importedRecord['sku'],
             ];
         }
 

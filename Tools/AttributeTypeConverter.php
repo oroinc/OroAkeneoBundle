@@ -15,6 +15,7 @@ class AttributeTypeConverter
         'pim_catalog_text' => 'manyToMany',
         'pim_catalog_textarea' => 'manyToMany',
         'pim_catalog_file' => 'file',
+        'pim_catalog_image' => 'image',
         'pim_catalog_date' => 'manyToMany',
         'pim_catalog_simpleselect' => 'enum',
         'pim_catalog_multiselect' => 'multiEnum',
