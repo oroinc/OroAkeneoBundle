@@ -212,6 +212,9 @@ class AkeneoTransport implements AkeneoTransportInterface
         $this->initFamilyVariants();
 
         $searchFilters = $this->akeneoSearchBuilder->getFilters($this->transportEntity->getProductFilter());
+        if (isset($searchFilters['completeness'])) {
+            unset($searchFilters['completeness']);
+        }
 
         return new ProductIterator(
             $this->client->getProductModelApi()->all(
