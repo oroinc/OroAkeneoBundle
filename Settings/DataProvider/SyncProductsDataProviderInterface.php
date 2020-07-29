@@ -8,4 +8,6 @@ interface SyncProductsDataProviderInterface
      * @return string[]
      */
     public function getSyncProducts();
+
+    public function getDefaultValue(): string;
 }

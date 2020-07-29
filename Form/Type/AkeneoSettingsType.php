@@ -132,6 +132,7 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 ChoiceType::class,
                 [
                     'choices'           => $this->syncProductsDataProvider->getSyncProducts(),
+                    'data'              => $this->syncProductsDataProvider->getDefaultValue(),
                     'choice_label'      => function ($action) {
                         return $this->translator->trans(
                             sprintf('oro.akeneo.integration.settings.sync_products.%s', $action)

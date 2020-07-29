@@ -20,8 +20,13 @@ class SyncProductsDataProvider implements SyncProductsDataProviderInterface
     public function getSyncProducts()
     {
         return [
-            self::PUBLISHED,
             self::ALL_PRODUCTS,
+            self::PUBLISHED,
         ];
+    }
+
+    public function getDefaultValue(): string
+    {
+        return self::ALL_PRODUCTS;
     }
 }

@@ -12,6 +12,7 @@ use Oro\Bundle\AkeneoBundle\Form\Type\AkeneoSettingsType;
 use Oro\Bundle\AkeneoBundle\Integration\Iterator\AttributeFamilyIterator;
 use Oro\Bundle\AkeneoBundle\Integration\Iterator\AttributeIterator;
 use Oro\Bundle\AkeneoBundle\Integration\Iterator\ProductIterator;
+use Oro\Bundle\AkeneoBundle\Settings\DataProvider\SyncProductsDataProvider;
 use Oro\Bundle\IntegrationBundle\Entity\Transport;
 use Oro\Bundle\MultiCurrencyBundle\Config\MultiCurrencyConfigProvider;
 use Psr\Log\LoggerInterface;
@@ -190,6 +191,19 @@ class AkeneoTransport implements AkeneoTransportInterface
         $this->initAttributesList();
 
         $searchFilters = $this->akeneoSearchBuilder->getFilters($this->transportEntity->getProductFilter());
+
+        if ($this->transportEntity->getSyncProducts() === SyncProductsDataProvider::PUBLISHED) {
+            return new ProductIterator(
+                $this->client->getPublishedProductApi()->all(
+                    $pageSize,
+                    ['search' => $searchFilters, 'scope' => $this->transportEntity->getAkeneoActiveChannel()]
+                ),
+                $this->client,
+                $this->logger,
+                $this->attributes,
+                []
+            );
+        }
 
         return new ProductIterator(
             $this->client->getProductApi()->all(
