@@ -168,14 +168,14 @@ class AkeneoClientFactory
     {
         $this->client->getCurrencyApi()->all();
         $em = $this->doctrineHelper->getEntityManager($this->akeneoSettings);
-        $em->getUnitOfWork()->scheduleExtraUpdate(
-            $this->akeneoSettings,
-            [
-                'token' => [null, $this->client->getToken()],
-                'refreshToken' => [null, $this->client->getRefreshToken()],
-                'tokenExpiryDateTime' => [null, new \DateTime('now +3500 seconds')],
-            ]
-        );
-        $em->flush();
+        $em->getUnitOfWork()->removeFromIdentityMap($this->akeneoSettings);
+        $em->refresh($this->akeneoSettings);
+
+        $this->akeneoSettings->setToken($this->client->getToken());
+        $this->akeneoSettings->setRefreshToken($this->client->getRefreshToken());
+        $this->akeneoSettings->setTokenExpiryDateTime(new \DateTime('now +3500 seconds'));
+
+        $em->flush($this->akeneoSettings);
+        $em->getUnitOfWork()->markReadOnly($this->akeneoSettings);
     }
 }
