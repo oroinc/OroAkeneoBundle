@@ -33,6 +33,11 @@ class AkeneoTransport implements AkeneoTransportInterface
     private $familyVariants = [];
 
     /**
+     * @var array
+     */
+    private $families = [];
+
+    /**
      * @var AkeneoClientFactory
      */
     private $clientFactory;
@@ -178,7 +183,11 @@ class AkeneoTransport implements AkeneoTransportInterface
      */
     public function getAttributeFamilies()
     {
-        return new AttributeFamilyIterator($this->client->getFamilyApi()->all(), $this->client, $this->logger);
+        return new AttributeFamilyIterator(
+            $this->client->getFamilyApi()->all(self::PAGE_SIZE),
+            $this->client,
+            $this->logger
+        );
     }
 
     /**
@@ -273,21 +282,32 @@ class AkeneoTransport implements AkeneoTransportInterface
     {
         $attributeFilter = $this->getAttributeFilter();
 
-        return new AttributeIterator($this->client->getAttributeApi()->all($pageSize), $this->client, $this->logger, $attributeFilter);
+        return new AttributeIterator(
+            $this->client->getAttributeApi()->all($pageSize),
+            $this->client,
+            $this->logger,
+            $attributeFilter
+        );
     }
 
     private function getAttributeFilter(): array
     {
-        $attributeFilter = [];
         $attrList = $this->transportEntity->getAkeneoAttributesList();
         if (!empty($attrList)) {
-            $attributeFilter = array_merge(
+            return array_merge(
                 explode(';', $attrList) ?? [],
                 explode(';', $this->transportEntity->getAkeneoAttributesImageList()) ?? []
             );
         }
 
-        return $attributeFilter;
+        $this->initFamilies();
+
+        $familtyAttributes = [];
+        foreach ($this->families as $family) {
+            $familtyAttributes = array_unique(array_merge($familtyAttributes, $family['attributes'] ?? []));
+        }
+
+        return $familtyAttributes;
     }
 
     public function downloadAndSaveMediaFile($type, $code)
@@ -348,13 +368,28 @@ class AkeneoTransport implements AkeneoTransportInterface
 
     protected function initFamilyVariants()
     {
-        if (empty($this->familyVariants)) {
-            foreach ($this->client->getFamilyApi()->all(self::PAGE_SIZE) as $family) {
-                foreach ($this->client->getFamilyVariantApi()->all($family['code'], self::PAGE_SIZE) as $variant) {
-                    $variant['family'] = $family['code'];
-                    $this->familyVariants[$variant['code']] = $variant;
-                }
+        if (!empty($this->familyVariants)) {
+            return;
+        }
+
+        $this->initFamilies();
+
+        foreach ($this->families as $family) {
+            foreach ($this->client->getFamilyVariantApi()->all($family['code'], self::PAGE_SIZE) as $variant) {
+                $variant['family'] = $family['code'];
+                $this->familyVariants[$variant['code']] = $variant;
             }
+        }
+    }
+
+    protected function initFamilies()
+    {
+        if (!empty($this->families)) {
+            return;
+        }
+
+        foreach ($this->client->getFamilyApi()->all(self::PAGE_SIZE) as $family) {
+            $this->families[$family['code']] = $family;
         }
     }
 }
