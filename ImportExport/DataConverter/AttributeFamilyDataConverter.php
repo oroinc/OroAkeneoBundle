@@ -55,6 +55,10 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
             $group['akeneo_code'] = $group['code'];
 
             foreach ($group['attributes'] as $attributeCode) {
+                if (!in_array($attributeCode, $importedRecord['attributes'])) {
+                    continue;
+                }
+
                 $entityConfigFieldId = $this->entityConfigManager->getConfigModelId(
                     $importedRecord['entityClass'],
                     FieldConfigModelFieldNameGenerator::generate($attributeCode)
@@ -82,6 +86,13 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
                 }
             }
         }
+
+        $importedRecord['groups'] = array_filter(
+            $importedRecord['groups'],
+            function ($group) {
+                return !empty($group['attributeRelations']);
+            }
+        );
 
         return parent::convertToImportFormat($importedRecord, $skipNullValues);
     }
