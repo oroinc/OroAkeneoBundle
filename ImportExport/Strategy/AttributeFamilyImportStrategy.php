@@ -50,6 +50,11 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
 
     public function close()
     {
+        $this->reflectionProperties = [];
+        $this->cachedEntities = [];
+
+        $this->databaseHelper->onClear();
+
         $this->clearOwnerCache();
     }
 
@@ -74,7 +79,7 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
             $family = $this->findExistingEntity($entity->getAttributeFamily());
             if ($family instanceof AttributeFamily) {
                 foreach ($family->getAttributeGroups() as $attributeGroup) {
-                    if ($attributeGroup->getCode() === $entity->getCode()) {
+                    if ($attributeGroup->getAkeneoCode() === $entity->getAkeneoCode()) {
                         return $attributeGroup;
                     }
                 }
@@ -98,7 +103,7 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
             $family = $this->findExistingEntity($entity->getAttributeFamily());
             if ($family instanceof AttributeFamily) {
                 foreach ($family->getAttributeGroups() as $attributeGroup) {
-                    if ($attributeGroup->getCode() === $entity->getCode()) {
+                    if ($attributeGroup->getAkeneoCode() === $entity->getAkeneoCode()) {
                         return $attributeGroup;
                     }
                 }
@@ -342,6 +347,18 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
 
     protected function removeNotInitializedEntities($entity, array $field, array $relations)
     {
+    }
+
+    protected function combineIdentityValues($entity, $entityClass, array $searchContext)
+    {
+        if (is_a($entity, AttributeGroup::class)) {
+            return [
+                'attributeFamily' => $entity->getAttributeFamily()->getCode(),
+                'code' => $entity->getCode(),
+            ];
+        }
+
+        return parent::combineIdentityValues($entity, $entityClass, $searchContext);
     }
 
     protected function generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation)

@@ -3,7 +3,7 @@
 namespace Oro\Bundle\AkeneoBundle\Integration\Iterator;
 
 use Akeneo\Pim\ApiClient\Pagination\ResourceCursorInterface;
-use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientInterface;
+use Oro\Bundle\AkeneoBundle\Integration\AkeneoPimExtendableClientInterface;
 use Psr\Log\LoggerInterface;
 
 class ProductIterator extends AbstractIterator
@@ -23,7 +23,7 @@ class ProductIterator extends AbstractIterator
      */
     public function __construct(
         ResourceCursorInterface $resourceCursor,
-        AkeneoPimEnterpriseClientInterface $client,
+        AkeneoPimExtendableClientInterface $client,
         LoggerInterface $logger,
         array $attributes,
         array $familyVariants

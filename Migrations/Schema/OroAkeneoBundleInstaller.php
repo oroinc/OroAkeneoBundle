@@ -39,7 +39,7 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
             'is_displayable' => false,
         ],
         'importexport' => [
-            'identity' => true,
+            'identity' => false,
         ],
     ];
 
@@ -48,7 +48,7 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
      */
     public function getMigrationVersion()
     {
-        return 'v1_8';
+        return 'v1_9';
     }
 
     /**

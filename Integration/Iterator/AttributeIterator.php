@@ -3,7 +3,7 @@
 namespace Oro\Bundle\AkeneoBundle\Integration\Iterator;
 
 use Akeneo\Pim\ApiClient\Pagination\ResourceCursorInterface;
-use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientInterface;
+use Oro\Bundle\AkeneoBundle\Integration\AkeneoPimExtendableClientInterface;
 use Psr\Log\LoggerInterface;
 
 class AttributeIterator extends AbstractIterator
@@ -20,7 +20,7 @@ class AttributeIterator extends AbstractIterator
      */
     public function __construct(
         ResourceCursorInterface $resourceCursor,
-        AkeneoPimEnterpriseClientInterface $client,
+        AkeneoPimExtendableClientInterface $client,
         LoggerInterface $logger,
         $attributesFilter = []
     ) {
@@ -29,12 +29,14 @@ class AttributeIterator extends AbstractIterator
         parent::__construct($resourceCursor, $client, $logger);
     }
 
-    /**
-     * @var
-     */
     const OPTION_TYPES = [
         'pim_catalog_simpleselect',
         'pim_catalog_multiselect',
+    ];
+
+    const REFERENCE_ENTITY_TYPES = [
+        'akeneo_reference_entity',
+        'akeneo_reference_entity_collection',
     ];
 
     /**
@@ -49,27 +51,18 @@ class AttributeIterator extends AbstractIterator
         }
 
         $this->setOptions($attribute);
+        $this->setReferenceEntityRecords($attribute);
 
         return $attribute;
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function valid()
-    {
-        return $this->resourceCursor->valid();
-    }
-
-    /**
      * Get attribute options from API.
-     *
-     * @return array
      */
     private function setOptions(array &$attribute)
     {
-        if (false === in_array($attribute['type'], self::OPTION_TYPES)) {
-            return $attribute;
+        if (!in_array($attribute['type'], self::OPTION_TYPES)) {
+            return;
         }
 
         $attribute['options'] = [];
@@ -88,6 +81,36 @@ class AttributeIterator extends AbstractIterator
                 return ($a['sort_order'] < $b['sort_order']) ? -1 : 1;
             }
         );
+    }
+
+    /**
+     * Get Reference Entity records as options from API.
+     */
+    private function setReferenceEntityRecords(array &$attribute): void
+    {
+        if (!in_array($attribute['type'], self::REFERENCE_ENTITY_TYPES)) {
+            return;
+        }
+
+        $attribute['options'] = [];
+
+        $records = $this->client->getReferenceEntityRecordApi()->all($attribute['reference_data_name']);
+
+        foreach ($records as $record) {
+            $labels = [];
+            foreach (($record['values']['label'] ?? []) as $label) {
+                $labels[$label['locale']] = $label['data'];
+            }
+
+            if (!$labels) {
+                continue;
+            }
+
+            $attribute['options'][] = [
+                'code' => $record['code'],
+                'labels' => $labels,
+            ];
+        }
     }
 
     /**
