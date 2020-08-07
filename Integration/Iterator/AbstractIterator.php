@@ -3,7 +3,7 @@
 namespace Oro\Bundle\AkeneoBundle\Integration\Iterator;
 
 use Akeneo\Pim\ApiClient\Pagination\ResourceCursorInterface;
-use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientInterface;
+use Oro\Bundle\AkeneoBundle\Integration\AkeneoPimExtendableClientInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 
@@ -19,7 +19,7 @@ abstract class AbstractIterator implements \Iterator
     protected $resourceCursor;
 
     /**
-     * @var AkeneoPimEnterpriseClientInterface
+     * @var AkeneoPimExtendableClientInterface
      */
     protected $client;
 
@@ -28,7 +28,7 @@ abstract class AbstractIterator implements \Iterator
      */
     public function __construct(
         ResourceCursorInterface $resourceCursor,
-        AkeneoPimEnterpriseClientInterface $client,
+        AkeneoPimExtendableClientInterface $client,
         LoggerInterface $logger
     ) {
         $this->resourceCursor = $resourceCursor;
