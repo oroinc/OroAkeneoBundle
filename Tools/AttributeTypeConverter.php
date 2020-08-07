@@ -18,7 +18,9 @@ class AttributeTypeConverter
         'pim_catalog_image' => 'image',
         'pim_catalog_date' => 'manyToMany',
         'pim_catalog_simpleselect' => 'enum',
+        'akeneo_reference_entity' => 'enum',
         'pim_catalog_multiselect' => 'multiEnum',
+        'akeneo_reference_entity_collection' => 'multiEnum',
     ];
 
     /**

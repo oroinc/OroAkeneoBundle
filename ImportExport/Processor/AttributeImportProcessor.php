@@ -5,10 +5,8 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\Processor;
 use Oro\Bundle\EntityBundle\Helper\FieldHelper;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityConfigBundle\Entity\FieldConfigModel;
-use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 use Oro\Bundle\IntegrationBundle\ImportExport\Processor\StepExecutionAwareImportProcessor;
-use Oro\Bundle\ProductBundle\Entity\Product;
 
 /**
  * Converts data to import format, processes entity.
@@ -126,8 +124,6 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
 
     public function flush()
     {
-        $this->removeUnprocessed();
-
         $this->cacheProvider->save('attribute_attributeLabels', $this->attributeLabels);
         $this->cacheProvider->save('attribute_optionLabels', $this->optionLabels);
         $this->cacheProvider->save('attribute_fieldNameMapping', $this->fieldNameMapping);
@@ -136,52 +132,6 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
         $this->optionLabels = null;
         $this->fieldNameMapping = null;
         $this->fieldTypeMapping = null;
-    }
-
-    protected function removeUnprocessed()
-    {
-        $fields = $this->fieldHelper->getFields(Product::class, true);
-        $importExportProvider = $this->configManager->getProvider('importexport');
-        $extendProvider = $this->configManager->getProvider('extend');
-        $flushRequired = false;
-
-        foreach ($fields as $field) {
-            if (array_key_exists($field['name'], $this->fieldNameMapping)) {
-                continue;
-            }
-
-            if (false === $this->configManager->hasConfig(Product::class, $field['name'])) {
-                continue;
-            }
-
-            $extendConfig = $extendProvider->getConfig(Product::class, $field['name']);
-            if (ExtendScope::STATE_ACTIVE !== $extendConfig->get('state')) {
-                continue;
-            }
-
-            $importExportConfig = $importExportProvider->getConfig(Product::class, $field['name']);
-            if ('akeneo' !== $importExportConfig->get('source')) {
-                continue;
-            }
-
-            $fieldConfig = $extendProvider->getConfig(Product::class, $field['name']);
-            if (ExtendScope::STATE_DELETE === $fieldConfig->get('state')) {
-                continue;
-            }
-
-            $fieldConfig->set('state', ExtendScope::STATE_DELETE);
-            $this->configManager->persist($fieldConfig);
-            $this->contextRegistry->getByStepExecution($this->stepExecution)->incrementDeleteCount();
-
-            $entityConfig = $extendProvider->getConfig(Product::class);
-            $entityConfig->set('upgradeable', true);
-            $this->configManager->persist($entityConfig);
-            $flushRequired = true;
-        }
-
-        if ($flushRequired) {
-            $this->configManager->flush();
-        }
     }
 
     public function setFieldHelper(FieldHelper $fieldHelper): void

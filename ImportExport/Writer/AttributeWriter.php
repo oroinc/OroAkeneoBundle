@@ -265,17 +265,13 @@ class AttributeWriter extends BaseAttributeWriter
             $this->saveViewConfig($className, $fieldName);
             $this->saveFormConfig($className, $fieldName);
             $this->setSearchConfig($searchConfig, $importedFieldType);
+
+            $attributeConfig->set('searchable', $type->isSearchable());
+            $searchConfig->set('searchable', $type->isSearchable());
+            $attributeConfig->set('filterable', $type->isFilterable());
         }
 
         $attributeConfig->set('is_attribute', true);
-
-        if (false === $type->isSearchable()) {
-            $attributeConfig->set('searchable', false);
-            $searchConfig->set('searchable', false);
-        }
-        if (false === $type->isFilterable()) {
-            $attributeConfig->set('filterable', false);
-        }
 
         $this->configManager->persist($attributeConfig);
         $this->configManager->persist($searchConfig);

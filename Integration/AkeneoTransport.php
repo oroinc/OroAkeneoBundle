@@ -3,7 +3,6 @@
 namespace Oro\Bundle\AkeneoBundle\Integration;
 
 use Akeneo\Pim\ApiClient\Exception\NotFoundHttpException;
-use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientInterface;
 use Gaufrette\Filesystem;
 use Knp\Bundle\GaufretteBundle\FilesystemMap;
 use Oro\Bundle\AkeneoBundle\Client\AkeneoClientFactory;
@@ -43,7 +42,7 @@ class AkeneoTransport implements AkeneoTransportInterface
     private $clientFactory;
 
     /**
-     * @var AkeneoPimEnterpriseClientInterface
+     * @var AkeneoPimExtendableClientInterface
      */
     private $client;
 

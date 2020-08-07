@@ -2,10 +2,10 @@
 
 namespace Oro\Bundle\AkeneoBundle\Client;
 
-use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClient;
-use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientBuilder;
 use Oro\Bundle\AkeneoBundle\Encoder\Crypter;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
+use Oro\Bundle\AkeneoBundle\Integration\AkeneoPimExtendableClient;
+use Oro\Bundle\AkeneoBundle\Integration\AkeneoPimExtendableClientBuilder;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 
 /**
@@ -57,7 +57,7 @@ class AkeneoClientFactory
     private $refreshToken;
 
     /**
-     * @var AkeneoPimEnterpriseClient
+     * @var AkeneoPimExtendableClient
      */
     private $client;
 
@@ -85,7 +85,7 @@ class AkeneoClientFactory
      *
      * @param bool $tokensEnabled
      *
-     * @return AkeneoPimEnterpriseClient
+     * @return AkeneoPimExtendableClient
      */
     public function getInstance(AkeneoSettings $akeneoSettings, $tokensEnabled = true)
     {
@@ -123,11 +123,11 @@ class AkeneoClientFactory
     /**
      * Build client by token.
      *
-     * @return AkeneoPimEnterpriseClient
+     * @return AkeneoPimExtendableClient
      */
     private function createClientByToken()
     {
-        $clientBuilder = new AkeneoPimEnterpriseClientBuilder($this->akeneoUrl);
+        $clientBuilder = new AkeneoPimExtendableClientBuilder($this->akeneoUrl);
         $this->client = $clientBuilder->buildAuthenticatedByToken(
             $this->clientId,
             $this->secret,
@@ -141,11 +141,11 @@ class AkeneoClientFactory
     /**
      * Build token by username and password.
      *
-     * @return AkeneoPimEnterpriseClient
+     * @return AkeneoPimExtendableClient
      */
     private function createClient()
     {
-        $clientBuilder = new AkeneoPimEnterpriseClientBuilder($this->akeneoUrl);
+        $clientBuilder = new AkeneoPimExtendableClientBuilder($this->akeneoUrl);
         $this->client = $clientBuilder->buildAuthenticatedByPassword(
             $this->clientId,
             $this->secret,
