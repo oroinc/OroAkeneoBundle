@@ -24,18 +24,15 @@ class AsyncProcessor implements ProcessorInterface
             return;
         }
 
-        $fields = ['identifier', 'sku'];
+        $fields = ['identifier', 'sku', 'code'];
         foreach ($fields as $field) {
-            if (!empty($item[$field])) {
-                foreach ((array)$item[$field] as $variant) {
-                    $parent = mb_strtoupper($item['parent']);
-                    $variant = mb_strtoupper($variant);
-                    $this->variants[$parent][$variant] = [
-                        'parent'  => $parent,
-                        'variant' => $variant,
-                    ];
-                }
+            if (empty($item[$field])) {
+                continue;
             }
+
+            $parent = mb_strtoupper($item['parent']);
+            $variant = mb_strtoupper($item[$field]);
+            $this->variants[$parent][$variant] = ['parent' => $parent, 'variant' => $variant];
         }
     }
 
@@ -47,7 +44,28 @@ class AsyncProcessor implements ProcessorInterface
 
     public function flush()
     {
-        $this->cacheProvider->save('product_variants', $this->variants);
-        $this->variants = null;
+        if (!$this->variants) {
+            return;
+        }
+
+        $resolvedVariants = [];
+
+        foreach ($this->variants as $parent => $variants) {
+            foreach ($variants as $variantKey => $variant) {
+                if (array_key_exists($variantKey, $this->variants)) {
+                    foreach ($this->variants[$variantKey] as $resolvedVariantKey => $resolvedVariant) {
+                        $resolvedVariant['parent'] = $parent;
+                        $resolvedVariants[$parent][$resolvedVariantKey] = $resolvedVariant;
+                    }
+
+                    continue;
+                }
+
+                $resolvedVariants[$parent][$variantKey] = $variant;
+            }
+        }
+
+        $this->cacheProvider->save('product_variants', $resolvedVariants);
+        $this->variants = [];
     }
 }

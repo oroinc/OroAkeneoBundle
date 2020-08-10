@@ -87,8 +87,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
             ];
         }
 
-        $importedRecord['inventory_status'] = ['id' => Product::INVENTORY_STATUS_IN_STOCK];
-        $importedRecord['type'] = 'simple';
+        $importedRecord['type'] = Product::TYPE_SIMPLE;
         $importedRecord['status'] = Product::STATUS_ENABLED;
         if (array_key_exists('enabled', $importedRecord)) {
             $importedRecord['status'] = empty($importedRecord['enabled']) ?
@@ -118,12 +117,12 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     private function setFamilyVariant(array &$importedRecord)
     {
         if (empty($importedRecord['family_variant'])) {
-            $importedRecord['type'] = 'simple';
+            $importedRecord['type'] = Product::TYPE_SIMPLE;
 
             return;
         }
 
-        $importedRecord['type'] = 'configurable';
+        $importedRecord['type'] = Product::TYPE_CONFIGURABLE;
         $importedRecord['attributeFamily'] = [
             'code' => AttributeFamilyCodeGenerator::generate($importedRecord['family_variant']['family']),
         ];
@@ -131,12 +130,38 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         $variantFields = [];
         $fieldMapping = $this->getFieldMapping();
 
-        foreach ($importedRecord['family_variant']['variant_attribute_sets'] as $set) {
+        $sets = $importedRecord['family_variant']['variant_attribute_sets'] ?: [];
+        $isTwoLevelFamilyVariant = count($sets) === 2;
+
+        $isFirstLevelProduct = empty($importedRecord['parent']);
+        $isSecondLevelProduct = !empty($importedRecord['parent']);
+
+        if ($isTwoLevelFamilyVariant) {
+            $importedRecord['status'] = Product::STATUS_ENABLED;
+
+            $allowSecondProductOnly = $this->getTransport()->getVariantLevels() ===
+                AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_SECOND_ONLY;
+            if ($isFirstLevelProduct && $allowSecondProductOnly) {
+                $importedRecord['status'] = Product::STATUS_DISABLED;
+            }
+
+            $allowFirstProductOnly = $this->getTransport()->getVariantLevels() ===
+                AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_FIRST_ONLY;
+            if ($isSecondLevelProduct && $allowFirstProductOnly) {
+                $importedRecord['status'] = Product::STATUS_DISABLED;
+            }
+        }
+
+        if ($isTwoLevelFamilyVariant && $isSecondLevelProduct) {
+            $sets = array_slice($sets, -1);
+        }
+
+        foreach ($sets as $set) {
             foreach ($set['axes'] as $code) {
                 if (array_key_exists($code, $fieldMapping)) {
                     $field = $fieldMapping[$code];
 
-                    $variantFields[] = $field['name'];
+                    $variantFields[$field['name']] = $field['name'];
                 }
             }
         }

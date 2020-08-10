@@ -183,6 +183,7 @@
         </div>
     </div>
 
+<<<<<<< HEAD
     <div class="control-group control-group-choice">
         <div class="control-label wrap">
             {{ UI.tooltip('oro.akeneo.integration.settings.akeneo_attribute_list.tooltip'|trans, {}, 'right') }}
@@ -205,5 +206,16 @@
     </div>
 
     {{ form_row(form.akeneoMergeImageToParent) }}
+
+    <div class="control-group control-group-choice">
+        <div class="control-label wrap">
+            {{ UI.tooltip('oro.akeneo.integration.settings.variant_levels.tooltip'|trans, {}, 'right') }}
+            {{ form_label(form.variantLevels) }}
+        </div>
+        <div class="controls {% if (form_errors(form.variantLevels)|length > 0) %} validation-error {% endif %}">
+            {{ form_widget(form.variantLevels) }}
+            {{ form_errors(form.variantLevels) }}
+        </div>
+    </div>
 </div>
 {% endblock %}
