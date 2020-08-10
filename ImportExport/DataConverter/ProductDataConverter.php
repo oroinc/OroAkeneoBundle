@@ -132,11 +132,15 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         $fieldMapping = $this->getFieldMapping();
 
         foreach ($importedRecord['family_variant']['variant_attribute_sets'] as $set) {
+            if (!empty($importedRecord['parent']) && $set['level'] == 1) {
+                continue;
+            }
+
             foreach ($set['axes'] as $code) {
                 if (array_key_exists($code, $fieldMapping)) {
                     $field = $fieldMapping[$code];
 
-                    $variantFields[] = $field['name'];
+                    $variantFields[$field['name']] = $field['name'];
                 }
             }
         }
