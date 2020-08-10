@@ -18,6 +18,10 @@ use Symfony\Component\HttpFoundation\ParameterBag;
  */
 class AkeneoSettings extends Transport
 {
+    public const TWO_LEVEL_FAMILY_VARIANT_FIRST_ONLY = 'first_only';
+    public const TWO_LEVEL_FAMILY_VARIANT_SECOND_ONLY = 'second_only';
+    public const TWO_LEVEL_FAMILY_VARIANT_BOTH = 'both';
+
     /**
      * @var string
      *
@@ -172,6 +176,13 @@ class AkeneoSettings extends Transport
      * @ORM\Column(name="akeneo_merge_image_to_parent", type="boolean", options={"default"=false})
      */
     private $akeneoMergeImageToParent = false;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="akeneo_variant_levels", type="text", nullable=true)
+     */
+    protected $variantLevels;
 
     /**
      * @var ParameterBag
@@ -704,5 +715,15 @@ class AkeneoSettings extends Transport
         $this->akeneoMergeImageToParent = $akeneoMergeImageToParent;
 
         return $this;
+    }
+
+    public function getVariantLevels(): ?string
+    {
+        return $this->variantLevels;
+    }
+
+    public function setVariantLevels(string $variantLevels): void
+    {
+        $this->variantLevels = $variantLevels;
     }
 }
