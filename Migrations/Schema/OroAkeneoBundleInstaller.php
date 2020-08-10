@@ -48,7 +48,7 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
      */
     public function getMigrationVersion()
     {
-        return 'v1_9';
+        return 'v1_10';
     }
 
     /**
@@ -118,6 +118,7 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
         $table->addColumn('pricelist_id', 'integer', ['notnull' => false]);
         $table->addColumn('akeneo_attributes_image_list', 'text', ['notnull' => false]);
         $table->addColumn('akeneo_merge_image_to_parent', 'boolean', ['notnull' => false, 'default' => false]);
+        $table->addColumn('akeneo_variant_levels', 'string', ['notnull' => false, 'length' => 255]);
         $table->addIndex(['rootcategory_id'], 'idx_d7a389a852d2453c', []);
         $table->addIndex(['pricelist_id'], 'idx_d7a389a846b960c4', []);
     }

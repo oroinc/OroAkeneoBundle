@@ -53,6 +53,12 @@ oro:
           label: 'Product Unit Attribute Name'
         product_unit_precision_attribute:
           label: 'Product Unit Precision Attribute Name'
+        variant_levels:
+          label: Multilevel Products
+          tooltip: Enable 1st and/or 2nd level configurable products for two-level family variants
+          both: Enable 1st and 2nd level configurable products
+          first_only: Enable 1st level configurable products
+          second_only: Enable 2st level configurable products
       popup:
         channel: 'This is a list of channels configured for the current Akeneo PIM instance. Select the required channel for product and category import. To refresh the list, click Refresh Channels'
         currencies: 'The control configures mapping between the currencies enabled in the current Akeneo PIM instance and the currencies enabled in this application. To skip price import for a specific currency, do not add mapping to it. To refresh the list, click Refresh Currencies'

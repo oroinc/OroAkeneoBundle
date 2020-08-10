@@ -132,7 +132,6 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 ChoiceType::class,
                 [
                     'choices'           => $this->syncProductsDataProvider->getSyncProducts(),
-                    'data'              => $this->syncProductsDataProvider->getDefaultValue(),
                     'choice_label'      => function ($action) {
                         return $this->translator->trans(
                             sprintf('oro.akeneo.integration.settings.sync_products.%s', $action)
@@ -268,6 +267,24 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                         'Yes' => true,
                         'No'  => false,
                     ],
+                ]
+            )
+            ->add(
+                'variantLevels',
+                ChoiceType::class,
+                [
+                    'choices' => [
+                        AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_BOTH,
+                        AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_FIRST_ONLY,
+                        AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_SECOND_ONLY,
+                    ],
+                    'choice_label' => function ($action) {
+                        return $this->translator->trans(
+                            sprintf('oro.akeneo.integration.settings.variant_levels.%s', $action)
+                        );
+                    },
+                    'label' => 'oro.akeneo.integration.settings.variant_levels.label',
+                    'required' => true,
                 ]
             );
 
