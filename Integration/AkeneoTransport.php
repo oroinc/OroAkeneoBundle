@@ -37,6 +37,11 @@ class AkeneoTransport implements AkeneoTransportInterface
     private $families = [];
 
     /**
+     * @var array
+     */
+    private $measureFamilies = [];
+
+    /**
      * @var AkeneoClientFactory
      */
     private $clientFactory;
@@ -197,6 +202,7 @@ class AkeneoTransport implements AkeneoTransportInterface
     public function getProducts(int $pageSize)
     {
         $this->initAttributesList();
+        $this->initMeasureFamilies();
 
         $searchFilters = $this->akeneoSearchBuilder->getFilters($this->transportEntity->getProductFilter());
 
@@ -209,7 +215,8 @@ class AkeneoTransport implements AkeneoTransportInterface
                 $this->client,
                 $this->logger,
                 $this->attributes,
-                []
+                $this->familyVariants,
+                $this->measureFamilies
             );
         }
 
@@ -221,7 +228,8 @@ class AkeneoTransport implements AkeneoTransportInterface
             $this->client,
             $this->logger,
             $this->attributes,
-            []
+            $this->familyVariants,
+            $this->measureFamilies
         );
     }
 
@@ -232,6 +240,7 @@ class AkeneoTransport implements AkeneoTransportInterface
     {
         $this->initAttributesList();
         $this->initFamilyVariants();
+        $this->initMeasureFamilies();
 
         $searchFilters = $this->akeneoSearchBuilder->getFilters($this->transportEntity->getProductFilter());
         if (isset($searchFilters['completeness'])) {
@@ -246,7 +255,8 @@ class AkeneoTransport implements AkeneoTransportInterface
             $this->client,
             $this->logger,
             $this->attributes,
-            $this->familyVariants
+            $this->familyVariants,
+            $this->measureFamilies
         );
     }
 
@@ -389,6 +399,19 @@ class AkeneoTransport implements AkeneoTransportInterface
 
         foreach ($this->client->getFamilyApi()->all(self::PAGE_SIZE) as $family) {
             $this->families[$family['code']] = $family;
+        }
+    }
+
+    protected function initMeasureFamilies()
+    {
+        if (!empty($this->measureFamilies)) {
+            return;
+        }
+
+        foreach ($this->client->getMeasureFamilyApi()->all() as $measurementFamily) {
+            foreach (($measurementFamily['units'] ?? []) as $unit) {
+                $this->measureFamilies[$unit['code']] = $unit['symbol'];
+            }
         }
     }
 }

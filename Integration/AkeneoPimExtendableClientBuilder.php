@@ -4,6 +4,7 @@ namespace Oro\Bundle\AkeneoBundle\Integration;
 
 use Akeneo\Pim\ApiClient\Security\Authentication;
 use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientBuilder;
+use Oro\Bundle\AkeneoBundle\Integration\Api\MeasurementFamilyApi;
 use Oro\Bundle\AkeneoBundle\Integration\Api\ReferenceEntityApi;
 use Oro\Bundle\AkeneoBundle\Integration\Api\ReferenceEntityRecordApi;
 
@@ -20,6 +21,7 @@ class AkeneoPimExtendableClientBuilder extends AkeneoPimEnterpriseClientBuilder
         $client->setReferenceEntityRecordApi(
             new ReferenceEntityRecordApi($resourceClient, $pageFactory, $cursorFactory)
         );
+        $client->setMeasurementFamilyApi(new MeasurementFamilyApi($resourceClient));
 
         return $client;
     }
