@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\Collection;
 use Oro\Bundle\AttachmentBundle\Entity\File;
 use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\EntityExtendBundle\Entity\AbstractEnumValue;
+use Oro\Bundle\EntityExtendBundle\Tools\ExtendHelper;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\ImportExport\Normalizer\LocalizationCodeFormatter;
 use Oro\Bundle\ProductBundle\Entity\Product;
@@ -42,12 +43,6 @@ class ProductImportStrategy extends ProductStrategy
 
     protected function beforeProcessEntity($entity)
     {
-        $existingProduct = $this->findExistingEntity($entity);
-        if ($existingProduct instanceof Product) {
-            $entity->setStatus($existingProduct->getStatus());
-            $entity->setInventoryStatus($existingProduct->getInventoryStatus());
-        }
-
         $this->setOwner($entity);
 
         return parent::beforeProcessEntity($entity);
@@ -75,6 +70,15 @@ class ProductImportStrategy extends ProductStrategy
                     break;
                 }
             }
+        }
+
+        if ($entity instanceof Product && !$entity->getInventoryStatus()) {
+            $inventoryStatusClassName = ExtendHelper::buildEnumValueClassName('prod_inventory_status');
+            $inventoryStatus = $this->findEntityByIdentityValues(
+                $inventoryStatusClassName,
+                ['id' => Product::INVENTORY_STATUS_IN_STOCK]
+            );
+            $entity->setInventoryStatus($inventoryStatus);
         }
 
         $this->existingProducts = [];
@@ -258,6 +262,7 @@ class ProductImportStrategy extends ProductStrategy
             'slugs',
             'slugPrototypes',
             'slugPrototypesWithRedirect',
+            'inventory_status'
         ];
 
         if (is_a($entityName, Product::class, true) && in_array($fieldName, $excludeProductFields)) {
