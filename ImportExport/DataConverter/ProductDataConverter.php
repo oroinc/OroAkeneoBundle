@@ -20,6 +20,7 @@ use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\Formatter\DateTimeFormatterInterface;
 use Oro\Bundle\ProductBundle\Entity\Product;
 use Oro\Bundle\ProductBundle\ImportExport\DataConverter\ProductDataConverter as BaseProductDataConverter;
+use Oro\Bundle\ProductBundle\ProductVariant\Registry\ProductVariantFieldValueHandlerRegistry;
 use Oro\Bundle\ProductBundle\Provider\ProductUnitsProvider;
 
 /**
@@ -60,6 +61,9 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
     /** @var DoctrineHelper */
     protected $doctrineHelper;
+
+    /** @var ProductVariantFieldValueHandlerRegistry */
+    private $productVariantFieldValueHandlerRegistry;
 
     public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
     {
@@ -156,10 +160,18 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
             $sets = array_slice($sets, -1);
         }
 
+        $importedRecord['variantFields'] = '';
+
         foreach ($sets as $set) {
             foreach ($set['axes'] as $code) {
                 if (array_key_exists($code, $fieldMapping)) {
                     $field = $fieldMapping[$code];
+
+                    try {
+                        $this->productVariantFieldValueHandlerRegistry->getVariantFieldValueHandler($field['type']);
+                    } catch (\InvalidArgumentException $e) {
+                        continue;
+                    }
 
                     $variantFields[$field['name']] = $field['name'];
                 }
@@ -416,7 +428,21 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         $item = array_shift($value);
 
         if ('pim_catalog_metric' === $item['type']) {
-            $item['data'] = sprintf('%s %s', $item['data']['amount'], $item['data']['unit']);
+            $value = sprintf(
+                '%s %s',
+                (float)$item['data']['amount'],
+                ucfirst(mb_strtolower($item['data']['unit']))
+            );
+
+            if (isset($item['data']['symbol'])) {
+                $value = sprintf(
+                    '%s (%s)',
+                    $value,
+                    $item['data']['symbol']
+                );
+            }
+
+            $item['data'] = $value;
         }
 
         return $item['data'];
@@ -517,5 +543,11 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
             'precision' =>  $precision,
             'sell' => true,
         ];
+    }
+
+    public function setProductVariantFieldValueHandlerRegistry(
+        ProductVariantFieldValueHandlerRegistry $productVariantFieldValueHandlerRegistry
+    ): void {
+        $this->productVariantFieldValueHandlerRegistry = $productVariantFieldValueHandlerRegistry;
     }
 }
