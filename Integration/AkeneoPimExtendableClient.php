@@ -4,10 +4,11 @@ namespace Oro\Bundle\AkeneoBundle\Integration;
 
 use Akeneo\Pim\ApiClient\Security\Authentication;
 use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientInterface;
+use Oro\Bundle\AkeneoBundle\Integration\Api\MeasurementFamilyApiInterface;
 use Oro\Bundle\AkeneoBundle\Integration\Api\ReferenceEntityApiInterface;
 use Oro\Bundle\AkeneoBundle\Integration\Api\ReferenceEntityRecordApiInterface;
 
-class AkeneoPimExtendableClient implements AkeneoPimEnterpriseClientInterface, AkeneoPimExtendableClientInterface
+class AkeneoPimExtendableClient implements AkeneoPimExtendableClientInterface
 {
     /** @var Authentication */
     private $authentication;
@@ -20,6 +21,9 @@ class AkeneoPimExtendableClient implements AkeneoPimEnterpriseClientInterface, A
 
     /** @var ReferenceEntityRecordApiInterface */
     private $referenceEntityRecordApi;
+
+    /** @var MeasurementFamilyApiInterface */
+    private $measurementFamilyApi;
 
     public function __construct(Authentication $authentication, AkeneoPimEnterpriseClientInterface $client)
     {
@@ -165,5 +169,15 @@ class AkeneoPimExtendableClient implements AkeneoPimEnterpriseClientInterface, A
     public function setReferenceEntityRecordApi(ReferenceEntityRecordApiInterface $referenceEntityRecordApi): void
     {
         $this->referenceEntityRecordApi = $referenceEntityRecordApi;
+    }
+
+    public function getMeasurementFamilyApi(): MeasurementFamilyApiInterface
+    {
+        return $this->measurementFamilyApi;
+    }
+
+    public function setMeasurementFamilyApi(MeasurementFamilyApiInterface $measurementFamilyApi): void
+    {
+        $this->measurementFamilyApi = $measurementFamilyApi;
     }
 }

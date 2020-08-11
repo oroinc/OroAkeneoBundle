@@ -19,6 +19,11 @@ class ProductIterator extends AbstractIterator
     private $familyVariants = [];
 
     /**
+     * @var array
+     */
+    private $measureFamilies = [];
+
+    /**
      * AttributeIterator constructor.
      */
     public function __construct(
@@ -26,11 +31,13 @@ class ProductIterator extends AbstractIterator
         AkeneoPimExtendableClientInterface $client,
         LoggerInterface $logger,
         array $attributes,
-        array $familyVariants
+        array $familyVariants,
+        array $measureFamilies
     ) {
         parent::__construct($resourceCursor, $client, $logger);
         $this->attributes = $attributes;
         $this->familyVariants = $familyVariants;
+        $this->measureFamilies = $measureFamilies;
     }
 
     /**
@@ -55,6 +62,16 @@ class ProductIterator extends AbstractIterator
             if (isset($this->attributes[$code])) {
                 foreach ($values as $key => $value) {
                     $product['values'][$code][$key]['type'] = $this->attributes[$code]['type'];
+
+                    if (!isset($value['data']['unit'])) {
+                        continue;
+                    }
+
+                    if (array_key_exists($value['data']['unit'], $this->measureFamilies)) {
+                        $symbol = $this->measureFamilies[$value['data']['unit']];
+
+                        $product['values'][$code][$key]['data']['symbol'] = $symbol;
+                    }
                 }
             } else {
                 unset($product['values'][$code]);
