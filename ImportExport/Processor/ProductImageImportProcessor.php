@@ -25,7 +25,7 @@ class ProductImageImportProcessor extends StepExecutionAwareImportProcessor
             $object = $this->serializer->deserialize(
                 $image,
                 $this->getEntityName(),
-                '',
+                null,
                 array_merge(
                     $this->context->getConfiguration(),
                     [
