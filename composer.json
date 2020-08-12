@@ -18,9 +18,7 @@
         ]
     },
     "require": {
-        "php": "7.3.*",
-        "ext-json": "*",
-        "oro/commerce-enterprise": "4.1.* <=4.1.4",
+        "oro/commerce-enterprise": "4.1.* <=4.1.6",
         "akeneo/api-php-client-ee": "3.0.*",
         "php-http/guzzle6-adapter": "1.1.*",
         "php-http/message": "1.8.*",
