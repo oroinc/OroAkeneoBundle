@@ -247,12 +247,12 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
         $importExportConfig = $importExportProvider->getConfig($className, $fieldName);
         $importExportConfig->set('source', 'akeneo');
 
-        if ('file' === $fieldConfigModel->getType()) {
+        if (in_array($fieldConfigModel->getType(), ['image', 'file'], true)) {
             $importExportConfig->set('full', false);
             $attachmentProvider = $this->configManager->getProvider('attachment');
             $attachmentConfig = $attachmentProvider->getConfig($className, $fieldName);
-            $attachmentConfig->set('mimetypes', implode("\n", ['application/*', 'image/*', 'text/*']));
             $attachmentConfig->set('file_applications', ['default', 'commerce']);
+            $attachmentConfig->set('acl_protected', true);
             $this->configManager->persist($attachmentConfig);
         }
 
@@ -285,6 +285,9 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
             $attributeConfig->set('searchable', $type->isSearchable());
             $searchConfig->set('searchable', $type->isSearchable());
             $attributeConfig->set('filterable', $type->isFilterable());
+
+            $attributeConfig->set('visible', true);
+            $attributeConfig->set('enabled', true);
         }
 
         $attributeConfig->set('is_attribute', true);
