@@ -2,6 +2,8 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Writer;
 
+use Akeneo\Bundle\BatchBundle\Entity\StepExecution;
+use Akeneo\Bundle\BatchBundle\Step\StepExecutionAwareInterface;
 use Doctrine\Common\Cache\CacheProvider;
 use Oro\Bundle\AkeneoBundle\Config\ChangesAwareInterface;
 use Oro\Bundle\AkeneoBundle\Tools\EnumSynchronizer;
@@ -15,6 +17,7 @@ use Oro\Bundle\EntityExtendBundle\Entity\EnumValueTranslation;
 use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
 use Oro\Bundle\EntityExtendBundle\Extend\RelationType;
 use Oro\Bundle\EntityExtendBundle\Tools\ExtendHelper;
+use Oro\Bundle\IntegrationBundle\Entity\Channel;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\ProductBundle\Entity\Product;
 use Oro\Bundle\TranslationBundle\Entity\Translation;
@@ -23,7 +26,7 @@ use Oro\Bundle\TranslationBundle\Manager\TranslationManager;
 /**
  * Import writer for product attributes.
  */
-class AttributeWriter extends BaseAttributeWriter
+class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareInterface
 {
     const ATTRIBUTE_LABELS_CONTEXT_KEY = 'attributeLabels';
 
@@ -35,6 +38,9 @@ class AttributeWriter extends BaseAttributeWriter
 
     /** @var AttributeTypeRegistry */
     private $attributeTypeRegistry;
+
+    /** @var StepExecution */
+    private $stepExecution;
 
     /** @var CacheProvider */
     private $cacheProvider;
@@ -50,6 +56,9 @@ class AttributeWriter extends BaseAttributeWriter
 
     /** @var array */
     private $fieldTypeMapping = [];
+
+    /** @var int */
+    private $organizationId;
 
     public function initialize()
     {
@@ -69,6 +78,8 @@ class AttributeWriter extends BaseAttributeWriter
         $this->optionLabels = null;
         $this->fieldNameMapping = null;
         $this->fieldTypeMapping = null;
+
+        $this->organizationId = null;
     }
 
     public function setEnumSynchronizer(EnumSynchronizer $enumSynchronizer): void
@@ -94,6 +105,11 @@ class AttributeWriter extends BaseAttributeWriter
     public function setCacheProvider(CacheProvider $cacheProvider): void
     {
         $this->cacheProvider = $cacheProvider;
+    }
+
+    public function setStepExecution(StepExecution $stepExecution)
+    {
+        $this->stepExecution = $stepExecution;
     }
 
     /**
@@ -272,6 +288,8 @@ class AttributeWriter extends BaseAttributeWriter
         }
 
         $attributeConfig->set('is_attribute', true);
+        $attributeConfig->set('is_global', false);
+        $attributeConfig->set('organization_id', $this->getOrganizationId());
 
         $this->configManager->persist($attributeConfig);
         $this->configManager->persist($searchConfig);
@@ -303,6 +321,26 @@ class AttributeWriter extends BaseAttributeWriter
         $importExportConfig->set('fallback_field', $fieldType);
         $this->configManager->persist($extendConfig);
         $this->configManager->persist($importExportConfig);
+    }
+
+    private function getOrganizationId(): ?int
+    {
+        if (!$this->organizationId) {
+            $channelId = $this->stepExecution->getJobExecution()->getExecutionContext()->get('channel');
+            if (!$channelId) {
+                return null;
+            }
+
+            /** @var Channel $channel */
+            $channel = $this->doctrineHelper->getEntity(Channel::class, $channelId);
+            if (!$channel) {
+                return null;
+            }
+
+            $this->organizationId = $channel->getOrganization()->getId();
+        }
+
+        return $this->organizationId;
     }
 
     private function saveDatagridConfig(string $className, string $fieldName): void
