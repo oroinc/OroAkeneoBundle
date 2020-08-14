@@ -55,11 +55,18 @@ class AttributeImportStrategy extends EntityFieldImportStrategy
             return null;
         }
 
+        $extendProvider = $this->configManager->getProvider('extend');
         if ($entity->getId()) {
-            $extendProvider = $this->configManager->getProvider('extend');
             $extendConfig = $extendProvider->getConfig($entity->getEntity()->getClassName(), $entity->getFieldName());
 
             if (ExtendScope::OWNER_SYSTEM === $extendConfig->get('owner')) {
+                return null;
+            }
+        }
+
+        if ($extendProvider->hasConfig($entity->getEntity()->getClassName(), $entity->getFieldName())) {
+            $extendConfig = $extendProvider->getConfig($entity->getEntity()->getClassName(), $entity->getFieldName());
+            if ($extendConfig->is('state', ExtendScope::STATE_DELETE)) {
                 return null;
             }
         }
