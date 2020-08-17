@@ -48,11 +48,6 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
     {
         $this->setOwner($entity);
 
-        return parent::beforeProcessEntity($entity);
-    }
-
-    protected function afterProcessEntity($entity)
-    {
         if ($entity instanceof Category) {
             $parent = $entity->getParentCategory();
             if ($parent instanceof Category && !$parent->getId()) {
@@ -61,6 +56,11 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
             }
         }
 
+        return parent::beforeProcessEntity($entity);
+    }
+
+    protected function afterProcessEntity($entity)
+    {
         $this->existingCategories = [];
 
         return parent::afterProcessEntity($entity);

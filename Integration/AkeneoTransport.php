@@ -184,7 +184,6 @@ class AkeneoTransport implements AkeneoTransportInterface
 
         if (!empty($akeneoChannel)) {
             foreach ($this->client->getChannelApi()->all() as $channel) {
-
                 $categoryTreeChannel = ($channel['code'] == $akeneoChannel && !empty($channel['category_tree'])) ? $channel['category_tree'] : null;
 
                 if (null !== $categoryTreeChannel) {
