@@ -142,10 +142,3 @@ services:
     class: 'Oro\Bundle\AkeneoBundle\Job\Context\SimpleContextAggregator'
     parent: oro_importexport.job.context.aggregator.simple
     decorates: oro_importexport.job.context.aggregator.simple
-
-  oro_akeneo.layout.data_provider.file_applications:
-    class: 'Oro\Bundle\AkeneoBundle\Layout\DataProvider\FileApplicationsDataProvider'
-    decorates: oro_attachment.layout.data_provider.file_applications
-    arguments:
-      - '@oro_akeneo.layout.data_provider.file_applications.inner'
-      - '@oro_entity_config.provider.attribute'
