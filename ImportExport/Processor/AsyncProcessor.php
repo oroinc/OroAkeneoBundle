@@ -23,7 +23,7 @@ class AsyncProcessor implements ProcessorInterface
         $identifier = $item['identifier'] ?? $item['code'];
 
         if (!empty($item['family_variant']) && empty($this->variants[$identifier])) {
-            $this->variants[$identifier][$identifier] = ['parent' => $identifier, 'variant' => false];
+            $this->variants[$identifier][''] = ['parent' => $identifier, 'variant' => false];
         }
 
         if (empty($item['parent'])) {
@@ -32,7 +32,7 @@ class AsyncProcessor implements ProcessorInterface
 
         $parent = $item['parent'];
         $this->variants[$parent][$identifier] = ['parent' => $parent, 'variant' => $identifier];
-        unset($this->variants[$identifier][$identifier]);
+        unset($this->variants[$identifier]['']);
     }
 
     public function initialize()
