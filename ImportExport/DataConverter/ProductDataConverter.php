@@ -91,14 +91,8 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
             ];
         }
 
-        $importedRecord['type'] = Product::TYPE_SIMPLE;
-        $importedRecord['status'] = Product::STATUS_ENABLED;
-        if (array_key_exists('enabled', $importedRecord)) {
-            $importedRecord['status'] = empty($importedRecord['enabled']) ?
-                Product::STATUS_DISABLED : Product::STATUS_ENABLED;
-        }
-
         $this->processValues($importedRecord);
+        $this->setStatus($importedRecord);
         $this->setSlugs($importedRecord);
         $this->setCategory($importedRecord);
         $this->setFamilyVariant($importedRecord);
@@ -115,14 +109,30 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         return $importedRecord;
     }
 
+    private function setStatus(array &$importedRecord)
+    {
+        $importedRecord['status'] = isset($importedRecord['enabled']) ?
+            Product::STATUS_ENABLED : Product::STATUS_DISABLED;
+
+        if (!empty($importedRecord['family_variant'])) {
+            $importedRecord['status'] = Product::STATUS_DISABLED;
+
+            return;
+        }
+
+        if (!empty($importedRecord['parent'])) {
+            $importedRecord['status'] = Product::STATUS_DISABLED;
+
+            return;
+        }
+    }
+
     /**
      * Set family variant for configurable products.
      */
     private function setFamilyVariant(array &$importedRecord)
     {
         if (empty($importedRecord['family_variant'])) {
-            $importedRecord['type'] = Product::TYPE_SIMPLE;
-
             return;
         }
 
@@ -131,36 +141,17 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
             'code' => AttributeFamilyCodeGenerator::generate($importedRecord['family_variant']['family']),
         ];
 
-        $variantFields = [];
-        $fieldMapping = $this->getFieldMapping();
-
         $sets = $importedRecord['family_variant']['variant_attribute_sets'] ?: [];
         $isTwoLevelFamilyVariant = count($sets) === 2;
-
         $isFirstLevelProduct = empty($importedRecord['parent']);
         $isSecondLevelProduct = !empty($importedRecord['parent']);
-
-        if ($isTwoLevelFamilyVariant) {
-            $importedRecord['status'] = Product::STATUS_ENABLED;
-
-            $allowSecondProductOnly = $this->getTransport()->getVariantLevels() ===
-                AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_SECOND_ONLY;
-            if ($isFirstLevelProduct && $allowSecondProductOnly) {
-                $importedRecord['status'] = Product::STATUS_DISABLED;
-            }
-
-            $allowFirstProductOnly = $this->getTransport()->getVariantLevels() ===
-                AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_FIRST_ONLY;
-            if ($isSecondLevelProduct && $allowFirstProductOnly) {
-                $importedRecord['status'] = Product::STATUS_DISABLED;
-            }
-        }
 
         if ($isTwoLevelFamilyVariant && $isSecondLevelProduct) {
             $sets = array_slice($sets, -1);
         }
 
-        $importedRecord['variantFields'] = '';
+        $variantFields = [];
+        $fieldMapping = $this->getFieldMapping();
 
         foreach ($sets as $set) {
             foreach ($set['axes'] as $code) {
@@ -178,8 +169,25 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
             }
         }
 
-        if (count($variantFields) > 0) {
-            $importedRecord['variantFields'] = implode(',', $variantFields);
+        if (!$variantFields) {
+            return;
+        }
+
+        $importedRecord['status'] = Product::STATUS_ENABLED;
+        $importedRecord['variantFields'] = implode(',', $variantFields);
+
+        if ($isTwoLevelFamilyVariant) {
+            $allowSecondProductOnly = $this->getTransport()->getVariantLevels() ===
+                AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_SECOND_ONLY;
+            if ($isFirstLevelProduct && $allowSecondProductOnly) {
+                $importedRecord['status'] = Product::STATUS_DISABLED;
+            }
+
+            $allowFirstProductOnly = $this->getTransport()->getVariantLevels() ===
+                AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_FIRST_ONLY;
+            if ($isSecondLevelProduct && $allowFirstProductOnly) {
+                $importedRecord['status'] = Product::STATUS_DISABLED;
+            }
         }
     }
 
@@ -241,6 +249,11 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
                     $importedRecord[$field['name']] = $this->processMultiEnumType($value);
                     break;
                 case 'file':
+                    if ($valueFirstItem['data']) {
+                        $importedRecord[$field['name']] = $this->processFileType($value);
+                    }
+                    break;
+                case 'image':
                     if ($valueFirstItem['data']) {
                         $importedRecord[$field['name']] = $this->processFileType($value);
                     }
@@ -540,7 +553,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
         return [
             'unit' => ['code' => $unit],
-            'precision' =>  $precision,
+            'precision' => $precision,
             'sell' => true,
         ];
     }

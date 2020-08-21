@@ -23,6 +23,19 @@ class ProductImageImportStrategy extends ConfigurableAddOrReplaceStrategy
             return null;
         }
 
+        if (!$entity->getProduct()) {
+            return null;
+        }
+
+        $existingProduct = $this->findExistingEntity($entity->getProduct());
+        if (!$existingProduct) {
+            return null;
+        }
+
         return parent::beforeProcessEntity($entity);
+    }
+
+    protected function updateContextCounters($entity)
+    {
     }
 }

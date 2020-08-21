@@ -44,7 +44,7 @@
          try {
 +            self::$callbackResultJob = $job;
              $result = call_user_func($runCallback, $jobRunner, $job);
-+            self::$callbackResultJob = $job;
++            self::$callbackResultJob = null;
          } catch (\Throwable $e) {
              $this->jobProcessor->failAndRedeliveryChildJob($job);
              $this->jobExtension->onError($job);

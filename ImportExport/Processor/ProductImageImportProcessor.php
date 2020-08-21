@@ -17,9 +17,13 @@ class ProductImageImportProcessor extends StepExecutionAwareImportProcessor
         $images = [];
         $product = null;
         foreach ($items as $image) {
+            $this->context->setValue('rawItemData', $image);
+
             if ($this->dataConverter) {
                 $image = $this->dataConverter->convertToImportFormat($image, false);
             }
+
+            $this->context->setValue('itemData', $image);
 
             /** @var ProductImage $object */
             $object = $this->serializer->deserialize(

@@ -2,7 +2,6 @@
 
 namespace Oro\Bundle\AkeneoBundle\Integration;
 
-use Akeneo\Pim\ApiClient\Exception\NotFoundHttpException;
 use Gaufrette\Filesystem;
 use Knp\Bundle\GaufretteBundle\FilesystemMap;
 use Oro\Bundle\AkeneoBundle\Client\AkeneoClientFactory;
@@ -347,24 +346,16 @@ class AkeneoTransport implements AkeneoTransportInterface
         return $familtyAttributes;
     }
 
-    public function downloadAndSaveMediaFile($type, $code)
+    public function downloadAndSaveMediaFile(string $code)
     {
-        $path = $this->getFilePath($type, $code);
-
+        $path = sprintf('akeneo/%s', $code);
         if ($this->filesystem->has($path)) {
-            return;
-        }
-
-        $oldPath = $this->getOldFilePath($type, $code);
-        if ($this->filesystem->has($oldPath)) {
-            $this->filesystem->rename($oldPath, $path);
-
             return;
         }
 
         try {
             $content = $this->client->getProductMediaFileApi()->download($code)->getContents();
-        } catch (NotFoundHttpException $e) {
+        } catch (\Throwable $e) {
             $this->logger->critical(
                 'Error on downloading media file.',
                 ['message' => $e->getMessage(), 'exception' => $e]
@@ -373,20 +364,16 @@ class AkeneoTransport implements AkeneoTransportInterface
             return;
         }
 
-        $this->filesystem->write($path, $content, true);
-    }
+        try {
+            $this->filesystem->write($path, $content, true);
+        } catch (\Throwable $e) {
+            $this->logger->critical(
+                'Error during saving media file.',
+                ['message' => $e->getMessage(), 'exception' => $e]
+            );
 
-    protected function getFilePath(string $type, string $code): string
-    {
-        return sprintf('%s/%s', $type, $code);
-    }
-
-    /**
-     * @internal BC layer
-     */
-    protected function getOldFilePath(string $type, string $code): string
-    {
-        return sprintf('%s/%s', $type, basename($code));
+            return;
+        }
     }
 
     protected function initAttributesList()

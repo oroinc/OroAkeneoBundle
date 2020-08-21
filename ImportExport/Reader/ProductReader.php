@@ -31,11 +31,15 @@ class ProductReader extends IteratorBasedReader
         foreach ($items as $item) {
             foreach ($item['values'] as $values) {
                 foreach ($values as $value) {
-                    if ('pim_catalog_file' !== $value['type'] || empty($value['data'])) {
+                    if (!in_array($value['type'], ['pim_catalog_image', 'pim_catalog_file'])) {
                         continue;
                     }
 
-                    $this->getAkeneoTransport($context)->downloadAndSaveMediaFile('attachments', $value['data']);
+                    if (empty($value['data'])) {
+                        continue;
+                    }
+
+                    $this->getAkeneoTransport($context)->downloadAndSaveMediaFile($value['data']);
                 }
             }
         }

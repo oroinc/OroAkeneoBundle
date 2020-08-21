@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Processor;
 
+use Oro\Bundle\AkeneoBundle\Tools\AttributeTypeConverter;
 use Oro\Bundle\EntityBundle\Helper\FieldHelper;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityConfigBundle\Entity\FieldConfigModel;
@@ -48,7 +49,7 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
             $item = $this->dataConverter->convertToImportFormat($item, false);
         }
 
-        if (null === $type) {
+        if (!AttributeTypeConverter::convert($type)) {
             return null;
         }
 
