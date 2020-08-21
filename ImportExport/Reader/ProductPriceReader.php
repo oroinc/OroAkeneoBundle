@@ -40,7 +40,7 @@ class ProductPriceReader extends IteratorBasedReader
             }
         }
 
-        $this->stepExecution->setReadCount(count($prices));
+        $this->stepExecution->setReadCount(0);
 
         $this->setSourceIterator(new \ArrayIterator($prices));
     }

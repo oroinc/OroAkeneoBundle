@@ -94,8 +94,10 @@ connector:
             writer: oro_pricing.importexport.writer.product_price
         import_variants:
           title: import
-          class: Oro\Bundle\AkeneoBundle\ImportExport\Step\ItemStep
+          class: Oro\Bundle\BatchBundle\Step\ItemStep
           services:
             reader: oro_akeneo.importexport.reader.product_variant
             processor: oro_akeneo.importexport.processor.import.product_variant
-            writer: oro_akeneo.importexport.writer.cumulative.persistent_batch_writer
+            writer: oro_integration.writer.persistent_batch_writer
+          parameters:
+            batch_size: 1
