@@ -30,8 +30,8 @@ class AsyncProcessor implements ProcessorInterface
                 continue;
             }
 
-            $parent = mb_strtoupper($item['parent']);
-            $variant = mb_strtoupper($item[$field]);
+            $parent = $item['parent'];
+            $variant = $item[$field];
             $this->variants[$parent][$variant] = ['parent' => $parent, 'variant' => $variant];
         }
     }

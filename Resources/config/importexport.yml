@@ -81,8 +81,9 @@ services:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Processor\ProductVariantProcessor'
     arguments:
       - '@doctrine'
-      - '@oro_importexport.strategy.import.helper'
+      - '@oro_akeneo.strategy.import.helper'
       - '@oro_importexport.context_registry'
+      - '@translator'
 
   oro_akeneo.importexport.processor.async:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Processor\AsyncProcessor'
@@ -196,10 +197,18 @@ services:
       - [setSlugGenerator, ["@oro_entity_config.slug.generator"]]
       - [setEntityConfigManager, ["@oro_entity_config.config_manager"]]
       - [setDateTimeFormatter, ["@oro_locale.formatter.date_time"]]
-      - [setAttachmentsDir, ["%kernel.project_dir%/var/import_export/attachments/"]]
+      - [setAttachmentsDir, ["%kernel.project_dir%/var/import_export/akeneo"]]
       - [setProductUnitsProvider, ["@oro_product.provider.product_units_provider"]]
       - [setDoctrineHelper, ["@oro_entity.doctrine_helper"]]
       - [setProductVariantFieldValueHandlerRegistry, ["@oro_product.product_variant_field.registry.product_variant_field_value_handler_registry"]]
+
+  oro_akeneo.importexport.normalizer.product_image:
+    class: 'Oro\Bundle\AkeneoBundle\ImportExport\Serializer\Normalizer\ProductImageNormalizer'
+    parent: oro_product.importexport.normalizer.product_image
+    calls:
+      - [setProductImageDir, ['%kernel.project_dir%/var/import_export/akeneo']]
+    tags:
+      - { name: oro_importexport.normalizer, priority: 100 }
 
   oro_akeneo.importexport.strategy.product:
     class: '%oro_akeneo.importexport.strategy.product.class%'

@@ -41,11 +41,15 @@ class ProductImageReader extends IteratorBasedReader
         }
 
         $images = [];
-        foreach ($items as &$item) {
-            foreach ($item['values'] as $code => &$values) {
+        foreach ($items as $item) {
+            foreach ($item['values'] as $code => $values) {
                 if (empty($this->attributesImageFilter) || in_array($code, $this->attributesImageFilter)) {
                     foreach ($values as $value) {
-                        if ('pim_catalog_image' !== $value['type'] || empty($value['data'])) {
+                        if (!in_array($value['type'], ['pim_catalog_image', 'pim_catalog_file'])) {
+                            continue;
+                        }
+
+                        if (empty($value['data'])) {
                             continue;
                         }
 
@@ -62,7 +66,7 @@ class ProductImageReader extends IteratorBasedReader
             }
         }
 
-        $this->stepExecution->setReadCount(count($images));
+        $this->stepExecution->setReadCount(0);
 
         $this->setSourceIterator(new \ArrayIterator($images));
     }
@@ -82,11 +86,15 @@ class ProductImageReader extends IteratorBasedReader
             foreach ($item['values'] as $code => $values) {
                 if (empty($this->attributesImageFilter) || in_array($code, $this->attributesImageFilter)) {
                     foreach ($values as $value) {
-                        if ('pim_catalog_image' !== $value['type'] || empty($value['data'])) {
+                        if (!in_array($value['type'], ['pim_catalog_image', 'pim_catalog_file'])) {
                             continue;
                         }
 
-                        $this->getAkeneoTransport($context)->downloadAndSaveMediaFile('product_images', $value['data']);
+                        if (empty($value['data'])) {
+                            continue;
+                        }
+
+                        $this->getAkeneoTransport($context)->downloadAndSaveMediaFile($value['data']);
                     }
                 }
             }

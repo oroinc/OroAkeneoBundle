@@ -11,6 +11,7 @@ use Oro\Bundle\ImportExportBundle\Strategy\Import\ImportStrategyHelper;
 use Oro\Bundle\ProductBundle\Entity\Product;
 use Oro\Bundle\ProductBundle\Entity\ProductVariantLink;
 use Oro\Bundle\ProductBundle\Entity\Repository\ProductRepository;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareInterface
 {
@@ -26,14 +27,19 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
     /** @var ContextRegistry */
     private $contextRegistry;
 
+    /** @var TranslatorInterface */
+    private $translator;
+
     public function __construct(
         ManagerRegistry $registry,
         ImportStrategyHelper $strategyHelper,
-        ContextRegistry $contextRegistry
+        ContextRegistry $contextRegistry,
+        TranslatorInterface $translator
     ) {
         $this->registry = $registry;
         $this->strategyHelper = $strategyHelper;
         $this->contextRegistry = $contextRegistry;
+        $this->translator = $translator;
     }
 
     public function setStepExecution(StepExecution $stepExecution)
@@ -51,18 +57,11 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
         $parentSkus = array_column($items, 'parent');
         $variantSkus = array_column($items, 'variant');
 
-        if (!$parentSkus || !$variantSkus) {
-            return null;
-        }
-
-        $variantSkusUppercase = array_map(
-            function ($variantSku) {
-                return mb_strtoupper($variantSku);
-            },
-            array_column($items, 'variant')
-        );
-
         $parentSku = reset($parentSkus);
+
+        $context = $this->contextRegistry->getByStepExecution($this->stepExecution);
+        $context->setValue('rawItemData', ['configurable' => $parentSku, 'variants' => $variantSkus]);
+        $context->setValue('itemData', ['configurable' => $parentSku, 'variants' => $variantSkus]);
 
         $objectManager = $this->registry->getManagerForClass(Product::class);
         /** @var ProductRepository $productRepository */
@@ -70,30 +69,47 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
 
         $parentProduct = $productRepository->findOneBySku($parentSku);
         if (!$parentProduct instanceof Product) {
+            $context->incrementErrorEntriesCount();
+
+            $errorMessages = [$this->translator->trans('oro.product.product_by_sku.not_found', [], 'validators')];
+            $this->strategyHelper->addValidationErrors($errorMessages, $context);
+
             return null;
         }
 
-        if (!$parentProduct->getId()) {
-            return null;
-        }
+        $variantSkusUppercase = array_map(
+            function ($variantSku) {
+                return mb_strtoupper($variantSku);
+            },
+            $variantSkus
+        );
 
-        $hasChanges = false;
         $variantSkusUppercase = array_combine($variantSkusUppercase, $variantSkusUppercase);
         foreach ($parentProduct->getVariantLinks() as $variantLink) {
-            if (!array_key_exists($variantLink->getProduct()->getSkuUppercase(), $variantSkusUppercase)) {
+            $variantProduct = $variantLink->getProduct();
+            if (!$variantSkusUppercase) {
                 $parentProduct->removeVariantLink($variantLink);
+                $variantProduct->setStatus(Product::STATUS_DISABLED);
                 $objectManager->remove($variantLink);
-                $hasChanges = true;
                 continue;
             }
 
-            unset($variantSkusUppercase[$variantLink->getProduct()->getSkuUppercase()]);
+            if (!array_key_exists($variantProduct->getSkuUppercase(), $variantSkusUppercase)) {
+                $parentProduct->removeVariantLink($variantLink);
+                $variantProduct->setStatus(Product::STATUS_DISABLED);
+                $objectManager->remove($variantLink);
+                continue;
+            }
+
+            $variantProduct->setStatus(Product::STATUS_ENABLED);
+
+            unset($variantSkusUppercase[$variantProduct->getSkuUppercase()]);
         }
 
         $variantLinks = [];
         foreach ($variantSkusUppercase as $variantSku) {
             $variantProduct = $productRepository->findOneBySku($variantSku);
-            if ($variantProduct instanceof Product && $variantProduct->getId()) {
+            if ($variantProduct instanceof Product) {
                 $variantLink = new ProductVariantLink();
                 $variantLink->setProduct($variantProduct);
                 $variantLink->setParentProduct($parentProduct);
@@ -101,33 +117,35 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
                 $variantProduct->addParentVariantLink($variantLink);
                 $parentProduct->addVariantLink($variantLink);
 
-                $variantLinks[] = $variantLink;
-                $hasChanges = true;
+                $variantProduct->setStatus(Product::STATUS_ENABLED);
+
+                $variantLinks[$variantProduct->getSku()] = $variantLink;
             }
+        }
+
+        if (!$parentProduct->getVariantLinks()) {
+            $parentProduct->setStatus(Product::STATUS_DISABLED);
         }
 
         $validationErrors = $this->strategyHelper->validateEntity($parentProduct);
         if ($validationErrors) {
-            $context = $this->contextRegistry->getByStepExecution($this->stepExecution);
             $context->incrementErrorEntriesCount();
             $this->strategyHelper->addValidationErrors($validationErrors, $context);
 
-            foreach ($parentProduct->getVariantLinks() as $variantLink) {
-                $parentProduct->removeVariantLink($variantLink);
-                $objectManager->remove($variantLink);
+            $objectManager->clear();
+
+            $parentProduct = $productRepository->findOneBySku($parentSku);
+            if (!$parentProduct instanceof Product) {
+                return null;
             }
+
+            $parentProduct->setStatus(Product::STATUS_DISABLED);
 
             return $parentProduct;
         }
 
-        if ($hasChanges) {
-            foreach ($variantLinks as $item) {
-                $objectManager->persist($item);
-            }
+        $context->incrementUpdateCount();
 
-            return $parentProduct;
-        }
-
-        return null;
+        return $parentProduct;
     }
 }

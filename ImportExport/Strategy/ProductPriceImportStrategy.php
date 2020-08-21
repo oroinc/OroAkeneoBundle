@@ -27,4 +27,8 @@ class ProductPriceImportStrategy extends BaseStrategy
 
         return parent::beforeProcessEntity($entity);
     }
+
+    protected function updateContextCounters($entity)
+    {
+    }
 }
