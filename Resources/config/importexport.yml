@@ -206,7 +206,7 @@ services:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Serializer\Normalizer\ProductImageNormalizer'
     parent: oro_product.importexport.normalizer.product_image
     calls:
-      - [setProductImageDir, ['%kernel.project_dir%/var/import_export/akeneo']]
+      - [setProductImageDir, ['%kernel.project_dir%/var/import_export/akeneo/']]
     tags:
       - { name: oro_importexport.normalizer, priority: 100 }
 
