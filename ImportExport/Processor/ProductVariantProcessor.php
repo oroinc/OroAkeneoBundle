@@ -55,7 +55,7 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
     public function process($items)
     {
         $parentSkus = array_column($items, 'parent');
-        $variantSkus = array_column($items, 'variant');
+        $variantSkus = array_filter(array_column($items, 'variant'));
 
         $parentSku = reset($parentSkus);
 
@@ -123,10 +123,6 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
             }
         }
 
-        if (!$parentProduct->getVariantLinks()) {
-            $parentProduct->setStatus(Product::STATUS_DISABLED);
-        }
-
         $validationErrors = $this->strategyHelper->validateEntity($parentProduct);
         if ($validationErrors) {
             $context->incrementErrorEntriesCount();
@@ -142,6 +138,10 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
             $parentProduct->setStatus(Product::STATUS_DISABLED);
 
             return $parentProduct;
+        }
+
+        if ($parentProduct->getVariantLinks()->isEmpty()) {
+            $parentProduct->setStatus(Product::STATUS_DISABLED);
         }
 
         $context->incrementUpdateCount();
