@@ -55,7 +55,7 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
     public function process($items)
     {
         $parentSkus = array_column($items, 'parent');
-        $variantSkus = array_filter(array_column($items, 'variant'));
+        $variantSkus = array_values(array_filter(array_column($items, 'variant')));
 
         $parentSku = reset($parentSkus);
 

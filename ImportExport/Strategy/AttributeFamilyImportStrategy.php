@@ -128,7 +128,7 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
 
                 $extendConfig = $extendProvider->getConfig(Product::class, $fieldConfigModel->getFieldName());
 
-                if (ExtendScope::STATE_ACTIVE !== $extendConfig->get('state')) {
+                if (!$extendConfig->is('state', ExtendScope::STATE_ACTIVE)) {
                     $attributeGroup->removeAttributeRelation($attributeRelation);
                 }
             }

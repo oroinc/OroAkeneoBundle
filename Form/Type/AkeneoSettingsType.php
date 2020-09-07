@@ -7,6 +7,7 @@ use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\Integration\AkeneoTransportInterface;
 use Oro\Bundle\AkeneoBundle\Settings\DataProvider\SyncProductsDataProviderInterface;
 use Oro\Bundle\AkeneoBundle\Validator\Constraints\AttributeCodeConstraint;
+use Oro\Bundle\AkeneoBundle\Validator\Constraints\AttributeMappingConstraint;
 use Oro\Bundle\AkeneoBundle\Validator\Constraints\JsonConstraint;
 use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\FormBundle\Form\Type\OroEncodedPlaceholderPasswordType;
@@ -274,7 +275,7 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 ]
             )
             ->add(
-                'variantLevels',
+                'akeneoVariantLevels',
                 ChoiceType::class,
                 [
                     'choices' => [
@@ -290,6 +291,19 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                     },
                     'label' => 'oro.akeneo.integration.settings.variant_levels.label',
                     'required' => true,
+                ]
+            )
+            ->add(
+                'akeneoAttributesMapping',
+                TextareaType::class,
+                [
+                    'required' => false,
+                    'empty_data' => AkeneoSettings::DEFAULT_ATTRIBUTES_MAPPING,
+                    'attr' => ['placeholder' => AkeneoSettings::DEFAULT_ATTRIBUTES_MAPPING],
+                    'label' => 'oro.akeneo.integration.settings.akeneo_attributes_mapping.label',
+                    'constraints' => [
+                        new AttributeMappingConstraint(),
+                    ],
                 ]
             );
 

@@ -291,6 +291,7 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
         }
 
         $attributeConfig->set('is_attribute', true);
+        $attributeConfig->set('field_name', $fieldConfigModel->getFieldName());
         $attributeConfig->set('is_global', false);
         $attributeConfig->set('organization_id', $this->getOrganizationId());
 

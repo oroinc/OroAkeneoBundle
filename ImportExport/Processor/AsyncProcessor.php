@@ -20,10 +20,10 @@ class AsyncProcessor implements ProcessorInterface
 
     private function updateVariants(array &$item)
     {
-        $identifier = $item['identifier'] ?? $item['code'];
+        $sku = $item['sku'];
 
-        if (!empty($item['family_variant']) && empty($this->variants[$identifier])) {
-            $this->variants[$identifier][''] = ['parent' => $identifier, 'variant' => false];
+        if (!empty($item['family_variant']) && empty($this->variants[$sku])) {
+            $this->variants[$sku][''] = ['parent' => $sku, 'variant' => false];
         }
 
         if (empty($item['parent'])) {
@@ -31,8 +31,8 @@ class AsyncProcessor implements ProcessorInterface
         }
 
         $parent = $item['parent'];
-        $this->variants[$parent][$identifier] = ['parent' => $parent, 'variant' => $identifier];
-        unset($this->variants[$identifier]['']);
+        $this->variants[$parent][$sku] = ['parent' => $parent, 'variant' => $sku];
+        unset($this->variants[$sku]['']);
     }
 
     public function initialize()
