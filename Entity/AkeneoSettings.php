@@ -21,6 +21,7 @@ class AkeneoSettings extends Transport
     public const TWO_LEVEL_FAMILY_VARIANT_FIRST_ONLY = 'first_only';
     public const TWO_LEVEL_FAMILY_VARIANT_SECOND_ONLY = 'second_only';
     public const TWO_LEVEL_FAMILY_VARIANT_BOTH = 'both';
+    public const DEFAULT_ATTRIBUTES_MAPPING = 'name:names;description:descriptions;';
 
     /**
      * @var string
@@ -180,9 +181,16 @@ class AkeneoSettings extends Transport
     /**
      * @var string
      *
-     * @ORM\Column(name="akeneo_variant_levels", type="text", nullable=true)
+     * @ORM\Column(name="akeneo_variant_levels", type="string", length=255)
      */
-    protected $variantLevels;
+    private $akeneoVariantLevels;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="akeneo_attributes_mapping", type="text", nullable=true)
+     */
+    private $akeneoAttributesMapping;
 
     /**
      * @var ParameterBag
@@ -280,6 +288,8 @@ class AkeneoSettings extends Transport
                     'akeneoLocales'                 => $this->getAkeneoLocales()->toArray(),
                     'akeneoLocalesList'             => $this->getAkeneoLocalesList(),
                     'akeneoAttributesList'          => $this->getAkeneoAttributesList(),
+                    'akeneoVariantLevels'           => $this->getAkeneoVariantLevels(),
+                    'akeneoAttributesMapping'       => $this->getAkeneoAttributesMapping(),
                 ]
             );
         }
@@ -717,13 +727,27 @@ class AkeneoSettings extends Transport
         return $this;
     }
 
-    public function getVariantLevels(): ?string
+    public function getAkeneoVariantLevels(): ?string
     {
-        return $this->variantLevels;
+        return $this->akeneoVariantLevels;
     }
 
-    public function setVariantLevels(string $variantLevels): void
+    public function setAkeneoVariantLevels(string $akeneoVariantLevels): self
     {
-        $this->variantLevels = $variantLevels;
+        $this->akeneoVariantLevels = $akeneoVariantLevels;
+
+        return $this;
+    }
+
+    public function getAkeneoAttributesMapping(): ?string
+    {
+        return $this->akeneoAttributesMapping;
+    }
+
+    public function setAkeneoAttributesMapping(string $akeneoAttributesMapping): self
+    {
+        $this->akeneoAttributesMapping = $akeneoAttributesMapping;
+
+        return $this;
     }
 }

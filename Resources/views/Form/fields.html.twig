@@ -210,11 +210,22 @@
             <div class="control-group control-group-choice">
                 <div class="control-label wrap">
                     {{ UI.tooltip('oro.akeneo.integration.settings.variant_levels.tooltip'|trans, {}, 'right') }}
-                    {{ form_label(form.variantLevels) }}
+                    {{ form_label(form.akeneoVariantLevels) }}
                 </div>
-                <div class="controls {% if (form_errors(form.variantLevels)|length > 0) %} validation-error {% endif %}">
-                    {{ form_widget(form.variantLevels) }}
-                    {{ form_errors(form.variantLevels) }}
+                <div class="controls {% if (form_errors(form.akeneoVariantLevels)|length > 0) %} validation-error {% endif %}">
+                    {{ form_widget(form.akeneoVariantLevels) }}
+                    {{ form_errors(form.akeneoVariantLevels) }}
+                </div>
+            </div>
+
+            <div class="control-group control-group-choice">
+                <div class="control-label wrap">
+                    {{ UI.tooltip('oro.akeneo.integration.settings.akeneo_attributes_mapping.tooltip'|trans, {}, 'right') }}
+                    {{ form_label(form.akeneoAttributesMapping) }}
+                </div>
+                <div class="controls {% if (form_errors(form.akeneoAttributesMapping)|length > 0) %} validation-error {% endif %}">
+                    {{ form_widget(form.akeneoAttributesMapping) }}
+                    {{ form_errors(form.akeneoAttributesMapping) }}
                 </div>
             </div>
         </div>

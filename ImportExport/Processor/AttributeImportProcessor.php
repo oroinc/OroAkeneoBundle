@@ -2,7 +2,6 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Processor;
 
-use Oro\Bundle\AkeneoBundle\Tools\AttributeTypeConverter;
 use Oro\Bundle\EntityBundle\Helper\FieldHelper;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityConfigBundle\Entity\FieldConfigModel;
@@ -45,27 +44,9 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
         $code = $item['code'];
         $type = $item['type'];
 
-        if ($this->dataConverter) {
-            $item = $this->dataConverter->convertToImportFormat($item, false);
-        }
-
-        if (!AttributeTypeConverter::convert($type)) {
-            return null;
-        }
-
         $this->context->setValue('originalFieldName', $code);
 
-        $object = $this->serializer->deserialize(
-            $item,
-            $this->getEntityName(),
-            '',
-            $this->context->getConfiguration()
-        );
-
-        if ($this->strategy) {
-            $object = $this->strategy->process($object);
-        }
-
+        $object = parent::process($item);
         if ($object instanceof FieldConfigModel) {
             $this->fieldNameMapping[$object->getFieldName()] = $code;
             $this->fieldTypeMapping[$object->getFieldName()] = $type;

@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 
+use Akeneo\Bundle\BatchBundle\Item\InvalidItemException;
 use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeTypeConverter;
 use Oro\Bundle\AkeneoBundle\Tools\FieldConfigModelFieldNameGenerator;
@@ -32,7 +33,12 @@ class AttributeDataConverter extends EntityFieldDataConverter
      */
     public function convertToImportFormat(array $importedRecord, $skipNullValues = true)
     {
-        $importedRecord['type'] = AttributeTypeConverter::convert($importedRecord['type']);
+        $type = AttributeTypeConverter::convert($importedRecord['type']);
+        if (!$type) {
+            throw new InvalidItemException(sprintf('Type "%s" is not supported', $type), $importedRecord);
+        }
+
+        $importedRecord['type'] = $type;
         $importedRecord['fieldName'] = FieldConfigModelFieldNameGenerator::generate($importedRecord['code']);
         $importedRecord['entity:id'] = (int)$this->getImportExportContext()->getValue('entity_id');
         $this->setLabels($importedRecord);

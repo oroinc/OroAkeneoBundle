@@ -59,6 +59,9 @@ oro:
           both: Enable 1st and 2nd level configurable products
           first_only: Enable 1st level configurable products
           second_only: Enable 2st level configurable products
+        akeneo_attributes_mapping:
+          label: Attributes Mapping
+          tooltip: 'Additional mapping of Akeneo attributes to OroCommerce attributes. A single value must be separated with a colon (akeneo_code:oro_attribute_name). Values must be separated with a semi-colon (custom_sku:sku;name:names).'
       popup:
         channel: 'This is a list of channels configured for the current Akeneo PIM instance. Select the required channel for product and category import. To refresh the list, click Refresh Channels'
         currencies: 'The control configures mapping between the currencies enabled in the current Akeneo PIM instance and the currencies enabled in this application. To skip price import for a specific currency, do not add mapping to it. To refresh the list, click Refresh Currencies'

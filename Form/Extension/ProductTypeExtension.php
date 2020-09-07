@@ -75,7 +75,7 @@ class ProductTypeExtension extends AbstractTypeExtension
             }
 
             $extendConfig = $extendProvider->getConfig(Product::class, $field['name']);
-            if (ExtendScope::STATE_ACTIVE !== $extendConfig->get('state')) {
+            if (!$extendConfig->is('state', ExtendScope::STATE_ACTIVE)) {
                 continue;
             }
 

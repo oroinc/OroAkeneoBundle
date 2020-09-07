@@ -13,67 +13,43 @@ use Oro\Bundle\AkeneoBundle\Integration\Iterator\ProductIterator;
 use Oro\Bundle\AkeneoBundle\Settings\DataProvider\SyncProductsDataProvider;
 use Oro\Bundle\IntegrationBundle\Entity\Transport;
 use Oro\Bundle\MultiCurrencyBundle\Config\MultiCurrencyConfigProvider;
+use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Intl\Intl;
 
 class AkeneoTransport implements AkeneoTransportInterface
 {
+    use LoggerAwareTrait;
+
     const PAGE_SIZE = 100;
 
-    /**
-     * @var array
-     */
     private $attributes = [];
 
-    /**
-     * @var array
-     */
     private $familyVariants = [];
 
-    /**
-     * @var array
-     */
     private $families = [];
 
-    /**
-     * @var array
-     */
     private $measureFamilies = [];
 
-    /**
-     * @var AkeneoClientFactory
-     */
+    private $attributeMapping = [];
+
+    /** @var AkeneoClientFactory */
     private $clientFactory;
 
-    /**
-     * @var AkeneoPimExtendableClientInterface
-     */
+    /** @var AkeneoPimExtendableClientInterface */
     private $client;
 
-    /**
-     * @var MultiCurrencyConfigProvider
-     */
+    /** @var MultiCurrencyConfigProvider */
     private $configProvider;
 
-    /**
-     * @var AkeneoSettings
-     */
+    /** @var AkeneoSettings */
     private $transportEntity;
 
-    /**
-     * @var AkeneoSearchBuilder
-     */
+    /** @var AkeneoSearchBuilder */
     private $akeneoSearchBuilder;
 
-    /**
-     * @var Filesystem
-     */
+    /** @var Filesystem */
     private $filesystem;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
 
     public function __construct(
         AkeneoClientFactory $clientFactory,
@@ -243,7 +219,8 @@ class AkeneoTransport implements AkeneoTransportInterface
                 $this->logger,
                 $this->attributes,
                 $this->familyVariants,
-                $this->measureFamilies
+                $this->measureFamilies,
+                $this->getAttributeMapping()
             );
         }
 
@@ -256,7 +233,8 @@ class AkeneoTransport implements AkeneoTransportInterface
             $this->logger,
             $this->attributes,
             $this->familyVariants,
-            $this->measureFamilies
+            $this->measureFamilies,
+            $this->getAttributeMapping()
         );
     }
 
@@ -283,7 +261,8 @@ class AkeneoTransport implements AkeneoTransportInterface
             $this->logger,
             $this->attributes,
             $this->familyVariants,
-            $this->measureFamilies
+            $this->measureFamilies,
+            $this->getAttributeMapping()
         );
     }
 
@@ -428,5 +407,31 @@ class AkeneoTransport implements AkeneoTransportInterface
                 $this->measureFamilies[$unit['code']] = $unit['symbol'];
             }
         }
+    }
+
+    protected function getAttributeMapping(): array
+    {
+        if ($this->attributeMapping) {
+            return $this->attributeMapping;
+        }
+
+        $attributesMappings = trim(
+            $this->transportEntity->getAkeneoAttributesMapping() ?? AkeneoSettings::DEFAULT_ATTRIBUTES_MAPPING,
+            ';:'
+        );
+
+        if (!empty($attributesMappings)) {
+            $attributesMapping = explode(';', $attributesMappings);
+            foreach ($attributesMapping as $attributeMapping) {
+                list($akeneoAttribute, $systemAttribute) = explode(':', $attributeMapping);
+                if (!isset($akeneoAttribute, $systemAttribute)) {
+                    continue;
+                }
+
+                $this->attributeMapping[$systemAttribute] = $akeneoAttribute;
+            }
+        }
+
+        return $this->attributeMapping;
     }
 }

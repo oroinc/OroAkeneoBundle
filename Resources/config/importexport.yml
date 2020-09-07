@@ -116,7 +116,6 @@ services:
     class: '%oro_akeneo.importexport.strategy.attribute.class%'
     parent: oro_entity_config.importexport.strategy.entity_field.add_or_replace
     calls:
-      - [setFieldHelper, ['@oro_entity.helper.field_helper']]
       - [setConfigManager, ['@oro_entity_config.config_manager']]
       - [setImportStrategyHelper, ['@oro_akeneo.strategy.import.helper']]
 

@@ -2,7 +2,6 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 
-use Doctrine\Common\Util\Inflector;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeFamilyCodeGenerator;
@@ -12,7 +11,6 @@ use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityConfigBundle\Generator\SlugGenerator;
-use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
 use Oro\Bundle\EntityExtendBundle\Extend\RelationType;
 use Oro\Bundle\ImportExportBundle\Context\ContextAwareInterface;
 use Oro\Bundle\LocaleBundle\Entity\Localization;
@@ -33,28 +31,23 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     use AkeneoIntegrationTrait;
     use LocalizationAwareTrait;
 
-    /**
-     * @var SlugGenerator
-     */
+    /** @var SlugGenerator */
     protected $slugGenerator;
 
-    /**
-     * @var ConfigManager
-     */
+    /** @var ConfigManager */
     protected $entityConfigManager;
 
-    /**
-     * @var DateTimeFormatterInterface
-     */
+    /** @var DateTimeFormatterInterface */
     protected $dateTimeFormatter;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $attachmentsDir;
 
     /** @var array */
-    protected $fieldMapping = [];
+    protected $akeneoFields = [];
+
+    /** @var array */
+    protected $systemFields = [];
 
     /** @var ProductUnitsProvider */
     protected $productUnitsProvider;
@@ -82,29 +75,19 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     {
         unset($importedRecord['_links']);
 
-        $importedRecord['sku'] = $importedRecord['identifier'] ?? $importedRecord['code'];
-        $importedRecord['primaryUnitPrecision'] = $this->getPrimaryUnitPrecision($importedRecord);
-
-        if (!empty($importedRecord['family'])) {
-            $importedRecord['attributeFamily'] = [
-                'code' => AttributeFamilyCodeGenerator::generate($importedRecord['family']),
-            ];
-        }
-
         $this->processValues($importedRecord);
+        $this->processSystemValues($importedRecord);
+        unset($importedRecord['values']);
+
+        $this->setPrimaryUnitPrecision($importedRecord);
         $this->setStatus($importedRecord);
-        $this->setSlugs($importedRecord);
         $this->setCategory($importedRecord);
         $this->setFamilyVariant($importedRecord);
 
         $importedRecord = parent::convertToImportFormat($importedRecord, $skipNullValues);
 
-        if (empty($importedRecord['names']['default'])) {
-            $importedRecord['names']['default'] = [
-                'fallback' => null,
-                'string' => $importedRecord['sku'],
-            ];
-        }
+        $this->setNames($importedRecord);
+        $this->setSlugs($importedRecord);
 
         return $importedRecord;
     }
@@ -127,11 +110,33 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         }
     }
 
+    private function setPrimaryUnitPrecision(array &$importedRecord): void
+    {
+        $importedRecord['primaryUnitPrecision'] = $this->getPrimaryUnitPrecision($importedRecord);
+    }
+
+    private function setNames(array &$importedRecord): void
+    {
+        if (empty($importedRecord['names']['default'])) {
+            $importedRecord['names']['default'] = [
+                'fallback' => null,
+                'string' => $importedRecord['sku'],
+            ];
+        }
+    }
+
     /**
      * Set family variant for configurable products.
      */
     private function setFamilyVariant(array &$importedRecord)
     {
+        $importedRecord['attributeFamily'] = ['code' => 'default_family'];
+        if (!empty($importedRecord['family'])) {
+            $importedRecord['attributeFamily'] = [
+                'code' => AttributeFamilyCodeGenerator::generate($importedRecord['family']),
+            ];
+        }
+
         if (empty($importedRecord['family_variant'])) {
             return;
         }
@@ -151,12 +156,12 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         }
 
         $variantFields = [];
-        $fieldMapping = $this->getFieldMapping();
+        $this->prepareFieldMapping();
 
         foreach ($sets as $set) {
             foreach ($set['axes'] as $code) {
-                if (array_key_exists($code, $fieldMapping)) {
-                    $field = $fieldMapping[$code];
+                if (array_key_exists($code, $this->akeneoFields)) {
+                    $field = $this->akeneoFields[$code];
 
                     try {
                         $this->productVariantFieldValueHandlerRegistry->getVariantFieldValueHandler($field['type']);
@@ -177,13 +182,13 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         $importedRecord['variantFields'] = implode(',', $variantFields);
 
         if ($isTwoLevelFamilyVariant) {
-            $allowSecondProductOnly = $this->getTransport()->getVariantLevels() ===
+            $allowSecondProductOnly = $this->getTransport()->getAkeneoVariantLevels() ===
                 AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_SECOND_ONLY;
             if ($isFirstLevelProduct && $allowSecondProductOnly) {
                 $importedRecord['status'] = Product::STATUS_DISABLED;
             }
 
-            $allowFirstProductOnly = $this->getTransport()->getVariantLevels() ===
+            $allowFirstProductOnly = $this->getTransport()->getAkeneoVariantLevels() ===
                 AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_FIRST_ONLY;
             if ($isSecondLevelProduct && $allowFirstProductOnly) {
                 $importedRecord['status'] = Product::STATUS_DISABLED;
@@ -191,139 +196,148 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         }
     }
 
-    /**
-     * Convert product values.
-     *
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     */
     private function processValues(array &$importedRecord)
     {
-        if (false === is_array($importedRecord['values'])) {
+        if (!is_array($importedRecord['values'])) {
             return;
         }
 
-        $importExportProvider = $this->entityConfigManager->getProvider('importexport');
-
-        $fieldMapping = $this->getFieldMapping();
+        $this->prepareFieldMapping();
 
         foreach ($importedRecord['values'] as $attributeCode => $value) {
-            $field = $this->getField($attributeCode, $fieldMapping);
-
-            if (!$field) {
-                unset($importedRecord['values'][$attributeCode]);
-
+            if (!array_key_exists($attributeCode, $this->akeneoFields)) {
                 continue;
             }
 
-            $importExportConfig = $importExportProvider->getConfig(Product::class, $field['name']);
+            $field = $this->akeneoFields[$attributeCode];
 
-            $isLocalizable = in_array($field['type'], [RelationType::MANY_TO_MANY, RelationType::TO_MANY]) &&
-                LocalizedFallbackValue::class === $field['related_entity_name'];
-
-            if ($isLocalizable) {
-                $importedRecord[$field['name']] = $this->processRelationType(
-                    $value,
-                    $importExportConfig->get('fallback_field', false, 'text'),
-                    $this->getDefaultLocalization(),
-                    $this->getTransport()
-                );
-
-                unset($importedRecord['values'][$attributeCode]);
-
-                continue;
-            }
-
-            $valueFirstItem = array_values($value)[0];
-
-            if (AttributeTypeConverter::convert($valueFirstItem['type']) !== $field['type']) {
-                unset($importedRecord['values'][$attributeCode]);
-
-                continue;
-            }
-
-            switch ($field['type']) {
-                case 'enum':
-                    $importedRecord[$field['name']] = $this->processEnumType($value);
-                    break;
-                case 'multiEnum':
-                    $importedRecord[$field['name']] = $this->processMultiEnumType($value);
-                    break;
-                case 'file':
-                    if ($valueFirstItem['data']) {
-                        $importedRecord[$field['name']] = $this->processFileType($value);
-                    }
-                    break;
-                case 'image':
-                    if ($valueFirstItem['data']) {
-                        $importedRecord[$field['name']] = $this->processFileType($value);
-                    }
-                    break;
-                default:
-                    $importedRecord[$field['name']] = $this->processBasicType($value);
-                    break;
-            }
-
-            unset($importedRecord['values'][$attributeCode]);
+            $this->processValue($importedRecord, $field, $value);
         }
     }
 
-    /**
-     * Gets field by attribute code.
-     */
-    private function getField(string $attributeCode, array $fieldMapping): ?array
+    private function processValue(array &$importedRecord, array $field, array $value)
     {
-        $attributeCodes = [
-            $attributeCode,
-            Inflector::singularize(Inflector::camelize($attributeCode)),
-            Inflector::pluralize(Inflector::camelize($attributeCode)),
-        ];
+        $importExportProvider = $this->entityConfigManager->getProvider('importexport');
+        $importExportConfig = $importExportProvider->getConfig(Product::class, $field['name']);
 
-        foreach ($attributeCodes as $guessedCode) {
-            if (!empty($fieldMapping[$guessedCode])) {
-                $field = $fieldMapping[$guessedCode];
+        $isLocalizable = in_array($field['type'], [RelationType::MANY_TO_MANY, RelationType::TO_MANY]) &&
+            LocalizedFallbackValue::class === $field['related_entity_name'];
+
+        if ($isLocalizable) {
+            $importedRecord[$field['name']] = $this->processRelationType(
+                $value,
+                $importExportConfig->get('fallback_field', false, 'text'),
+                $this->getDefaultLocalization(),
+                $this->getTransport()
+            );
+
+            return;
+        }
+
+        $values = array_values($value);
+        $valueFirstItem = reset($values);
+        if (AttributeTypeConverter::convert($valueFirstItem['type']) !== $field['type']) {
+            return;
+        }
+
+        switch ($field['type']) {
+            case 'enum':
+                $importedRecord[$field['name']] = $this->processEnumType($value);
+                break;
+            case 'multiEnum':
+                $importedRecord[$field['name']] = $this->processMultiEnumType($value);
+                break;
+            case 'file':
+                if ($valueFirstItem['data']) {
+                    $importedRecord[$field['name']] = $this->processFileType($value);
+                }
+                break;
+            case 'image':
+                if ($valueFirstItem['data']) {
+                    $importedRecord[$field['name']] = $this->processFileType($value);
+                }
+                break;
+            default:
+                $importedRecord[$field['name']] = $this->processBasicType($value);
+                break;
+        }
+    }
+
+    private function processSystemValues(array &$importedRecord)
+    {
+        if (!is_array($importedRecord['values'])) {
+            return;
+        }
+
+        $this->prepareFieldMapping();
+
+        foreach ($importedRecord['values'] as $attributeCode => $value) {
+            $systemFieldName = $this->getMappedAttribute($attributeCode);
+            if (!$systemFieldName) {
+                continue;
+            }
+
+            if (!array_key_exists($systemFieldName, $this->systemFields)) {
+                continue;
+            }
+
+            $systemField = $this->systemFields[$systemFieldName];
+
+            $this->processValue($importedRecord, $systemField, $value);
+        }
+    }
+
+    private function getMappedAttribute(string $attributeCode): ?string
+    {
+        $mappedAttributes = [];
+        $attributesMappings = trim(
+            $this->getTransport()->getAkeneoAttributesMapping() ?? AkeneoSettings::DEFAULT_ATTRIBUTES_MAPPING,
+            ';:'
+        );
+
+        if (!empty($attributesMappings)) {
+            $attributesMapping = explode(';', $attributesMappings);
+            foreach ($attributesMapping as $attributeMapping) {
+                list($akeneoAttribute, $systemAttribute) = explode(':', $attributeMapping);
+                if (!isset($akeneoAttribute, $systemAttribute)) {
+                    continue;
+                }
+
+                $mappedAttributes[$systemAttribute] = $akeneoAttribute;
             }
         }
 
-        return $field ?? null;
+        $key = array_search($attributeCode, $mappedAttributes);
+        if ($key) {
+            return $key;
+        }
+
+        return null;
     }
 
-    private function getFieldMapping()
+    private function prepareFieldMapping()
     {
-        if ($this->fieldMapping) {
-            return $this->fieldMapping;
+        if ($this->systemFields) {
+            return;
         }
 
         $fields = $this->fieldHelper->getFields(Product::class, true);
-        $extendProvider = $this->entityConfigManager->getProvider('extend');
         $importExportProvider = $this->entityConfigManager->getProvider('importexport');
 
         foreach ($fields as $field) {
-            if (false === $this->entityConfigManager->hasConfig(Product::class, $field['name'])) {
-                continue;
-            }
-
-            $extendConfig = $extendProvider->getConfig(Product::class, $field['name']);
-
-            if (ExtendScope::STATE_ACTIVE !== $extendConfig->get('state')) {
+            if (!$this->entityConfigManager->hasConfig(Product::class, $field['name'])) {
                 continue;
             }
 
             $importExportConfig = $importExportProvider->getConfig(Product::class, $field['name']);
-            if ('akeneo' !== $importExportConfig->get('source')) {
-                $this->fieldMapping[$field['name']] = $field;
+            if ('akeneo' === $importExportConfig->get('source')) {
+                $this->akeneoFields[$importExportConfig->get('source_name')] = $field;
 
                 continue;
             }
 
-            $source = $importExportConfig->get('source_name');
-            if (!$source) {
-                continue;
-            }
-
-            $this->fieldMapping[$source] = $field;
+            $this->systemFields[mb_strtolower($field['name'])] = $field;
         }
-
-        return $this->fieldMapping;
     }
 
     /**
@@ -509,7 +523,8 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
     public function close()
     {
-        $this->fieldMapping = [];
+        $this->akeneoFields = [];
+        $this->systemFields = [];
     }
 
     /**

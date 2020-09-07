@@ -29,7 +29,7 @@ class ProductPriceReader extends IteratorBasedReader
                     }
 
                     foreach ($value['data'] as &$price) {
-                        $price['sku'] = $item['identifier'] ?? $item['code'];
+                        $price['sku'] = $item['sku'];
                         if ($price != array_filter($price)) {
                             continue;
                         }
