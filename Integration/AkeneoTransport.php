@@ -355,6 +355,36 @@ class AkeneoTransport implements AkeneoTransportInterface
         }
     }
 
+    public function downloadAndSaveAsset(string $code, string $file): void
+    {
+        $path = sprintf('akeneo/%s', $file);
+        if ($this->filesystem->has($path)) {
+            return;
+        }
+
+        try {
+            $content = $this->client->getAssetReferenceFileApi()->downloadFromNotLocalizableAsset($code)->getContents();
+        } catch (\Throwable $e) {
+            $this->logger->critical(
+                'Error on downloading asset.',
+                ['message' => $e->getMessage(), 'exception' => $e]
+            );
+
+            return;
+        }
+
+        try {
+            $this->filesystem->write($path, $content, true);
+        } catch (\Throwable $e) {
+            $this->logger->critical(
+                'Error during saving asset.',
+                ['message' => $e->getMessage(), 'exception' => $e]
+            );
+
+            return;
+        }
+    }
+
     protected function initAttributesList()
     {
         if (empty($this->attributes)) {

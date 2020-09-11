@@ -20,6 +20,7 @@ class AttributeTypeConverter
         'pim_catalog_simpleselect' => 'enum',
         'akeneo_reference_entity' => 'enum',
         'pim_catalog_multiselect' => 'multiEnum',
+        'pim_assets_collection' => 'multiFile',
         'akeneo_reference_entity_collection' => 'multiEnum',
     ];
 

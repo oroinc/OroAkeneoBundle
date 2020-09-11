@@ -14,6 +14,11 @@ class AttributeIterator extends AbstractIterator
     private $attributesFilter = [];
 
     /**
+     * @var \ArrayIterator
+     */
+    private $attributes;
+
+    /**
      * AttributeIterator constructor.
      *
      * @param array $attributesFilter
@@ -25,6 +30,7 @@ class AttributeIterator extends AbstractIterator
         $attributesFilter = []
     ) {
         $this->attributesFilter = $attributesFilter;
+        $this->attributes = new \ArrayIterator();
 
         parent::__construct($resourceCursor, $client, $logger);
     }
@@ -44,16 +50,44 @@ class AttributeIterator extends AbstractIterator
      */
     public function doCurrent()
     {
-        $attribute = $this->filter();
-
-        if (null === $attribute) {
-            return null;
-        }
+        $attribute = $this->attributes->current();
 
         $this->setOptions($attribute);
         $this->setReferenceEntityRecords($attribute);
 
         return $attribute;
+    }
+
+    public function rewind()
+    {
+        parent::rewind();
+
+        $this->attributes->rewind();
+
+        do {
+            $attribute = $this->resourceCursor->current();
+
+            if (empty($this->attributesFilter) || in_array($attribute['code'], $this->attributesFilter)) {
+                $this->attributes->append($attribute);
+            }
+
+            $this->resourceCursor->next();
+        } while ($this->resourceCursor->valid());
+    }
+
+    public function next()
+    {
+        $this->attributes->next();
+    }
+
+    public function key()
+    {
+        return $this->attributes->key();
+    }
+
+    public function valid()
+    {
+        return $this->attributes->valid();
     }
 
     /**
@@ -111,27 +145,5 @@ class AttributeIterator extends AbstractIterator
                 'labels' => $labels,
             ];
         }
-    }
-
-    /**
-     * @return array|null
-     */
-    private function filter()
-    {
-        do {
-            $attribute = $this->resourceCursor->current();
-
-            if (!empty($this->attributesFilter) && !in_array($attribute['code'], $this->attributesFilter)) {
-                $this->next();
-
-                if (!$this->valid()) {
-                    return null;
-                }
-            } else {
-                break;
-            }
-        } while ($this->valid());
-
-        return $attribute;
     }
 }

@@ -29,6 +29,9 @@ use Oro\Bundle\TranslationBundle\Manager\TranslationManager;
 class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareInterface
 {
     const ATTRIBUTE_LABELS_CONTEXT_KEY = 'attributeLabels';
+    const MAX_SIZE = 10;
+    const MAX_WIDTH = 100;
+    const MAX_HEIGHT = 100;
 
     /** @var TranslationManager */
     private $translationManager;
@@ -247,12 +250,15 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
         $importExportConfig = $importExportProvider->getConfig($className, $fieldName);
         $importExportConfig->set('source', 'akeneo');
 
-        if (in_array($fieldConfigModel->getType(), ['image', 'file'], true)) {
+        if (in_array($fieldConfigModel->getType(), ['image', 'file', 'multiFile', 'multiImage'], true)) {
             $importExportConfig->set('full', false);
             $attachmentProvider = $this->configManager->getProvider('attachment');
             $attachmentConfig = $attachmentProvider->getConfig($className, $fieldName);
             $attachmentConfig->set('file_applications', ['default', 'commerce']);
             $attachmentConfig->set('acl_protected', true);
+            $attachmentConfig->set('maxsize', self::MAX_SIZE);
+            $attachmentConfig->set('width', self::MAX_WIDTH);
+            $attachmentConfig->set('height', self::MAX_HEIGHT);
             $this->configManager->persist($attachmentConfig);
         }
 
@@ -291,7 +297,6 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
         }
 
         $attributeConfig->set('is_attribute', true);
-        $attributeConfig->set('field_name', $fieldConfigModel->getFieldName());
         $attributeConfig->set('is_global', false);
         $attributeConfig->set('organization_id', $this->getOrganizationId());
 

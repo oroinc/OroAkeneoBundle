@@ -16,6 +16,8 @@ class ProductIterator extends AbstractIterator
 
     private $attributeMapping = [];
 
+    private $assets = [];
+
     public function __construct(
         ResourceCursorInterface $resourceCursor,
         AkeneoPimExtendableClientInterface $client,
@@ -43,6 +45,7 @@ class ProductIterator extends AbstractIterator
         $this->setSku($product);
         $this->setValueAttributeTypes($product);
         $this->setFamilyVariant($product);
+        $this->setAssetCode($product);
 
         return $product;
     }
@@ -84,6 +87,34 @@ class ProductIterator extends AbstractIterator
 
         if (isset($this->familyVariants[$model['family_variant']])) {
             $model['family_variant'] = $this->familyVariants[$model['family_variant']];
+        }
+    }
+
+    private function setAssetCode(array &$product): void
+    {
+        foreach ($product['values'] as $code => &$values) {
+            foreach ($values as $key => &$value) {
+                if ($value['type'] !== 'pim_assets_collection') {
+                    continue;
+                }
+
+                $codes = [];
+                foreach ((array)$value['data'] as &$code) {
+                    if (array_key_exists($code, $this->assets)) {
+                        $codes[$code] = $this->assets[$code];
+
+                        continue;
+                    }
+
+                    $asset = $this->client->getAssetApi()->get($code);
+                    if (!empty($asset['reference_files'][0]['code'])) {
+                        $this->assets[$code] = $asset['reference_files'][0]['code'];
+
+                        $codes[$code] = $this->assets[$code];
+                    }
+                }
+                $value['data'] = $codes;
+            }
         }
     }
 
