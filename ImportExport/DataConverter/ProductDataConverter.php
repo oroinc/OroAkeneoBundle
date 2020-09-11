@@ -257,6 +257,12 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
                     $importedRecord[$field['name']] = $this->processFileType($value);
                 }
                 break;
+            case 'multiFile':
+                $importedRecord[$field['name']] = $this->processFileTypes($value);
+                break;
+            case 'multiImage':
+                $importedRecord[$field['name']] = $this->processFileTypes($value);
+                break;
             default:
                 $importedRecord[$field['name']] = $this->processBasicType($value);
                 break;
@@ -440,6 +446,18 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         $item = array_shift($value);
 
         return $this->getAttachmentPath($item['data']);
+    }
+
+    private function processFileTypes(array $value): array
+    {
+        $items = array_shift($value);
+
+        $paths = [];
+        foreach ($items['data'] as $item) {
+            $paths[] = [$this->getAttachmentPath($item)];
+        }
+
+        return $paths;
     }
 
     protected function getAttachmentPath(string $code): string
