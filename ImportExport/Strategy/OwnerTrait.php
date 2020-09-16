@@ -36,6 +36,11 @@ trait OwnerTrait
             return;
         }
 
+        $this->ownerHelper->populateChannelOwner($entity, $this->getChannel());
+    }
+
+    protected function getChannel()
+    {
         if (!$this->channel) {
             $this->channel = $this->doctrineHelper->getEntityReference(
                 Channel::class,
@@ -43,7 +48,7 @@ trait OwnerTrait
             );
         }
 
-        $this->ownerHelper->populateChannelOwner($entity, $this->channel);
+        return $this->channel;
     }
 
     private function clearOwnerCache()

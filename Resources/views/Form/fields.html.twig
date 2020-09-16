@@ -228,6 +228,19 @@
                     {{ form_errors(form.akeneoAttributesMapping) }}
                 </div>
             </div>
+
+            {{ form_row(form.akeneoBrandReferenceEntityCode) }}
+
+            <div class="control-group control-group-choice">
+                <div class="control-label wrap">
+                    {{ UI.tooltip('oro.akeneo.integration.settings.akeneo_brand_mapping.tooltip'|trans, {}, 'right') }}
+                    {{ form_label(form.akeneoBrandMapping) }}
+                </div>
+                <div class="controls {% if (form_errors(form.akeneoBrandMapping)|length > 0) %} validation-error {% endif %}">
+                    {{ form_widget(form.akeneoBrandMapping) }}
+                    {{ form_errors(form.akeneoBrandMapping) }}
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}

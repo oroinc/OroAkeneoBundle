@@ -22,6 +22,7 @@ class AkeneoSettings extends Transport
     public const TWO_LEVEL_FAMILY_VARIANT_SECOND_ONLY = 'second_only';
     public const TWO_LEVEL_FAMILY_VARIANT_BOTH = 'both';
     public const DEFAULT_ATTRIBUTES_MAPPING = 'name:names;description:descriptions;';
+    public const DEFAULT_BRAND_MAPPING = 'label:names';
 
     /**
      * @var string
@@ -193,6 +194,16 @@ class AkeneoSettings extends Transport
     private $akeneoAttributesMapping;
 
     /**
+     * @ORM\Column(name="akeneo_brand_reference_code", type="string", length=255)
+     */
+    private $akeneoBrandReferenceEntityCode;
+
+    /**
+     * @ORM\Column(name="akeneo_brand_mapping", type="text", nullable=true)
+     */
+    private $akeneoBrandMapping;
+
+    /**
      * @var ParameterBag
      */
     private $settings;
@@ -272,24 +283,26 @@ class AkeneoSettings extends Transport
         if (null === $this->settings) {
             $this->settings = new ParameterBag(
                 [
-                    'clientId'                      => $this->getClientId(),
-                    'secret'                        => $this->getSecret(),
-                    'akeneoChannels'                => $this->getAkeneoChannels(),
-                    'akeneoActiveChannel'           => $this->getAkeneoActiveChannel(),
-                    'username'                      => $this->getUsername(),
-                    'password'                      => $this->getPassword(),
-                    'token'                         => $this->getToken(),
-                    'refreshToken'                  => $this->getRefreshToken(),
-                    'syncProducts'                  => $this->getSyncProducts(),
-                    'productUnitAttribute'          => $this->getProductUnitAttribute(),
+                    'clientId' => $this->getClientId(),
+                    'secret' => $this->getSecret(),
+                    'akeneoChannels' => $this->getAkeneoChannels(),
+                    'akeneoActiveChannel' => $this->getAkeneoActiveChannel(),
+                    'username' => $this->getUsername(),
+                    'password' => $this->getPassword(),
+                    'token' => $this->getToken(),
+                    'refreshToken' => $this->getRefreshToken(),
+                    'syncProducts' => $this->getSyncProducts(),
+                    'productUnitAttribute' => $this->getProductUnitAttribute(),
                     'productUnitPrecisionAttribute' => $this->getProductUnitPrecisionAttribute(),
-                    'akeneoCurrencies'              => $this->getAkeneoCurrencies(),
-                    'akeneoActiveCurrencies'        => $this->getAkeneoActiveCurrencies(),
-                    'akeneoLocales'                 => $this->getAkeneoLocales()->toArray(),
-                    'akeneoLocalesList'             => $this->getAkeneoLocalesList(),
-                    'akeneoAttributesList'          => $this->getAkeneoAttributesList(),
-                    'akeneoVariantLevels'           => $this->getAkeneoVariantLevels(),
-                    'akeneoAttributesMapping'       => $this->getAkeneoAttributesMapping(),
+                    'akeneoCurrencies' => $this->getAkeneoCurrencies(),
+                    'akeneoActiveCurrencies' => $this->getAkeneoActiveCurrencies(),
+                    'akeneoLocales' => $this->getAkeneoLocales()->toArray(),
+                    'akeneoLocalesList' => $this->getAkeneoLocalesList(),
+                    'akeneoAttributesList' => $this->getAkeneoAttributesList(),
+                    'akeneoVariantLevels' => $this->getAkeneoVariantLevels(),
+                    'akeneoAttributesMapping' => $this->getAkeneoAttributesMapping(),
+                    'akeneoBrandReferenceEntityCode' => $this->getAkeneoBrandReferenceEntityCode(),
+                    'akeneoBrandMapping' => $this->getAkeneoBrandMapping(),
                 ]
             );
         }
@@ -749,5 +762,25 @@ class AkeneoSettings extends Transport
         $this->akeneoAttributesMapping = $akeneoAttributesMapping;
 
         return $this;
+    }
+
+    public function getAkeneoBrandReferenceEntityCode(): ?string
+    {
+        return $this->akeneoBrandReferenceEntityCode;
+    }
+
+    public function setAkeneoBrandReferenceEntityCode(?string $akeneoBrandReferenceEntityCode): void
+    {
+        $this->akeneoBrandReferenceEntityCode = $akeneoBrandReferenceEntityCode;
+    }
+
+    public function getAkeneoBrandMapping(): ?string
+    {
+        return $this->akeneoBrandMapping;
+    }
+
+    public function setAkeneoBrandMapping(?string $akeneoBrandMapping): void
+    {
+        $this->akeneoBrandMapping = $akeneoBrandMapping;
     }
 }

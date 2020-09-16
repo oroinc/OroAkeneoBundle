@@ -55,4 +55,10 @@ interface AkeneoTransportInterface extends TransportInterface
      * @return \Iterator
      */
     public function getAttributes(int $pageSize);
+
+    public function getBrands(): \Traversable;
+
+    public function downloadAndSaveMediaFile(string $code): void;
+
+    public function downloadAndSaveAsset(string $code, string $file): void;
 }
