@@ -49,6 +49,8 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     /** @var array */
     protected $systemFields = [];
 
+    private $mappedAttributes = [];
+
     /** @var ProductUnitsProvider */
     protected $productUnitsProvider;
 
@@ -237,6 +239,8 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         $values = array_values($value);
         $valueFirstItem = reset($values);
         if (AttributeTypeConverter::convert($valueFirstItem['type']) !== $field['type']) {
+            $importedRecord[$field['name']] = $this->processBasicType($value);
+
             return;
         }
 
@@ -248,14 +252,10 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
                 $importedRecord[$field['name']] = $this->processMultiEnumType($value);
                 break;
             case 'file':
-                if ($valueFirstItem['data']) {
-                    $importedRecord[$field['name']] = $this->processFileType($value);
-                }
+                $importedRecord[$field['name']] = $this->processFileType($value);
                 break;
             case 'image':
-                if ($valueFirstItem['data']) {
-                    $importedRecord[$field['name']] = $this->processFileType($value);
-                }
+                $importedRecord[$field['name']] = $this->processFileType($value);
                 break;
             case 'multiFile':
                 $importedRecord[$field['name']] = $this->processFileTypes($value);
@@ -295,25 +295,26 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
     private function getMappedAttribute(string $attributeCode): ?string
     {
-        $mappedAttributes = [];
-        $attributesMappings = trim(
-            $this->getTransport()->getAkeneoAttributesMapping() ?? AkeneoSettings::DEFAULT_ATTRIBUTES_MAPPING,
-            ';:'
-        );
+        if (!$this->mappedAttributes) {
+            $attributesMappings = trim(
+                $this->getTransport()->getAkeneoAttributesMapping() ?? AkeneoSettings::DEFAULT_ATTRIBUTES_MAPPING,
+                ';:'
+            );
 
-        if (!empty($attributesMappings)) {
-            $attributesMapping = explode(';', $attributesMappings);
-            foreach ($attributesMapping as $attributeMapping) {
-                list($akeneoAttribute, $systemAttribute) = explode(':', $attributeMapping);
-                if (!isset($akeneoAttribute, $systemAttribute)) {
-                    continue;
+            if (!empty($attributesMappings)) {
+                $attributesMapping = explode(';', $attributesMappings);
+                foreach ($attributesMapping as $attributeMapping) {
+                    list($akeneoAttribute, $systemAttribute) = explode(':', $attributeMapping);
+                    if (!isset($akeneoAttribute, $systemAttribute)) {
+                        continue;
+                    }
+
+                    $this->mappedAttributes[$systemAttribute] = $akeneoAttribute;
                 }
-
-                $mappedAttributes[$systemAttribute] = $akeneoAttribute;
             }
         }
 
-        $key = array_search($attributeCode, $mappedAttributes);
+        $key = array_search($attributeCode, $this->mappedAttributes);
         if ($key) {
             return $key;
         }
@@ -516,7 +517,6 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         }
 
         $importedRecord['category:akeneo_code'] = reset($categories);
-        $importedRecord['category:channel:id'] = $this->context->getOption('channel');
     }
 
     public function setEntityConfigManager(ConfigManager $entityConfigManager): void

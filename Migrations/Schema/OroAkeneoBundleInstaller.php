@@ -20,22 +20,22 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
      * @var array
      */
     protected $options = [
-        'extend'       => [
-            'origin'        => ExtendScope::OWNER_CUSTOM,
-            'owner'         => ExtendScope::OWNER_CUSTOM,
-            'state'         => ExtendScope::STATE_NEW,
+        'extend' => [
+            'origin' => ExtendScope::OWNER_CUSTOM,
+            'owner' => ExtendScope::OWNER_CUSTOM,
+            'state' => ExtendScope::STATE_NEW,
             'is_serialized' => false,
-            'is_extend'     => true,
+            'is_extend' => true,
         ],
-        'datagrid'     => [
-            'is_visible'  => 0,
+        'datagrid' => [
+            'is_visible' => 0,
             'show_filter' => 0,
-            'order'       => null,
+            'order' => null,
         ],
-        'form'         => [
+        'form' => [
             'is_enabled' => false,
         ],
-        'view'         => [
+        'view' => [
             'is_displayable' => false,
         ],
         'importexport' => [
@@ -48,7 +48,7 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
      */
     public function getMigrationVersion()
     {
-        return 'v1_11';
+        return 'v1_12';
     }
 
     /**
@@ -65,6 +65,7 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
         $this->addOroIntegrationTransportForeignKeys($schema);
 
         $this->updateCategoryTable($schema);
+        $this->updateBrandTable($schema);
         $this->updateAttributeFamilyTable($schema);
         $this->updateAttributeGroupTable($schema);
     }
@@ -120,6 +121,9 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
         $table->addColumn('akeneo_merge_image_to_parent', 'boolean', ['notnull' => false, 'default' => false]);
         $table->addColumn('akeneo_variant_levels', 'string', ['notnull' => false, 'length' => 255]);
         $table->addColumn('akeneo_attributes_mapping', 'text', ['notnull' => false]);
+        $table->addColumn('akeneo_brand_reference_code', 'string', ['notnull' => false, 'length' => 255]);
+        $table->addColumn('akeneo_brand_mapping', 'text', ['notnull' => false]);
+
         $table->addIndex(['rootcategory_id'], 'idx_d7a389a852d2453c', []);
         $table->addIndex(['pricelist_id'], 'idx_d7a389a846b960c4', []);
     }
@@ -170,18 +174,12 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
             'oro_integration_channel',
             'name',
             [
-                'form'   => [
-                    'is_enabled' => false,
-                ],
-                'view'   => [
-                    'is_displayable' => false,
-                ],
-                'entity' => [
-                    'label' => 'oro.akeneo.category.channel.label',
-                ],
-                'extend' => [
-                    'owner' => ExtendScope::OWNER_CUSTOM,
-                ],
+                'extend' => ['owner' => ExtendScope::OWNER_CUSTOM],
+                'form' => ['is_enabled' => false],
+                'view' => ['is_displayable' => false],
+                'importexport' => ['identity' => false],
+                'datagrid' => ['is_visible' => 0, 'show_filter' => 0, 'order' => null],
+                'entity' => ['label' => 'oro.akeneo.category.channel.label'],
             ]
         );
         $options = array_merge(
@@ -197,7 +195,46 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
             'akeneo_code',
             'string',
             [
-                'notnull'     => false,
+                'notnull' => false,
+                'oro_options' => $options,
+            ]
+        );
+    }
+
+    /**
+     * Add channel & akeneo code to brand table.
+     */
+    protected function updateBrandTable(Schema $schema)
+    {
+        $this->extendExtension->addManyToOneRelation(
+            $schema,
+            'oro_brand',
+            'channel',
+            'oro_integration_channel',
+            'name',
+            [
+                'extend' => ['owner' => ExtendScope::OWNER_CUSTOM],
+                'form' => ['is_enabled' => false],
+                'view' => ['is_displayable' => false],
+                'datagrid' => ['is_visible' => 0, 'show_filter' => 0, 'order' => null],
+                'importexport' => ['identity' => false],
+                'entity' => ['label' => 'oro.akeneo.brand.channel.label'],
+            ]
+        );
+        $options = array_merge(
+            $this->options,
+            [
+                'entity' => [
+                    'label' => 'oro.akeneo.brand.akeneo_code.label',
+                ],
+            ]
+        );
+        $table = $schema->getTable('oro_brand');
+        $table->addColumn(
+            'akeneo_code',
+            'string',
+            [
+                'notnull' => false,
                 'oro_options' => $options,
             ]
         );
@@ -215,26 +252,18 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
             'oro_integration_channel',
             'name',
             [
-                'form'   => [
-                    'is_enabled' => false,
-                ],
-                'view'   => [
-                    'is_displayable' => false,
-                ],
-                'entity' => [
-                    'label' => 'oro.akeneo.attribute_family.channel.label',
-                ],
-                'extend' => [
-                    'owner' => ExtendScope::OWNER_CUSTOM,
-                ],
+                'extend' => ['owner' => ExtendScope::OWNER_CUSTOM],
+                'form' => ['is_enabled' => false],
+                'view' => ['is_displayable' => false],
+                'importexport' => ['identity' => false],
+                'datagrid' => ['is_visible' => 0, 'show_filter' => 0, 'order' => null],
+                'entity' => ['label' => 'oro.akeneo.attribute_family.channel.label'],
             ]
         );
     }
 
     /**
      * Add akeneo_code to attribute group table.
-     *
-     * @throws SchemaException
      */
     protected function updateAttributeGroupTable(Schema $schema)
     {
@@ -251,7 +280,7 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
             'akeneo_code',
             'string',
             [
-                'notnull'     => false,
+                'notnull' => false,
                 'oro_options' => $options,
             ]
         );

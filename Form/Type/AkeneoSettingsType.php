@@ -305,6 +305,27 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                         new AttributeMappingConstraint(),
                     ],
                 ]
+            )
+            ->add(
+                'akeneoBrandReferenceEntityCode',
+                TextType::class,
+                [
+                    'label' => 'oro.akeneo.integration.settings.akeneo_brand_reference_entity_code.label',
+                    'required' => false,
+                ]
+            )
+            ->add(
+                'akeneoBrandMapping',
+                TextareaType::class,
+                [
+                    'required' => false,
+                    'empty_data' => AkeneoSettings::DEFAULT_BRAND_MAPPING,
+                    'attr' => ['placeholder' => AkeneoSettings::DEFAULT_BRAND_MAPPING],
+                    'label' => 'oro.akeneo.integration.settings.akeneo_brand_mapping.label',
+                    'constraints' => [
+                        new AttributeMappingConstraint(),
+                    ],
+                ]
             );
 
         $builder->addEventListener(FormEvents::PRE_SET_DATA, [$this, 'onPreSetData']);

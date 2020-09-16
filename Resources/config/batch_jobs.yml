@@ -101,3 +101,15 @@ connector:
             writer: oro_integration.writer.persistent_batch_writer
           parameters:
             batch_size: 1
+
+    akeneo_brand_import:
+      title: "Brand import from Akeneo"
+      type:  import
+      steps:
+        import:
+          title: import
+          class: Oro\Bundle\AkeneoBundle\ImportExport\Step\ItemStep
+          services:
+            reader: oro_akeneo.integration.connector.brand
+            processor: oro_akeneo.importexport.processor.brand
+            writer: oro_akeneo.importexport.writer.cumulative.persistent_batch_writer

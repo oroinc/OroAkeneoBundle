@@ -5,52 +5,33 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 use Doctrine\Common\Collections\Collection;
 use Oro\Bundle\AttachmentBundle\Entity\File;
 use Oro\Bundle\AttachmentBundle\Entity\FileItem;
-use Oro\Bundle\CatalogBundle\Entity\Category;
-use Oro\Bundle\EntityExtendBundle\Entity\AbstractEnumValue;
-use Oro\Bundle\EntityExtendBundle\Tools\ExtendHelper;
+use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\ImportExport\Normalizer\LocalizationCodeFormatter;
+use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStrategy;
 use Oro\Bundle\ProductBundle\Entity\Brand;
 use Oro\Bundle\ProductBundle\Entity\Product;
-use Oro\Bundle\ProductBundle\ImportExport\Strategy\ProductStrategy;
 
-/**
- * Strategy to import products.
- */
-class ProductImportStrategy extends ProductStrategy
+class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements ClosableInterface
 {
     use ImportStrategyAwareHelperTrait;
     use OwnerTrait;
-
-    /**
-     * @var Product[]
-     *
-     * Cache existing product request in scope of a single row processing to avoid excess DB queries
-     */
-    private $existingProducts = [];
 
     public function close()
     {
         $this->reflectionProperties = [];
         $this->cachedEntities = [];
-        $this->cachedInverseSingleRelations = [];
-        $this->cachedExistingEntities = [];
-        $this->cachedInverseMultipleRelations = [];
-
-        $this->existingProducts = [];
-
-        $this->clearOwnerCache();
 
         $this->databaseHelper->onClear();
 
-        parent::close();
+        $this->clearOwnerCache();
     }
 
-    protected function beforeProcessEntity($entity)
+    public function beforeProcessEntity($entity)
     {
         $this->setOwner($entity);
 
-        $fields = $this->fieldHelper->getRelations(Product::class);
+        $fields = $this->fieldHelper->getRelations(Brand::class);
         foreach ($fields as $field) {
             if ($this->isFileItemValue($field)) {
                 /** @var Collection $collection */
@@ -68,38 +49,7 @@ class ProductImportStrategy extends ProductStrategy
 
     protected function afterProcessEntity($entity)
     {
-        if ($entity instanceof Product && $entity->getCategory() && !$entity->getCategory()->getId()) {
-            $entity->setCategory(null);
-
-            $categoryCodes = (array)$this->fieldHelper->getItemData(
-                $this->context->getValue('rawItemData'),
-                'categories'
-            );
-
-            foreach (array_filter($categoryCodes) as $categoryCode) {
-                $category = $this->databaseHelper->findOneBy(
-                    Category::class,
-                    ['akeneo_code' => $categoryCode, 'channel' => $this->context->getOption('channel')]
-                );
-
-                if ($category instanceof Category) {
-                    $entity->setCategory($category);
-
-                    break;
-                }
-            }
-        }
-
-        if ($entity instanceof Product && !$entity->getInventoryStatus()) {
-            $inventoryStatusClassName = ExtendHelper::buildEnumValueClassName('prod_inventory_status');
-            $inventoryStatus = $this->findEntityByIdentityValues(
-                $inventoryStatusClassName,
-                ['id' => Product::INVENTORY_STATUS_IN_STOCK]
-            );
-            $entity->setInventoryStatus($inventoryStatus);
-        }
-
-        $fields = $this->fieldHelper->getRelations(Product::class);
+        $fields = $this->fieldHelper->getRelations(Brand::class);
         foreach ($fields as $field) {
             if ($this->isFileItemValue($field)) {
                 /** @var Collection $collection */
@@ -110,28 +60,11 @@ class ProductImportStrategy extends ProductStrategy
             }
         }
 
-        $this->existingProducts = [];
-
         return parent::afterProcessEntity($entity);
-    }
-
-    protected function populateOwner(Product $entity)
-    {
     }
 
     protected function findExistingEntity($entity, array $searchContext = [])
     {
-        if ($entity instanceof Product && array_key_exists($entity->getSku(), $this->existingProducts)) {
-            return $this->existingProducts[$entity->getSku()];
-        }
-
-        if ($entity instanceof Category && $entity->getAkeneoCode()) {
-            return $this->databaseHelper->findOneBy(
-                Category::class,
-                ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $this->getChannel()]
-            );
-        }
-
         if ($entity instanceof Brand && $entity->getAkeneoCode()) {
             return $this->databaseHelper->findOneBy(
                 Brand::class,
@@ -153,28 +86,11 @@ class ProductImportStrategy extends ProductStrategy
             return $searchContext[$localizationCode] ?? null;
         }
 
-        $entity = parent::findExistingEntity($entity, $searchContext);
-
-        if ($entity instanceof Product) {
-            $this->existingProducts[$entity->getSku()] = $entity;
-        }
-
-        return $entity;
+        return parent::findExistingEntity($entity, $searchContext);
     }
 
     protected function findExistingEntityByIdentityFields($entity, array $searchContext = [])
     {
-        if ($entity instanceof Product && array_key_exists($entity->getSku(), $this->existingProducts)) {
-            return $this->existingProducts[$entity->getSku()];
-        }
-
-        if ($entity instanceof Category && $entity->getAkeneoCode()) {
-            return $this->databaseHelper->findOneBy(
-                Category::class,
-                ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $this->getChannel()]
-            );
-        }
-
         if ($entity instanceof Brand && $entity->getAkeneoCode()) {
             return $this->databaseHelper->findOneBy(
                 Brand::class,
@@ -196,13 +112,7 @@ class ProductImportStrategy extends ProductStrategy
             return $searchContext[$localizationCode] ?? null;
         }
 
-        $entity = parent::findExistingEntityByIdentityFields($entity, $searchContext);
-
-        if ($entity instanceof Product) {
-            $this->existingProducts[$entity->getSku()] = $entity;
-        }
-
-        return $entity;
+        return parent::findExistingEntityByIdentityFields($entity, $searchContext);
     }
 
     /**
@@ -278,22 +188,6 @@ class ProductImportStrategy extends ProductStrategy
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function importExistingEntity($entity, $existingEntity, $itemData = null, array $excludedFields = [])
-    {
-        // Existing enum values shouldn't be modified. Just added to entity (collection).
-        if (is_a($entity, AbstractEnumValue::class, true)) {
-            return;
-        }
-
-        parent::importExistingEntity($entity, $existingEntity, $itemData, $excludedFields);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     protected function updateContextCounters($entity)
     {
         $identifier = $this->databaseHelper->getIdentifier($entity);
@@ -302,33 +196,6 @@ class ProductImportStrategy extends ProductStrategy
         } else {
             $this->context->incrementAddCount();
         }
-    }
-
-    protected function isFieldExcluded($entityName, $fieldName, $itemData = null)
-    {
-        $excludeProductFields = [
-            'variantLinks',
-            'parentVariantLinks',
-            'images',
-            'slugs',
-            'slugPrototypes',
-            'slugPrototypesWithRedirect',
-            'inventory_status',
-        ];
-
-        if (is_a($entityName, Product::class, true) && in_array($fieldName, $excludeProductFields)) {
-            return true;
-        }
-
-        $allowedProductFields = [
-            'brand',
-        ];
-
-        if (is_a($entityName, Product::class, true) && in_array($fieldName, $allowedProductFields)) {
-            return false;
-        }
-
-        return parent::isFieldExcluded($entityName, $fieldName, $itemData);
     }
 
     protected function mapCollections(Collection $importedCollection, Collection $sourceCollection)

@@ -6,6 +6,9 @@ use Akeneo\Pim\ApiClient\Security\Authentication;
 use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientInterface;
 use Oro\Bundle\AkeneoBundle\Integration\Api\MeasurementFamilyApiInterface;
 use Oro\Bundle\AkeneoBundle\Integration\Api\ReferenceEntityApiInterface;
+use Oro\Bundle\AkeneoBundle\Integration\Api\ReferenceEntityAttributeApiInterface;
+use Oro\Bundle\AkeneoBundle\Integration\Api\ReferenceEntityAttributeOptionApiInterface;
+use Oro\Bundle\AkeneoBundle\Integration\Api\ReferenceEntityMediaFileApiInterface;
 use Oro\Bundle\AkeneoBundle\Integration\Api\ReferenceEntityRecordApiInterface;
 
 class AkeneoPimExtendableClient implements AkeneoPimExtendableClientInterface
@@ -21,6 +24,15 @@ class AkeneoPimExtendableClient implements AkeneoPimExtendableClientInterface
 
     /** @var ReferenceEntityRecordApiInterface */
     private $referenceEntityRecordApi;
+
+    /** @var ReferenceEntityAttributeApiInterface */
+    private $referenceEntityAttributeApi;
+
+    /** @var ReferenceEntityAttributeOptionApiInterface */
+    private $referenceEntityAttributeOptionApi;
+
+    /** @var ReferenceEntityMediaFileApiInterface */
+    private $referenceEntityMediaFileApi;
 
     /** @var MeasurementFamilyApiInterface */
     private $measurementFamilyApi;
@@ -179,5 +191,38 @@ class AkeneoPimExtendableClient implements AkeneoPimExtendableClientInterface
     public function setMeasurementFamilyApi(MeasurementFamilyApiInterface $measurementFamilyApi): void
     {
         $this->measurementFamilyApi = $measurementFamilyApi;
+    }
+
+    public function getReferenceEntityAttributeApi(): ReferenceEntityAttributeApiInterface
+    {
+        return $this->referenceEntityAttributeApi;
+    }
+
+    public function setReferenceEntityAttributeApi(
+        ReferenceEntityAttributeApiInterface $referenceEntityAttributeApi
+    ): void {
+        $this->referenceEntityAttributeApi = $referenceEntityAttributeApi;
+    }
+
+    public function getReferenceEntityAttributeOptionApi(): ReferenceEntityAttributeOptionApiInterface
+    {
+        return $this->referenceEntityAttributeOptionApi;
+    }
+
+    public function setReferenceEntityAttributeOptionApi(
+        ReferenceEntityAttributeOptionApiInterface $referenceEntityAttributeOptionApi
+    ): void {
+        $this->referenceEntityAttributeOptionApi = $referenceEntityAttributeOptionApi;
+    }
+
+    public function getReferenceEntityMediaFileApi(): ReferenceEntityMediaFileApiInterface
+    {
+        return $this->referenceEntityMediaFileApi;
+    }
+
+    public function setReferenceEntityMediaFileApi(
+        ReferenceEntityMediaFileApiInterface $referenceEntityMediaFileApi
+    ): void {
+        $this->referenceEntityMediaFileApi = $referenceEntityMediaFileApi;
     }
 }

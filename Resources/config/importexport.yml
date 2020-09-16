@@ -43,6 +43,12 @@ services:
     tags:
       - { name: oro_importexport.normalizer, priority: 100 }
 
+  oro_akeneo.importexport.normalizer.brand:
+    class: Oro\Bundle\AkeneoBundle\ImportExport\Serializer\Normalizer\BrandNormalizer
+    public: false
+    tags:
+      - { name: oro_importexport.normalizer, priority: 100 }
+
   oro_akeneo.integration.connector.category:
     class: "%oro_akeneo.integration.connector.category.class%"
     arguments:
@@ -195,6 +201,15 @@ services:
       - [setSchemaUpdateFilter, ['@oro_akeneo.placeholder.schema_update_filter']]
     tags:
       - { name: oro_integration.connector, type: product, channel_type: oro_akeneo }
+
+  oro_akeneo.integration.connector.brand:
+    class: 'Oro\Bundle\AkeneoBundle\Integration\Connector\BrandConnector'
+    arguments:
+      - '@oro_importexport.context_registry'
+      - '@oro_integration.logger.strategy'
+      - '@oro_integration.provider.connector_context_mediator'
+    tags:
+      - { name: oro_integration.connector, type: brand, channel_type: oro_akeneo }
 
   oro_akeneo.importexport.data_converter.product:
     class: '%oro_akeneo.importexport.data_converter.product.class%'
@@ -380,3 +395,28 @@ services:
     tags:
       - { name: kernel.event_listener, event: oro_datagrid.datagrid.build.before.attributes-grid, method: onBuildBefore }
       - { name: kernel.event_listener, event: oro_datagrid.orm_datasource.result.after.attributes-grid, method: onResultAfter }
+
+  oro_akeneo.importexport.processor.brand:
+    parent: oro_integration.importexport.processor.import
+    public: true
+    calls:
+      - [setDataConverter, ["@oro_akeneo.importexport.data_converter.brand"]]
+      - [setStrategy, ['@oro_akeneo.importexport.strategy.brand']]
+      - [setEntityName, ['Oro\Bundle\ProductBundle\Entity\Brand']]
+      - [setContextRegistry, ["@oro_importexport.context_registry"]]
+
+  oro_akeneo.importexport.strategy.brand:
+    class: 'Oro\Bundle\AkeneoBundle\ImportExport\Strategy\BrandImportStrategy'
+    parent: oro_locale.importexport.strategy.localized_fallback_value_aware
+    calls:
+      - [setImportStrategyHelper, ['@oro_akeneo.strategy.import.helper']]
+      - [setOwnerHelper, ['@oro_akeneo.importexport.strategy.default_owner_helper']]
+
+  oro_akeneo.importexport.data_converter.brand:
+    class: 'Oro\Bundle\AkeneoBundle\ImportExport\DataConverter\BrandDataConverter'
+    arguments:
+      - '@oro_entity.doctrine_helper'
+      - '@oro_entity.helper.field_helper'
+      - '@oro_entity_config.config_manager'
+      - '@oro_config.manager'
+      - '%kernel.project_dir%/var/import_export/akeneo'

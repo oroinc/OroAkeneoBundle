@@ -62,6 +62,11 @@ oro:
         akeneo_attributes_mapping:
           label: Attributes Mapping
           tooltip: 'Additional mapping of Akeneo attributes to OroCommerce attributes. A single value must be separated with a colon (akeneo_code:oro_attribute_name). Values must be separated with a semi-colon (custom_sku:sku;name:names).'
+        akeneo_brand_reference_entity_code:
+          label: 'Brand Reference Entity code'
+        akeneo_brand_mapping:
+          label: Brand Attributes Mapping
+          tooltip: 'Mapping of Reference Entity attributes to Brand attributes. A single value must be separated with a colon (label:names). Values must be separated with a semi-colon (label:names;label:slugs).'
       popup:
         channel: 'This is a list of channels configured for the current Akeneo PIM instance. Select the required channel for product and category import. To refresh the list, click Refresh Channels'
         currencies: 'The control configures mapping between the currencies enabled in the current Akeneo PIM instance and the currencies enabled in this application. To skip price import for a specific currency, do not add mapping to it. To refresh the list, click Refresh Currencies'
@@ -83,6 +88,8 @@ oro:
         label: Attribute family connector
       attribute:
         label: Attribute connector
+      brand:
+        label: Brand connector
     entity_config_field:
       channel:
         label: Channel

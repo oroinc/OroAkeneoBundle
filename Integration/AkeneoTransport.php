@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\AkeneoBundle\Integration;
 
+use Akeneo\Pim\ApiClient\Exception\NotFoundHttpException;
 use Gaufrette\Filesystem;
 use Knp\Bundle\GaufretteBundle\FilesystemMap;
 use Oro\Bundle\AkeneoBundle\Client\AkeneoClientFactory;
@@ -325,7 +326,7 @@ class AkeneoTransport implements AkeneoTransportInterface
         return $familtyAttributes;
     }
 
-    public function downloadAndSaveMediaFile(string $code)
+    public function downloadAndSaveMediaFile(string $code): void
     {
         $path = sprintf('akeneo/%s', $code);
         if ($this->filesystem->has($path)) {
@@ -463,5 +464,19 @@ class AkeneoTransport implements AkeneoTransportInterface
         }
 
         return $this->attributeMapping;
+    }
+
+    public function getBrands(): \Traversable
+    {
+        $brandReferenceEntityCode = $this->transportEntity->getAkeneoBrandReferenceEntityCode();
+        if (!$brandReferenceEntityCode) {
+            return new \EmptyIterator();
+        }
+
+        try {
+            return $this->client->getReferenceEntityRecordApi()->all($brandReferenceEntityCode);
+        } catch (NotFoundHttpException $e) {
+            return new \EmptyIterator();
+        }
     }
 }

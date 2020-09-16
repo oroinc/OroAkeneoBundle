@@ -91,7 +91,7 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
         if ($entity instanceof Category && $entity->getAkeneoCode()) {
             $category = $this->databaseHelper->findOneBy(
                 Category::class,
-                ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $entity->getChannel()]
+                ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $this->getChannel()]
             );
 
             if ($category) {
@@ -115,7 +115,7 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
         if ($entity instanceof Category && $entity->getAkeneoCode()) {
             $category = $this->databaseHelper->findOneBy(
                 Category::class,
-                ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $entity->getChannel()]
+                ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $this->getChannel()]
             );
 
             if ($category) {
