@@ -86,7 +86,6 @@ return PhpCsFixer\Config::create()
             'ternary_operator_spaces' => false,
             'phpdoc_no_useless_inheritdoc' => false,
             'class_definition' => false,
-            'single_line_throw' => false,
         ]
     )
     ->setRiskyAllowed(true);
