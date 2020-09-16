@@ -46,6 +46,7 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
         $importedRecord['code'] = AttributeFamilyCodeGenerator::generate($importedRecord['code']);
         $importedRecord['entityClass'] = Product::class;
         $importedRecord['isEnabled'] = true;
+        $importedRecord['channel:id'] = $this->getImportExportContext()->getOption('channel');
 
         $this->setLabels($importedRecord);
 
