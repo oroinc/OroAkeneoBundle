@@ -41,6 +41,8 @@ class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter imp
         $this->setSlugs($importedRecord);
         $this->setRootCategory($importedRecord);
 
+        $importedRecord['channel:id'] = $this->getImportExportContext()->getOption('channel');
+
         return parent::convertToImportFormat($importedRecord, $skipNullValues);
     }
 
@@ -86,6 +88,7 @@ class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter imp
     private function setRootCategory(array &$importedRecord)
     {
         if ($importedRecord['parent']) {
+            $importedRecord['parentCategory:channel:id'] = $this->getImportExportContext()->getOption('channel');
             $importedRecord['parentCategory:akeneo_code'] = $importedRecord['parent'];
 
             return;
