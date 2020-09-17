@@ -5,7 +5,6 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeFamilyCodeGenerator;
-use Oro\Bundle\AkeneoBundle\Tools\AttributeTypeConverter;
 use Oro\Bundle\AkeneoBundle\Tools\Generator;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
@@ -85,6 +84,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         $this->setStatus($importedRecord);
         $this->setCategory($importedRecord);
         $this->setFamilyVariant($importedRecord);
+        $this->setBrand($importedRecord);
 
         $importedRecord = parent::convertToImportFormat($importedRecord, $skipNullValues);
 
@@ -232,14 +232,6 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
                 $this->getDefaultLocalization(),
                 $this->getTransport()
             );
-
-            return;
-        }
-
-        $values = array_values($value);
-        $valueFirstItem = reset($values);
-        if (AttributeTypeConverter::convert($valueFirstItem['type']) !== $field['type']) {
-            $importedRecord[$field['name']] = $this->processBasicType($value);
 
             return;
         }
@@ -502,6 +494,13 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         $importedRecord['slugPrototypes'] = $importedRecord['names'] ?? [];
         foreach ($importedRecord['slugPrototypes'] as &$slugPrototype) {
             $slugPrototype['string'] = $this->slugGenerator->slugify($slugPrototype['string']);
+        }
+    }
+
+    private function setBrand(array &$importedRecord)
+    {
+        if (!empty($importedRecord['brand'])) {
+            $importedRecord['brand'] = ['akeneo_code' => $importedRecord['brand']];
         }
     }
 

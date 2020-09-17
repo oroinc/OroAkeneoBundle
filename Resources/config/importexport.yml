@@ -43,12 +43,6 @@ services:
     tags:
       - { name: oro_importexport.normalizer, priority: 100 }
 
-  oro_akeneo.importexport.normalizer.brand:
-    class: Oro\Bundle\AkeneoBundle\ImportExport\Serializer\Normalizer\BrandNormalizer
-    public: false
-    tags:
-      - { name: oro_importexport.normalizer, priority: 100 }
-
   oro_akeneo.integration.connector.category:
     class: "%oro_akeneo.integration.connector.category.class%"
     arguments:
