@@ -85,6 +85,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         $this->setCategory($importedRecord);
         $this->setFamilyVariant($importedRecord);
         $this->setBrand($importedRecord);
+        $this->setSku($importedRecord);
 
         $importedRecord = parent::convertToImportFormat($importedRecord, $skipNullValues);
 
@@ -502,6 +503,11 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         if (!empty($importedRecord['brand'])) {
             $importedRecord['brand'] = ['akeneo_code' => $importedRecord['brand']];
         }
+    }
+
+    private function setSku(array &$importedRecord)
+    {
+        $importedRecord['sku'] = (string)$importedRecord['sku'];
     }
 
     /**
