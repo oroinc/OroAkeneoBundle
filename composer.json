@@ -18,10 +18,10 @@
         ]
     },
     "require": {
-        "oro/commerce-enterprise": "4.1.* <=4.1.6",
+        "oro/commerce-enterprise": "4.1.* <=4.1.8",
         "akeneo/api-php-client-ee": "3.0.*",
-        "php-http/guzzle6-adapter": "1.1.*",
-        "php-http/message": "1.8.*",
+        "php-http/guzzle6-adapter": "~1.1",
+        "php-http/message": "~1.8",
         "cweagans/composer-patches": "~1.6"
     },
     "repositories": {
