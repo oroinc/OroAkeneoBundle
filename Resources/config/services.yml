@@ -79,6 +79,7 @@ services:
   oro_akeneo.strategy.import.helper:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Strategy\ImportStrategyHelper'
     parent: oro_importexport.strategy.import.helper
+    decorates: oro_importexport.strategy.import.helper
     calls:
       - [setDoctrineHelper, ['@oro_entity.doctrine_helper']]
 
@@ -147,3 +148,48 @@ services:
     class: 'Oro\Bundle\AkeneoBundle\Job\Context\SimpleContextAggregator'
     parent: oro_importexport.job.context.aggregator.simple
     decorates: oro_importexport.job.context.aggregator.simple
+
+  oro_akeneo.layout.data_provider.file_applications:
+    class: 'Oro\Bundle\AkeneoBundle\Layout\DataProvider\FileApplicationsDataProvider'
+    decorates: oro_attachment.layout.data_provider.file_applications
+    arguments:
+      - '@oro_akeneo.layout.data_provider.file_applications.inner'
+      - '@oro_entity_config.provider.attribute'
+
+  oro_akeneo.product_variant.type_handler.string_type_handle:
+    class: 'Oro\Bundle\AkeneoBundle\ProductVariant\TypeHandler\StringTypeHandler'
+    arguments:
+      - '@form.factory'
+
+  oro_akeneo.product_variant.registry.product_variant_type_handler_factory:
+    parent: oro_product.product_variant.registry.product_variant_type_handler_factory
+    decorates: oro_product.product_variant.registry.product_variant_type_handler_factory
+    calls:
+      - [addHandler, ['@oro_akeneo.product_variant.type_handler.string_type_handle']]
+
+  oro_akeneo.product_variant_field.field_value_handler.string_type_handler:
+    class: 'Oro\Bundle\AkeneoBundle\ProductVariant\VariantFieldValueHandler\StringVariantFieldValueHandler'
+    arguments:
+      - '@oro_entity.doctrine_helper'
+
+  oro_akeneo.product_variant_field.registry.product_variant_field_value_handler_registry:
+    parent: oro_product.product_variant_field.registry.product_variant_field_value_handler_registry
+    decorates: oro_product.product_variant_field.registry.product_variant_field_value_handler_registry
+    calls:
+      - [addHandler, ['@oro_akeneo.product_variant_field.field_value_handler.string_type_handler']]
+
+  oro_akeneo.provider.serialized_field_provider:
+    class: 'Oro\Bundle\AkeneoBundle\Provider\SerializedFieldProvider'
+    decorates: oro_entity_config.provider.serialized_field_provider
+    decoration_priority: -255
+    arguments:
+      - '@oro_akeneo.provider.serialized_field_provider.inner'
+      - '@oro_entity_config.provider.importexport'
+
+  oro_akeneo.provider.variant_field_provider:
+    class: 'Oro\Bundle\AkeneoBundle\Provider\VariantFieldProvider'
+    decorates: oro_product.provider.variant_field_provider
+    arguments:
+      - '@oro_akeneo.provider.variant_field_provider.inner'
+      - '@oro_entity_config.manager.attribute_manager'
+      - '@oro_entity_config.provider.serialized_field_provider'
