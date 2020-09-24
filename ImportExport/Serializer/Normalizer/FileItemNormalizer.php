@@ -26,7 +26,7 @@ class FileItemNormalizer implements DenormalizerInterface
     public function denormalize($data, $type, $format = null, array $context = [])
     {
         $fileItem = new FileItem();
-        $file = $this->fileNormalizer->denormalize(reset($data), $type, $format, $context);
+        $file = $this->fileNormalizer->denormalize($data, $type, $format, $context);
         $fileItem->setFile($file);
 
         return $fileItem;

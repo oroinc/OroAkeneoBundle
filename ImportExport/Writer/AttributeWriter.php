@@ -265,9 +265,7 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
         $this->fieldNameMapping = $this->cacheProvider->fetch('attribute_fieldNameMapping') ?? [];
         $sourceName = $this->fieldNameMapping[$fieldName] ?? null;
         if (!$sourceName) {
-            throw new \InvalidArgumentException(
-                sprintf('Unknown source name for "%s::%s"', $className, $fieldName)
-            );
+            throw new \InvalidArgumentException(sprintf('Unknown source name for "%s::%s"', $className, $fieldName));
         }
         $importExportConfig->set('source_name', $sourceName);
         $this->configManager->persist($importExportConfig);

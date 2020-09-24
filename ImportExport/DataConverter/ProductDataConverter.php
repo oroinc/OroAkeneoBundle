@@ -435,11 +435,11 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         return $id !== null ? Generator::generateLabel($id) : null;
     }
 
-    private function processFileType(array $value): string
+    private function processFileType(array $value): array
     {
         $item = array_shift($value);
 
-        return $this->getAttachmentPath($item['data']);
+        return ['uri' => $this->getAttachmentPath($item['data'])];
     }
 
     private function processFileTypes(array $value): array
@@ -448,7 +448,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
         $paths = [];
         foreach ($items['data'] as $item) {
-            $paths[] = [$this->getAttachmentPath($item)];
+            $paths[] = ['uri' => $this->getAttachmentPath($item)];
         }
 
         return $paths;
@@ -507,7 +507,9 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
     private function setSku(array &$importedRecord)
     {
-        $importedRecord['sku'] = (string)$importedRecord['sku'];
+        $identifier = $importedRecord['identifier'] ?? $importedRecord['code'];
+
+        $importedRecord['sku'] = (string)($importedRecord['sku'] ?? $identifier);
     }
 
     /**
