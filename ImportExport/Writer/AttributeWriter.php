@@ -235,8 +235,6 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
      */
     protected function setAttributeData(FieldConfigModel $fieldConfigModel)
     {
-        parent::setAttributeData($fieldConfigModel);
-
         $extendProvider = $this->configManager->getProvider('extend');
         $importExportProvider = $this->configManager->getProvider('importexport');
 
@@ -300,6 +298,8 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
 
         $this->configManager->persist($attributeConfig);
         $this->configManager->persist($searchConfig);
+
+        parent::setAttributeData($fieldConfigModel);
 
         if (RelationType::MANY_TO_MANY !== $fieldConfigModel->getType()) {
             return;

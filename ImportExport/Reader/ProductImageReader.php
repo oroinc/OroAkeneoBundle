@@ -49,7 +49,7 @@ class ProductImageReader extends IteratorBasedReader
                             continue;
                         }
 
-                        if (!in_array($value['type'], ['pim_catalog_image', 'pim_catalog_file', 'pim_assets_collection'])) {
+                        if (!in_array($value['type'], ['pim_catalog_image', 'pim_assets_collection'])) {
                             continue;
                         }
 
@@ -91,7 +91,7 @@ class ProductImageReader extends IteratorBasedReader
                             continue;
                         }
 
-                        if (in_array($value['type'], ['pim_catalog_image', 'pim_catalog_file'])) {
+                        if (in_array($value['type'], ['pim_catalog_image'])) {
                             $this->getAkeneoTransport($context)->downloadAndSaveMediaFile($value['data']);
                         }
 

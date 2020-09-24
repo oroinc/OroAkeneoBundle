@@ -4,6 +4,7 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Util\ClassUtils;
+use Oro\Bundle\AkeneoBundle\Integration\AkeneoChannel;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 use Oro\Bundle\ImportExportBundle\Exception\InvalidArgumentException;
@@ -120,6 +121,10 @@ class ImportStrategyHelper extends BaseImportStrategyHelper
 
     public function addValidationErrors(array $validationErrors, ContextInterface $context, $errorPrefix = null)
     {
+        if (AkeneoChannel::TYPE !== $context->getOption('channelType')) {
+            return parent::validateEntity($validationErrors, $context, $errorPrefix);
+        }
+
         foreach ($validationErrors as $validationError) {
             $context->addError(
                 $this->translator->trans(
@@ -129,7 +134,7 @@ class ImportStrategyHelper extends BaseImportStrategyHelper
                         '%item%' => json_encode(
                             $context->getValue('rawItemData'),
                             JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
-                        )
+                        ),
                     ]
                 )
             );
