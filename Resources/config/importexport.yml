@@ -39,6 +39,14 @@ services:
     class: Oro\Bundle\AkeneoBundle\ImportExport\Serializer\Normalizer\FileItemNormalizer
     public: false
     arguments:
+      - '@oro_akeneo.importexport.normalizer.file'
+    tags:
+      - { name: oro_importexport.normalizer, priority: 100 }
+
+  oro_akeneo.importexport.normalizer.file:
+    class: Oro\Bundle\AkeneoBundle\ImportExport\Serializer\Normalizer\FileNormalizer
+    public: false
+    arguments:
       - '@oro_attachment.serializer.file_normalizer'
     tags:
       - { name: oro_importexport.normalizer, priority: 100 }
