@@ -44,7 +44,7 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
             }
         }
 
-        return parent::beforeProcessEntity($entity);
+        return $entity;
     }
 
     protected function afterProcessEntity($entity)
@@ -60,7 +60,7 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
             }
         }
 
-        return parent::afterProcessEntity($entity);
+        return $entity;
     }
 
     protected function findExistingEntity($entity, array $searchContext = [])
@@ -223,7 +223,7 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
 
         if ($this->isFileValue($fields[$fieldName])) {
             $existingEntity = $this->findExistingEntity($entity);
-            if ($existingEntity instanceof Product) {
+            if ($existingEntity) {
                 $file = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
 
                 if ($file instanceof File && $file->getOriginalFilename()) {
@@ -236,7 +236,7 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
 
         if ($this->isFileItemValue($fields[$fieldName])) {
             $existingEntity = $this->findExistingEntity($entity);
-            if ($existingEntity instanceof Product) {
+            if ($existingEntity) {
                 $collection = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
 
                 foreach ($collection as $fileItem) {

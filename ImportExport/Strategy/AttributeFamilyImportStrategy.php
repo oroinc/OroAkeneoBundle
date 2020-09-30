@@ -3,6 +3,8 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 
 use Doctrine\Common\Collections\Collection;
+use Oro\Bundle\AttachmentBundle\Entity\File;
+use Oro\Bundle\AttachmentBundle\Entity\FileItem;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeFamily;
 use Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeGroup;
@@ -64,7 +66,12 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
         $this->setSystemAttributes($entity);
         $this->setOwner($entity);
 
-        return parent::beforeProcessEntity($entity);
+        return $entity;
+    }
+
+    protected function afterProcessEntity($entity)
+    {
+        return $entity;
     }
 
     protected function findExistingEntity($entity, array $searchContext = [])
@@ -86,6 +93,14 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
             }
 
             return null;
+        }
+
+        if ($entity instanceof File) {
+            return $searchContext[$entity->getOriginalFilename()] ?? null;
+        }
+
+        if ($entity instanceof FileItem) {
+            return $searchContext[$entity->getFile()->getOriginalFilename()] ?? null;
         }
 
         return parent::findExistingEntity($entity, $searchContext);
@@ -110,6 +125,14 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
             }
 
             return null;
+        }
+
+        if ($entity instanceof File) {
+            return $searchContext[$entity->getOriginalFilename()] ?? null;
+        }
+
+        if ($entity instanceof FileItem) {
+            return $searchContext[$entity->getFile()->getOriginalFilename()] ?? null;
         }
 
         return parent::findExistingEntityByIdentityFields($entity, $searchContext);
@@ -363,16 +386,51 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
 
     protected function generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation)
     {
+        $searchContext = parent::generateSearchContextForRelationsUpdate(
+            $entity,
+            $entityName,
+            $fieldName,
+            $isPersistRelation
+        );
+
         $fields = $this->fieldHelper->getRelations($entityName);
 
+        if ($this->isFileValue($fields[$fieldName])) {
+            $existingEntity = $this->findExistingEntity($entity);
+            if ($existingEntity) {
+                $file = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
+
+                if ($file instanceof File && $file->getOriginalFilename()) {
+                    return [$file->getOriginalFilename() => $file];
+                }
+            }
+
+            return $searchContext;
+        }
+
+        if ($this->isFileItemValue($fields[$fieldName])) {
+            $existingEntity = $this->findExistingEntity($entity);
+            if ($existingEntity) {
+                $collection = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
+
+                foreach ($collection as $fileItem) {
+                    if ($fileItem instanceof FileItem && $fileItem->getFile()->getOriginalFilename()) {
+                        $searchContext[$fileItem->getFile()->getOriginalFilename()] = $fileItem;
+                    }
+                }
+            }
+
+            return $searchContext;
+        }
+
         if (!$this->isLocalizedFallbackValue($fields[$fieldName])) {
-            return parent::generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation);
+            return $searchContext;
         }
 
         /** @var Collection $importedCollection */
         $importedCollection = $this->fieldHelper->getObjectValue($entity, $fieldName);
         if ($importedCollection->isEmpty()) {
-            return parent::generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation);
+            return $searchContext;
         }
 
         $existingEntity = $this->findExistingEntity($entity);
@@ -388,6 +446,16 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
             return $searchContext;
         }
 
-        return parent::generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation);
+        return $searchContext;
+    }
+
+    private function isFileValue(array $field): bool
+    {
+        return $this->fieldHelper->isRelation($field) && is_a($field['related_entity_name'], File::class, true);
+    }
+
+    private function isFileItemValue(array $field): bool
+    {
+        return $this->fieldHelper->isRelation($field) && is_a($field['related_entity_name'], FileItem::class, true);
     }
 }

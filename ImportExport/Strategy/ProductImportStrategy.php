@@ -353,7 +353,7 @@ class ProductImportStrategy extends ProductStrategy
 
         if ($this->isFileValue($fields[$fieldName])) {
             $existingEntity = $this->findExistingEntity($entity);
-            if ($existingEntity instanceof Product) {
+            if ($existingEntity) {
                 $file = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
 
                 if ($file instanceof File && $file->getOriginalFilename()) {
@@ -366,7 +366,7 @@ class ProductImportStrategy extends ProductStrategy
 
         if ($this->isFileItemValue($fields[$fieldName])) {
             $existingEntity = $this->findExistingEntity($entity);
-            if ($existingEntity instanceof Product) {
+            if ($existingEntity) {
                 $collection = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
 
                 foreach ($collection as $fileItem) {
