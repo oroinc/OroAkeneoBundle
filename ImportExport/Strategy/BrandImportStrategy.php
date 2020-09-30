@@ -10,7 +10,6 @@ use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\ImportExport\Normalizer\LocalizationCodeFormatter;
 use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStrategy;
 use Oro\Bundle\ProductBundle\Entity\Brand;
-use Oro\Bundle\ProductBundle\Entity\Product;
 
 class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements ClosableInterface
 {
