@@ -32,7 +32,12 @@ class ProductImageImportStrategy extends ConfigurableAddOrReplaceStrategy
             return null;
         }
 
-        return parent::beforeProcessEntity($entity);
+        return $entity;
+    }
+
+    protected function afterProcessEntity($entity)
+    {
+        return $entity;
     }
 
     protected function updateContextCounters($entity)

@@ -25,7 +25,23 @@ class ProductPriceImportStrategy extends BaseStrategy
             return null;
         }
 
-        return parent::beforeProcessEntity($entity);
+        $this->refreshPrice($entity);
+        $this->loadProduct($entity);
+
+        return $entity;
+    }
+
+    protected function afterProcessEntity($entity)
+    {
+        $this->refreshPrice($entity);
+
+        // Set version to track prices changed within import
+        $version = $this->context->getOption('importVersion');
+        if ($version) {
+            $entity->setVersion($version);
+        }
+
+        return $entity;
     }
 
     protected function updateContextCounters($entity)
