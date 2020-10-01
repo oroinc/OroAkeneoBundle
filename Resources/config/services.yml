@@ -149,13 +149,6 @@ services:
     parent: oro_importexport.job.context.aggregator.simple
     decorates: oro_importexport.job.context.aggregator.simple
 
-  oro_akeneo.layout.data_provider.file_applications:
-    class: 'Oro\Bundle\AkeneoBundle\Layout\DataProvider\FileApplicationsDataProvider'
-    decorates: oro_attachment.layout.data_provider.file_applications
-    arguments:
-      - '@oro_akeneo.layout.data_provider.file_applications.inner'
-      - '@oro_entity_config.provider.attribute'
-
   oro_akeneo.product_variant.type_handler.string_type_handle:
     class: 'Oro\Bundle\AkeneoBundle\ProductVariant\TypeHandler\StringTypeHandler'
     arguments:
