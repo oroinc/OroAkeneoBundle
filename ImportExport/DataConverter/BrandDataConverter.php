@@ -9,6 +9,7 @@ use Oro\Bundle\ConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityBundle\Helper\FieldHelper;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager as EntityConfigManager;
+use Oro\Bundle\EntityConfigBundle\Generator\SlugGenerator;
 use Oro\Bundle\EntityExtendBundle\Extend\RelationType;
 use Oro\Bundle\ImportExportBundle\Context\ContextAwareInterface;
 use Oro\Bundle\ImportExportBundle\Converter\DataConverterInterface;
@@ -35,6 +36,9 @@ class BrandDataConverter implements DataConverterInterface, ContextAwareInterfac
     /** @var EntityConfigManager */
     private $entityConfigManager;
 
+    /** @var SlugGenerator */
+    private $slugGenerator;
+
     /** @var string */
     private $attachmentsDir;
 
@@ -43,12 +47,14 @@ class BrandDataConverter implements DataConverterInterface, ContextAwareInterfac
         FieldHelper $fieldHelper,
         EntityConfigManager $entityConfigManager,
         ConfigManager $configManager,
+        SlugGenerator $slugGenerator,
         string $attachmentsDir
     ) {
         $this->doctrineHelper = $doctrineHelper;
         $this->fieldHelper = $fieldHelper;
         $this->entityConfigManager = $entityConfigManager;
         $this->configManager = $configManager;
+        $this->slugGenerator = $slugGenerator;
         $this->attachmentsDir = $attachmentsDir;
     }
 
@@ -84,6 +90,7 @@ class BrandDataConverter implements DataConverterInterface, ContextAwareInterfac
         }
 
         $this->setNames($record, $importedRecord);
+        $this->setSlugs($record, $importedRecord);
 
         $record['channel'] = ['id' => $this->getImportExportContext()->getOption('channel')];
         $record['akeneo_code'] = $importedRecord['code'];
@@ -98,6 +105,17 @@ class BrandDataConverter implements DataConverterInterface, ContextAwareInterfac
                 'fallback' => null,
                 'string' => $importedRecord['code'],
             ];
+        }
+    }
+
+    /**
+     * Sets slugs generated from names.
+     */
+    private function setSlugs(array &$importedRecord)
+    {
+        $importedRecord['slugPrototypes'] = $importedRecord['names'] ?? [];
+        foreach ($importedRecord['slugPrototypes'] as &$slugPrototype) {
+            $slugPrototype['string'] = $this->slugGenerator->slugify($slugPrototype['string']);
         }
     }
 

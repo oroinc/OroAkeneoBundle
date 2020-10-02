@@ -431,4 +431,5 @@ services:
       - '@oro_entity.helper.field_helper'
       - '@oro_entity_config.config_manager'
       - '@oro_config.manager'
+      - '@oro_entity_config.slug.generator'
       - '%kernel.project_dir%/var/import_export/akeneo'

@@ -8,7 +8,7 @@ namespace Oro\Bundle\AkeneoBundle\Integration\Api;
 
 use Akeneo\Pim\ApiClient\Exception\HttpException;
 use Akeneo\Pim\ApiClient\Exception\RuntimeException;
-use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * @author    Laurent Petard <laurent.petard@akeneo.com>
@@ -23,8 +23,10 @@ interface ReferenceEntityMediaFileApiInterface
      * @param string $code Code of the media file
      *
      * @throws HttpException If the request failed.
+     *
+     * @return StreamInterface
      */
-    public function download($code): ResponseInterface;
+    public function download($code);
 
     /**
      * Creates a new reference entity media file.
