@@ -10,6 +10,7 @@ use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\Form\Type\AkeneoSettingsType;
 use Oro\Bundle\AkeneoBundle\Integration\Iterator\AttributeFamilyIterator;
 use Oro\Bundle\AkeneoBundle\Integration\Iterator\AttributeIterator;
+use Oro\Bundle\AkeneoBundle\Integration\Iterator\BrandIterator;
 use Oro\Bundle\AkeneoBundle\Integration\Iterator\ProductIterator;
 use Oro\Bundle\AkeneoBundle\Settings\DataProvider\SyncProductsDataProvider;
 use Oro\Bundle\IntegrationBundle\Entity\Transport;
@@ -386,6 +387,36 @@ class AkeneoTransport implements AkeneoTransportInterface
         }
     }
 
+    public function downloadAndSaveReferenceEntityMediaFile(string $code): void
+    {
+        $path = sprintf('akeneo/%s', $code);
+        if ($this->filesystem->has($path)) {
+            return;
+        }
+
+        try {
+            $content = $this->client->getReferenceEntityMediaFileApi()->download($code)->getContents();
+        } catch (\Throwable $e) {
+            $this->logger->critical(
+                'Error on downloading asset.',
+                ['message' => $e->getMessage(), 'exception' => $e]
+            );
+
+            return;
+        }
+
+        try {
+            $this->filesystem->write($path, $content, true);
+        } catch (\Throwable $e) {
+            $this->logger->critical(
+                'Error during saving asset.',
+                ['message' => $e->getMessage(), 'exception' => $e]
+            );
+
+            return;
+        }
+    }
+
     protected function initAttributesList()
     {
         if (empty($this->attributes)) {
@@ -474,7 +505,12 @@ class AkeneoTransport implements AkeneoTransportInterface
         }
 
         try {
-            return $this->client->getReferenceEntityRecordApi()->all($brandReferenceEntityCode);
+            return new BrandIterator(
+                $this->client->getReferenceEntityRecordApi()->all($brandReferenceEntityCode),
+                $this->client,
+                $this->logger,
+                $this
+            );
         } catch (NotFoundHttpException $e) {
             return new \EmptyIterator();
         }
