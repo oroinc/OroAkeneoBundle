@@ -122,7 +122,7 @@ class ImportStrategyHelper extends BaseImportStrategyHelper
     public function addValidationErrors(array $validationErrors, ContextInterface $context, $errorPrefix = null)
     {
         if (AkeneoChannel::TYPE !== $context->getOption('channelType')) {
-            return parent::validateEntity($validationErrors, $context, $errorPrefix);
+            return parent::addValidationErrors($validationErrors, $context, $errorPrefix);
         }
 
         foreach ($validationErrors as $validationError) {
