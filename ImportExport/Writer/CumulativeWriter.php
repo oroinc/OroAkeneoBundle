@@ -39,6 +39,12 @@ class CumulativeWriter implements
     /** @var array */
     private $items = [];
 
+    private $forceListeners = [
+        'oro_entity.event_listener.entity_modify_created_updated_properties_listener',
+        'oro_redirect.event_listener.slug_change',
+        'oro_redirect.event_listener.slug_prototype_change',
+    ];
+
     public function __construct(
         ItemWriterInterface $writer,
         OptionalListenerManager $optionalListenerManager,
@@ -74,8 +80,9 @@ class CumulativeWriter implements
             $this->optionalListenerManager->disableListeners(
                 $this->optionalListenerManager->getListeners()
             );
-            $this->optionalListenerManager
-                ->enableListener('oro_entity.event_listener.entity_modify_created_updated_properties_listener');
+            foreach ($this->forceListeners as $forceListener) {
+                $this->optionalListenerManager->enableListener($forceListener);
+            }
 
             $this->writer->write($this->items);
         } finally {

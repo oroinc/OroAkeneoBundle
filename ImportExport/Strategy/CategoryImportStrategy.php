@@ -7,6 +7,7 @@ use Oro\Bundle\AttachmentBundle\Entity\File;
 use Oro\Bundle\AttachmentBundle\Entity\FileItem;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\CatalogBundle\Entity\Category;
+use Oro\Bundle\EntityConfigBundle\Generator\SlugGenerator;
 use Oro\Bundle\IntegrationBundle\Entity\Channel;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\ImportExport\Normalizer\LocalizationCodeFormatter;
@@ -19,6 +20,9 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
 {
     use ImportStrategyAwareHelperTrait;
     use OwnerTrait;
+
+    /** @var SlugGenerator */
+    private $slugGenerator;
 
     /**
      * @var Category[]
@@ -58,11 +62,29 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
         return $entity;
     }
 
+    /** @param Category $entity */
     protected function afterProcessEntity($entity)
     {
         $this->existingCategories = [];
 
+        if ($entity->getSlugPrototypes()->isEmpty()) {
+            foreach ($entity->getTitles() as $localizedTitle) {
+                $this->addSlug($entity, $localizedTitle);
+            }
+        }
+
+        if (!$entity->getDefaultSlugPrototype() && $entity->getDefaultTitle()) {
+            $this->addSlug($entity, $entity->getDefaultTitle());
+        }
+
         return $entity;
+    }
+
+    private function addSlug(Category $category, LocalizedFallbackValue $localizedName): void
+    {
+        $localizedSlug = clone $localizedName;
+        $localizedSlug->setString($this->slugGenerator->slugify($localizedSlug->getString()));
+        $category->addSlugPrototype($localizedSlug);
     }
 
     private function getRootCategory()
@@ -336,5 +358,10 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
     private function isFileItemValue(array $field): bool
     {
         return $this->fieldHelper->isRelation($field) && is_a($field['related_entity_name'], FileItem::class, true);
+    }
+
+    public function setSlugGenerator(SlugGenerator $slugGenerator): void
+    {
+        $this->slugGenerator = $slugGenerator;
     }
 }

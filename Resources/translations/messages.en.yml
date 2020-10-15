@@ -66,7 +66,7 @@ oro:
           label: 'Brand Reference Entity code'
         akeneo_brand_mapping:
           label: Brand Attributes Mapping
-          tooltip: 'Mapping of Reference Entity attributes to Brand attributes. A single value must be separated with a colon (label:names). Values must be separated with a semi-colon (label:names;label:slugs).'
+          tooltip: 'Mapping of Reference Entity attributes to Brand attributes. A single value must be separated with a colon (label:names). Values must be separated with a semi-colon (label:names;label:titles).'
       popup:
         channel: 'This is a list of channels configured for the current Akeneo PIM instance. Select the required channel for product and category import. To refresh the list, click Refresh Channels'
         currencies: 'The control configures mapping between the currencies enabled in the current Akeneo PIM instance and the currencies enabled in this application. To skip price import for a specific currency, do not add mapping to it. To refresh the list, click Refresh Currencies'

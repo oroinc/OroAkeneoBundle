@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\Collection;
 use Oro\Bundle\AttachmentBundle\Entity\File;
 use Oro\Bundle\AttachmentBundle\Entity\FileItem;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
+use Oro\Bundle\EntityConfigBundle\Generator\SlugGenerator;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\ImportExport\Normalizer\LocalizationCodeFormatter;
 use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStrategy;
@@ -15,6 +16,9 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
 {
     use ImportStrategyAwareHelperTrait;
     use OwnerTrait;
+
+    /** @var SlugGenerator */
+    private $slugGenerator;
 
     public function close()
     {
@@ -59,7 +63,24 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
             }
         }
 
+        if ($entity->getSlugPrototypes()->isEmpty()) {
+            foreach ($entity->getNames() as $localizedName) {
+                $this->addSlug($entity, $localizedName);
+            }
+        }
+
+        if (!$entity->getDefaultSlugPrototype() && $entity->getDefaultName()) {
+            $this->addSlug($entity, $entity->getDefaultName());
+        }
+
         return $entity;
+    }
+
+    private function addSlug(Brand $brand, LocalizedFallbackValue $localizedName): void
+    {
+        $localizedSlug = clone $localizedName;
+        $localizedSlug->setString($this->slugGenerator->slugify($localizedSlug->getString()));
+        $brand->addSlugPrototype($localizedSlug);
     }
 
     protected function findExistingEntity($entity, array $searchContext = [])
@@ -209,6 +230,21 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
     {
     }
 
+    protected function isFieldExcluded($entityName, $fieldName, $itemData = null)
+    {
+        $excludeBrandFields = [
+            'slugs',
+            'slugPrototypes',
+            'slugPrototypesWithRedirect',
+        ];
+
+        if (is_a($entityName, Brand::class, true) && in_array($fieldName, $excludeBrandFields)) {
+            return true;
+        }
+
+        return parent::isFieldExcluded($entityName, $fieldName, $itemData);
+    }
+
     protected function generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation)
     {
         $searchContext = parent::generateSearchContextForRelationsUpdate(
@@ -282,5 +318,10 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
     private function isFileItemValue(array $field): bool
     {
         return $this->fieldHelper->isRelation($field) && is_a($field['related_entity_name'], FileItem::class, true);
+    }
+
+    public function setSlugGenerator(SlugGenerator $slugGenerator): void
+    {
+        $this->slugGenerator = $slugGenerator;
     }
 }

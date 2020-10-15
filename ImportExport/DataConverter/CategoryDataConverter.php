@@ -5,7 +5,6 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\AkeneoBundle\Tools\Generator;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
-use Oro\Bundle\EntityConfigBundle\Generator\SlugGenerator;
 use Oro\Bundle\ImportExportBundle\Context\ContextAwareInterface;
 use Oro\Bundle\LocaleBundle\ImportExport\DataConverter\LocalizedFallbackValueAwareDataConverter;
 
@@ -13,11 +12,6 @@ class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter imp
 {
     use AkeneoIntegrationTrait;
     use LocalizationAwareTrait;
-
-    /**
-     * @var SlugGenerator
-     */
-    protected $slugGenerator;
 
     /** @var DoctrineHelper */
     protected $doctrineHelper;
@@ -27,18 +21,12 @@ class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter imp
         $this->doctrineHelper = $doctrineHelper;
     }
 
-    public function setSlugGenerator(SlugGenerator $slugGenerator)
-    {
-        $this->slugGenerator = $slugGenerator;
-    }
-
     /**
      * {@inheritdoc}
      */
     public function convertToImportFormat(array $importedRecord, $skipNullValues = true)
     {
         $this->setTitles($importedRecord);
-        $this->setSlugs($importedRecord);
         $this->setRootCategory($importedRecord);
 
         $importedRecord['channel:id'] = $this->getImportExportContext()->getOption('channel');
@@ -71,14 +59,6 @@ class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter imp
                 $value = $importedRecord['labels'][$akeneoLocale->getCode()] ?? null;
                 $importedRecord['titles'][$localization->getName()] = ['fallback' => null, 'string' => $value];
             }
-        }
-    }
-
-    private function setSlugs(array &$importedRecord)
-    {
-        $importedRecord['slugPrototypes'] = $importedRecord['titles'] ?? [];
-        foreach ($importedRecord['slugPrototypes'] as &$slugPrototype) {
-            $slugPrototype['string'] = $this->slugGenerator->slugify($slugPrototype['string']);
         }
     }
 

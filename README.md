@@ -163,4 +163,4 @@ Because of the differences between Akeneo and OroCommerce, you should take into 
 * OroCommerce does not support multiple categories, only the first category listed is used for product assignment.
 * OroCommerce does not support prices per currency, only the last price per currency listed is used for product assignment.
 * Categories tree rebuild starts after categories import.
-* Optional listeners are disabled by default. Please reindex data and recalculate prices and slugs manually.
+* Optional listeners are disabled by default. Please reindex data and recalculate prices manually.

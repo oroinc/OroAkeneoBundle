@@ -66,7 +66,6 @@ services:
     calls:
       - [setEntityName, ['Oro\Bundle\CatalogBundle\Entity\Category']]
       - [setTranslateUsingLocale, [false]]
-      - [setSlugGenerator, ["@oro_entity_config.slug.generator"]]
       - [setDoctrineHelper, ["@oro_entity.doctrine_helper"]]
 
   oro_akeneo.importexport.strategy.category:
@@ -75,6 +74,7 @@ services:
     calls:
       - [setImportStrategyHelper, ['@oro_akeneo.strategy.import.helper']]
       - [setOwnerHelper, ['@oro_akeneo.importexport.strategy.default_owner_helper']]
+      - [setSlugGenerator, ['@oro_entity_config.slug.generator']]
 
   oro_akeneo.importexport.processor.category:
     class: Oro\Bundle\AkeneoBundle\ImportExport\Processor\CategoryImportProcessor
@@ -218,7 +218,6 @@ services:
     parent: oro_product.importexport.data_converter.product
     calls:
       - [setTranslateUsingLocale, [false]]
-      - [setSlugGenerator, ["@oro_entity_config.slug.generator"]]
       - [setEntityConfigManager, ["@oro_entity_config.config_manager"]]
       - [setDateTimeFormatter, ["@oro_locale.formatter.date_time"]]
       - [setAttachmentsDir, ["%kernel.project_dir%/var/import_export/akeneo"]]
@@ -423,6 +422,7 @@ services:
     calls:
       - [setImportStrategyHelper, ['@oro_akeneo.strategy.import.helper']]
       - [setOwnerHelper, ['@oro_akeneo.importexport.strategy.default_owner_helper']]
+      - [setSlugGenerator, ['@oro_entity_config.slug.generator']]
 
   oro_akeneo.importexport.data_converter.brand:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\DataConverter\BrandDataConverter'
@@ -431,5 +431,4 @@ services:
       - '@oro_entity.helper.field_helper'
       - '@oro_entity_config.config_manager'
       - '@oro_config.manager'
-      - '@oro_entity_config.slug.generator'
       - '%kernel.project_dir%/var/import_export/akeneo'

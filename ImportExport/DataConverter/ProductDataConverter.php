@@ -9,7 +9,6 @@ use Oro\Bundle\AkeneoBundle\Tools\Generator;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
-use Oro\Bundle\EntityConfigBundle\Generator\SlugGenerator;
 use Oro\Bundle\EntityExtendBundle\Extend\RelationType;
 use Oro\Bundle\ImportExportBundle\Context\ContextAwareInterface;
 use Oro\Bundle\LocaleBundle\Entity\Localization;
@@ -29,9 +28,6 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 {
     use AkeneoIntegrationTrait;
     use LocalizationAwareTrait;
-
-    /** @var SlugGenerator */
-    protected $slugGenerator;
 
     /** @var ConfigManager */
     protected $entityConfigManager;
@@ -90,7 +86,6 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         $importedRecord = parent::convertToImportFormat($importedRecord, $skipNullValues);
 
         $this->setNames($importedRecord);
-        $this->setSlugs($importedRecord);
 
         return $importedRecord;
     }
@@ -487,17 +482,6 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         return $item['data'];
     }
 
-    /**
-     * Sets slugs generated from names.
-     */
-    private function setSlugs(array &$importedRecord)
-    {
-        $importedRecord['slugPrototypes'] = $importedRecord['names'] ?? [];
-        foreach ($importedRecord['slugPrototypes'] as &$slugPrototype) {
-            $slugPrototype['string'] = $this->slugGenerator->slugify($slugPrototype['string']);
-        }
-    }
-
     private function setBrand(array &$importedRecord)
     {
         if (!empty($importedRecord['brand'])) {
@@ -529,11 +513,6 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     public function setEntityConfigManager(ConfigManager $entityConfigManager): void
     {
         $this->entityConfigManager = $entityConfigManager;
-    }
-
-    public function setSlugGenerator(SlugGenerator $slugGenerator)
-    {
-        $this->slugGenerator = $slugGenerator;
     }
 
     public function setDateTimeFormatter(DateTimeFormatterInterface $dateTimeFormatter): void
