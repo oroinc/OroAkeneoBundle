@@ -29,6 +29,7 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
     use OwnerTrait;
 
     private const GROUP_CODE_GENERAL = 'general';
+    private const GROUP_CODE_IMAGES = 'images';
 
     /**
      * @var AttributeManager
@@ -168,37 +169,44 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
             ->find($id);
     }
 
-    private function setSystemAttributes(AttributeFamily $entity): void
+    protected function setSystemAttributes(AttributeFamily $entity): void
     {
         $defaultGroup = $this->getDefaultGroup($entity);
+        $imagesGroup = $this->getImagesGroup($entity);
+
         $systemAttributes = $this->attributeManager->getSystemAttributesByClass($entity->getEntityClass());
 
         foreach ($systemAttributes as $systemAttribute) {
-            if (false === $this->containsAttribute($entity, $systemAttribute)) {
+            $attributeGroupRelation = $this->getAttributeGroupRelation($entity, $systemAttribute);
+            if (!$attributeGroupRelation) {
                 $attributeGroupRelation = new AttributeGroupRelation();
                 $attributeGroupRelation->setEntityConfigFieldId($systemAttribute->getId());
-
                 $defaultGroup->addAttributeRelation($attributeGroupRelation);
+            }
+
+            if ($systemAttribute->getFieldName() === 'images') {
+                $defaultGroup->removeAttributeRelation($attributeGroupRelation);
+                $imagesGroup->addAttributeRelation($attributeGroupRelation);
             }
         }
 
-        $defaultGroup->setDefaultLabel(
-            $this->translator->trans('oro.entity_config.form.default_group_label')
-        );
         $entity->addAttributeGroup($defaultGroup);
+        $entity->addAttributeGroup($imagesGroup);
     }
 
-    private function containsAttribute(AttributeFamily $attributeFamily, FieldConfigModel $attribute): bool
-    {
+    protected function getAttributeGroupRelation(
+        AttributeFamily $attributeFamily,
+        FieldConfigModel $attribute
+    ): ?AttributeGroupRelation {
         foreach ($attributeFamily->getAttributeGroups() as $attributeGroup) {
             foreach ($attributeGroup->getAttributeRelations() as $relation) {
                 if ($relation->getEntityConfigFieldId() == $attribute->getId()) {
-                    return true;
+                    return $relation;
                 }
             }
         }
 
-        return false;
+        return null;
     }
 
     /**
@@ -347,7 +355,7 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
     /**
      * Gets existing default attribute group or creates new one.
      */
-    private function getDefaultGroup(AttributeFamily $entity): AttributeGroup
+    protected function getDefaultGroup(AttributeFamily $entity): AttributeGroup
     {
         $defaultGroup = $entity->getAttributeGroup(self::GROUP_CODE_GENERAL);
 
@@ -355,9 +363,29 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
             $defaultGroup = new AttributeGroup();
             $defaultGroup->setCode(self::GROUP_CODE_GENERAL);
             $defaultGroup->setAkeneoCode('default');
+            $defaultGroup->setDefaultLabel(
+                $this->translator->trans('oro.entity_config.form.default_group_label')
+            );
         }
 
         return $defaultGroup;
+    }
+
+    /**
+     * Gets existing images attribute group or creates new one.
+     */
+    protected function getImagesGroup(AttributeFamily $entity): AttributeGroup
+    {
+        $imagesGroup = $entity->getAttributeGroup(self::GROUP_CODE_IMAGES);
+
+        if (!$imagesGroup) {
+            $imagesGroup = new AttributeGroup();
+            $imagesGroup->setCode(self::GROUP_CODE_IMAGES);
+            $imagesGroup->setAkeneoCode(self::GROUP_CODE_IMAGES);
+            $imagesGroup->setDefaultLabel($this->translator->trans('oro.product.images.label'));
+        }
+
+        return $imagesGroup;
     }
 
     protected function mapCollections(Collection $importedCollection, Collection $sourceCollection)
