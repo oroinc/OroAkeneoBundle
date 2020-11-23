@@ -21,7 +21,7 @@
          $this->jobExtension = $jobExtension;
          $this->rootJob = $rootJob;
 +
-+        if (!self::$reservedMemory) {
++        if (PHP_SAPI === 'cli' && !self::$reservedMemory) {
 +            self::$reservedMemory = str_repeat('x', 32 * 1024 * 1024);
 +            register_shutdown_function([$this, 'handleFatalError']);
 +        }
