@@ -3,21 +3,36 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Reader;
 
 use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
+use Oro\Bundle\AkeneoBundle\Integration\AkeneoFileManager;
+use Oro\Bundle\AkeneoBundle\Tools\UUIDGenerator;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 
 class ProductImageReader extends IteratorBasedReader
 {
-    use AkeneoTransportTrait;
     use AkeneoIntegrationTrait;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $attributesImageFilter = [];
 
     /** @var DoctrineHelper */
     protected $doctrineHelper;
+
+    /** @var ContextInterface */
+    protected $context;
+
+    /** @var AkeneoFileManager */
+    private $akeneoFileManager;
+
+    public function setAkeneoFileManager(AkeneoFileManager $akeneoFileManager): void
+    {
+        $this->akeneoFileManager = $akeneoFileManager;
+    }
+
+    public function setImportExportContext(ContextInterface $context)
+    {
+        $this->context = $context;
+    }
 
     public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
     {
@@ -55,11 +70,21 @@ class ProductImageReader extends IteratorBasedReader
 
                         foreach ((array)$value['data'] as $path) {
                             $sku = $item['sku'];
-                            $images[$sku][$path] = ['SKU' => $sku, 'Name' => $path, 'uri' => $path];
+                            $images[$sku][$path] = [
+                                'SKU' => $sku,
+                                'Name' => $path,
+                                'uri' => $path,
+                                'uuid' => UUIDGenerator::generate($path),
+                            ];
 
                             if ($this->getTransport()->isAkeneoMergeImageToParent() && !empty($item['parent'])) {
                                 $sku = $item['parent'];
-                                $images[$sku][$path] = ['SKU' => $sku, 'Name' => $path, 'uri' => $path];
+                                $images[$sku][$path] = [
+                                    'SKU' => $sku,
+                                    'Name' => $path,
+                                    'uri' => $path,
+                                    'uuid' => UUIDGenerator::generate($path),
+                                ];
                             }
                         }
                     }
@@ -83,6 +108,8 @@ class ProductImageReader extends IteratorBasedReader
 
     protected function processImagesDownload(array $items, ContextInterface $context)
     {
+        $this->akeneoFileManager->initTransport($context);
+
         foreach ($items as $item) {
             foreach ($item['values'] as $code => $values) {
                 if (empty($this->attributesImageFilter) || in_array($code, $this->attributesImageFilter)) {
@@ -92,7 +119,7 @@ class ProductImageReader extends IteratorBasedReader
                         }
 
                         if (in_array($value['type'], ['pim_catalog_image'])) {
-                            $this->getAkeneoTransport($context)->downloadAndSaveMediaFile($value['data']);
+                            $this->akeneoFileManager->registerMediaFile($value['data']);
                         }
 
                         if (in_array($value['type'], ['pim_assets_collection'])) {
@@ -101,7 +128,7 @@ class ProductImageReader extends IteratorBasedReader
                             }
 
                             foreach ($value['data'] as $code => $file) {
-                                $this->getAkeneoTransport($context)->downloadAndSaveAsset($code, $file);
+                                $this->akeneoFileManager->registerAsset($code, $file);
                             }
                         }
                     }

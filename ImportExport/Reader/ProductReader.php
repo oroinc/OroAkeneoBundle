@@ -2,11 +2,18 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Reader;
 
+use Oro\Bundle\AkeneoBundle\Integration\AkeneoFileManager;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 
 class ProductReader extends IteratorBasedReader
 {
-    use AkeneoTransportTrait;
+    /** @var AkeneoFileManager */
+    private $akeneoFileManager;
+
+    public function setAkeneoFileManager(AkeneoFileManager $akeneoFileManager): void
+    {
+        $this->akeneoFileManager = $akeneoFileManager;
+    }
 
     protected function initializeFromContext(ContextInterface $context)
     {
@@ -28,6 +35,8 @@ class ProductReader extends IteratorBasedReader
 
     protected function processFileTypeDownload(array $items, ContextInterface $context)
     {
+        $this->akeneoFileManager->initTransport($context);
+
         foreach ($items as $item) {
             foreach ($item['values'] as $values) {
                 foreach ($values as $value) {
@@ -36,7 +45,7 @@ class ProductReader extends IteratorBasedReader
                     }
 
                     if (in_array($value['type'], ['pim_catalog_image', 'pim_catalog_file'])) {
-                        $this->getAkeneoTransport($context)->downloadAndSaveMediaFile($value['data']);
+                        $this->akeneoFileManager->registerMediaFile($value['data']);
                     }
 
                     if (in_array($value['type'], ['pim_assets_collection'])) {
@@ -45,7 +54,7 @@ class ProductReader extends IteratorBasedReader
                         }
 
                         foreach ($value['data'] as $code => $file) {
-                            $this->getAkeneoTransport($context)->downloadAndSaveAsset($code, $file);
+                            $this->akeneoFileManager->registerAsset($code, $file);
                         }
                     }
                 }

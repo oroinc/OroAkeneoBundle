@@ -12,10 +12,10 @@ class EntityFieldNormalizer extends BaseEntityFieldNormalizer
      */
     public function supportsDenormalization($data, $type, $format = null, array $context = [])
     {
-        return is_array($data) &&
-            is_a($type, 'Oro\Bundle\EntityConfigBundle\Entity\FieldConfigModel', true) &&
-            true === isset($context['channelType']) &&
-            AkeneoChannel::TYPE === $context['channelType'];
+        return is_array($data)
+            && is_a($type, 'Oro\Bundle\EntityConfigBundle\Entity\FieldConfigModel', true)
+            && true === isset($context['channelType'])
+            && AkeneoChannel::TYPE === $context['channelType'];
     }
 
     /**

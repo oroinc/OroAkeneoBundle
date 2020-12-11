@@ -10,8 +10,8 @@ use Oro\Bundle\PricingBundle\ImportExport\Strategy\ProductPriceImportStrategy as
  */
 class ProductPriceImportStrategy extends BaseStrategy
 {
-    use ImportStrategyAwareHelperTrait;
     use AkeneoIntegrationTrait;
+    use ImportStrategyAwareHelperTrait;
 
     /**
      * {@inheritdoc}
@@ -19,8 +19,8 @@ class ProductPriceImportStrategy extends BaseStrategy
     protected function beforeProcessEntity($entity)
     {
         if (
-            $entity->getPrice() &&
-            !in_array($entity->getPrice()->getCurrency(), $this->getTransport()->getAkeneoActiveCurrencies())
+            $entity->getPrice()
+            && !in_array($entity->getPrice()->getCurrency(), $this->getTransport()->getAkeneoActiveCurrencies())
         ) {
             return null;
         }

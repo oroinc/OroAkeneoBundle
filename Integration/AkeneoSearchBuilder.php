@@ -57,8 +57,8 @@ class AkeneoSearchBuilder
 
     private function isValidOption(array $option): bool
     {
-        return is_array($option) &&
-            count(array_intersect_key(array_flip($this->requiredOptionKeys), $option)) === count(
+        return is_array($option)
+            && count(array_intersect_key(array_flip($this->requiredOptionKeys), $option)) === count(
                 $this->requiredOptionKeys
             );
     }

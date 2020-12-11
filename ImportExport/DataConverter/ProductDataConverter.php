@@ -6,6 +6,7 @@ use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeFamilyCodeGenerator;
 use Oro\Bundle\AkeneoBundle\Tools\Generator;
+use Oro\Bundle\AkeneoBundle\Tools\UUIDGenerator;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
@@ -218,8 +219,8 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         $importExportProvider = $this->entityConfigManager->getProvider('importexport');
         $importExportConfig = $importExportProvider->getConfig(Product::class, $field['name']);
 
-        $isLocalizable = in_array($field['type'], [RelationType::MANY_TO_MANY, RelationType::TO_MANY]) &&
-            LocalizedFallbackValue::class === $field['related_entity_name'];
+        $isLocalizable = in_array($field['type'], [RelationType::MANY_TO_MANY, RelationType::TO_MANY])
+            && LocalizedFallbackValue::class === $field['related_entity_name'];
 
         if ($isLocalizable) {
             $importedRecord[$field['name']] = $this->processRelationType(
@@ -434,7 +435,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     {
         $item = array_shift($value);
 
-        return ['uri' => $this->getAttachmentPath($item['data'])];
+        return ['uri' => $this->getAttachmentPath($item['data']), 'uuid' => UUIDGenerator::generate($item['data'])];
     }
 
     private function processFileTypes(array $value): array
@@ -443,7 +444,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
         $paths = [];
         foreach ($items['data'] as $item) {
-            $paths[] = ['uri' => $this->getAttachmentPath($item)];
+            $paths[] = ['uri' => $this->getAttachmentPath($item), 'uuid' => UUIDGenerator::generate($item)];
         }
 
         return $paths;

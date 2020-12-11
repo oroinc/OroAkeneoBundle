@@ -15,14 +15,9 @@ trait AkeneoIntegrationTrait
     /** @var AkeneoSettings */
     protected $transport;
 
-    /** @var ContextInterface */
-    protected $context;
-
-    public function setImportExportContext(ContextInterface $context)
-    {
-        $this->context = $context;
-    }
-
+    /**
+     * @deprecated
+     */
     public function getImportExportContext(): ContextInterface
     {
         return $this->context;

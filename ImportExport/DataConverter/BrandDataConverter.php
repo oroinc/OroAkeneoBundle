@@ -5,12 +5,14 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\AkeneoBundle\Tools\Generator;
+use Oro\Bundle\AkeneoBundle\Tools\UUIDGenerator;
 use Oro\Bundle\ConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityBundle\Helper\FieldHelper;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager as EntityConfigManager;
 use Oro\Bundle\EntityExtendBundle\Extend\RelationType;
 use Oro\Bundle\ImportExportBundle\Context\ContextAwareInterface;
+use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 use Oro\Bundle\ImportExportBundle\Converter\DataConverterInterface;
 use Oro\Bundle\LocaleBundle\Entity\Localization;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
@@ -37,6 +39,14 @@ class BrandDataConverter implements DataConverterInterface, ContextAwareInterfac
 
     /** @var string */
     private $attachmentsDir;
+
+    /** @var ContextInterface */
+    protected $context;
+
+    public function setImportExportContext(ContextInterface $context)
+    {
+        $this->context = $context;
+    }
 
     public function __construct(
         DoctrineHelper $doctrineHelper,
@@ -85,7 +95,7 @@ class BrandDataConverter implements DataConverterInterface, ContextAwareInterfac
 
         $this->setNames($record, $importedRecord);
 
-        $record['channel'] = ['id' => $this->getImportExportContext()->getOption('channel')];
+        $record['channel'] = ['id' => $this->context->getOption('channel')];
         $record['akeneo_code'] = $importedRecord['code'];
 
         return $record;
@@ -106,8 +116,8 @@ class BrandDataConverter implements DataConverterInterface, ContextAwareInterfac
         $importExportProvider = $this->entityConfigManager->getProvider('importexport');
         $importExportConfig = $importExportProvider->getConfig(Brand::class, $field['name']);
 
-        $isLocalizable = in_array($field['type'], [RelationType::MANY_TO_MANY, RelationType::TO_MANY]) &&
-            LocalizedFallbackValue::class === $field['related_entity_name'];
+        $isLocalizable = in_array($field['type'], [RelationType::MANY_TO_MANY, RelationType::TO_MANY])
+            && LocalizedFallbackValue::class === $field['related_entity_name'];
 
         if ($isLocalizable) {
             $importedRecord[$field['name']] = $this->processRelationType(
@@ -224,7 +234,7 @@ class BrandDataConverter implements DataConverterInterface, ContextAwareInterfac
     {
         $item = array_shift($value);
 
-        return ['uri' => $this->getAttachmentPath($item['data'])];
+        return ['uri' => $this->getAttachmentPath($item['data']), 'uuid' => UUIDGenerator::generate($item['data'])];
     }
 
     private function processFileTypes(array $value): array
@@ -233,7 +243,7 @@ class BrandDataConverter implements DataConverterInterface, ContextAwareInterfac
 
         $paths = [];
         foreach ($items['data'] as $item) {
-            $paths[] = ['uri' => $this->getAttachmentPath($item)];
+            $paths[] = ['uri' => $this->getAttachmentPath($item), 'uuid' => UUIDGenerator::generate($item)];
         }
 
         return $paths;

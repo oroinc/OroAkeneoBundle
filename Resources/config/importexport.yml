@@ -338,7 +338,7 @@ services:
     arguments:
       - "@oro_importexport.context_registry"
     calls:
-      - [setContextMediator, ["@oro_integration.provider.connector_context_mediator"]]
+      - [setAkeneoFileManager, ["@oro_akeneo.integration.akeneo_file_manager"]]
 
   oro_akeneo.importexport.reader.price:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Reader\ProductPriceReader'
@@ -351,7 +351,7 @@ services:
       - "@oro_importexport.context_registry"
     calls:
       - [setDoctrineHelper, ["@oro_entity.doctrine_helper"]]
-      - [setContextMediator, ["@oro_integration.provider.connector_context_mediator"]]
+      - [setAkeneoFileManager, ["@oro_akeneo.integration.akeneo_file_manager"]]
 
   oro_akeneo.importexport.reader.product_variant:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Reader\ProductVariantReader'
@@ -395,16 +395,6 @@ services:
       - '@oro_entity.doctrine_helper'
     tags:
       - { name: kernel.event_listener, event: oro_datagrid.datagrid.build.before.attributes-grid, method: onBuildBefore }
-      - { name: kernel.event_listener, event: oro_datagrid.orm_datasource.result.after.attributes-grid, method: onResultAfter }
-
-  oro_akeneo.event_listener.attributes_grid_listener:
-    class: 'Oro\Bundle\AkeneoBundle\EventListener\AttributesGridListener'
-    decorates: oro_entity_config_pro.listener.attributes_grid_listener
-    arguments:
-      - '@oro_security.token_accessor'
-      - '@oro_entity.doctrine_helper'
-    tags:
-      - { name: kernel.event_listener, event: oro_datagrid.datagrid.build.after.attributes-grid, method: onBuildAfter, priority: -255 }
       - { name: kernel.event_listener, event: oro_datagrid.orm_datasource.result.after.attributes-grid, method: onResultAfter }
 
   oro_akeneo.importexport.processor.brand:

@@ -40,7 +40,7 @@ class AttributeDataConverter extends EntityFieldDataConverter
 
         $importedRecord['type'] = $type;
         $importedRecord['fieldName'] = FieldConfigModelFieldNameGenerator::generate($importedRecord['code']);
-        $importedRecord['entity:id'] = (int)$this->getImportExportContext()->getValue('entity_id');
+        $importedRecord['entity:id'] = (int)$this->context->getValue('entity_id');
         $this->setLabels($importedRecord);
         $this->setEnumOptions($importedRecord);
 

@@ -414,4 +414,17 @@ class ProductImportStrategy extends ProductStrategy
     {
         return $this->fieldHelper->isRelation($field) && is_a($field['related_entity_name'], FileItem::class, true);
     }
+
+    protected function validateBeforeProcess($entity)
+    {
+        $validationErrors = $this->strategyHelper->validateEntity($entity, null, ['import_field_type_akeneo']);
+        if ($validationErrors) {
+            $this->context->incrementErrorEntriesCount();
+            $this->strategyHelper->addValidationErrors($validationErrors, $this->context);
+
+            return null;
+        }
+
+        return $entity;
+    }
 }

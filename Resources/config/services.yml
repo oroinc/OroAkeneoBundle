@@ -193,3 +193,146 @@ services:
       - '@oro_akeneo.provider.variant_field_provider.inner'
       - '@oro_entity_config.manager.attribute_manager'
       - '@oro_entity_config.provider.serialized_field_provider'
+
+  oro_akeneo.integration.akeneo_file_manager:
+    class: 'Oro\Bundle\AkeneoBundle\Integration\AkeneoFileManager'
+    arguments:
+      - '@oro_integration.provider.connector_context_mediator'
+
+  oro_akeneo.file_manager:
+    class: 'Oro\Bundle\AkeneoBundle\Manager\FileManager'
+    parent: oro_attachment.file_manager
+    decorates: oro_attachment.file_manager
+    calls:
+      - [setAkeneoFileManager, ["@oro_akeneo.integration.akeneo_file_manager"]]
+
+  oro_akeneo.event_listener.refresh_context_listener:
+    class: 'Oro\Bundle\AkeneoBundle\EventListener\RefreshContextListener'
+    parent: oro_security.listener.refresh_context_listener
+    decorates: oro_security.listener.refresh_context_listener
+    tags:
+      - { name: doctrine.event_listener, event: preClose }
+      - { name: doctrine.event_listener, event: onClear }
+
+  oro_akeneo.validator.type_validation_loader:
+    parent: oro_importexport.validator.type_validation_loader
+    calls:
+      -
+        - addConstraints
+        -
+          - integer
+          -
+            - Regex:
+                pattern: '/^[+-]?\d+$/'
+                message: "This value should contain only valid integer."
+                groups: ['import_field_type_akeneo']
+      -
+        - addConstraints
+        -
+          - smallint
+          -
+            - Regex:
+                pattern: '/^[+-]?\d+$/'
+                message: "This value should contain only valid integer."
+                groups: ['import_field_type_akeneo']
+      -
+        - addConstraints
+        -
+          - bigint
+          -
+            - Regex:
+                pattern: '/^[+-]?\d+$/'
+                message: "This value should contain only valid integer."
+                groups: ['import_field_type_akeneo']
+      -
+        - addConstraints
+        -
+          - float
+          -
+            - Regex:
+                pattern: '/^[+-]?((\d+\.?\d*)|(\.\d+))*$/'
+                message: "This value should contain only valid float."
+                groups: ['import_field_type_akeneo']
+      -
+        - addConstraints
+        -
+          - decimal
+          -
+            - Regex:
+                pattern: '/^[+-]?((\d+\.?\d*)|(\.\d+))*$/'
+                message: "This value should contain only valid decimal."
+                groups: ['import_field_type_akeneo']
+      -
+        - addConstraints
+        -
+          - money
+          -
+            - Regex:
+                pattern: '/^[+-]?((\d+\.?\d*)|(\.\d+))*$/'
+                message: "This value should contain only valid decimal."
+                groups: ['import_field_type_akeneo']
+      -
+        - addConstraints
+        -
+          - percent
+          -
+            - Regex:
+                pattern: '/^[+-]?((\d+\.?\d*)|(\.\d+))*$/'
+                message: "This value should contain only valid float."
+                groups: ['import_field_type_akeneo']
+      -
+        - addConstraints
+        -
+          - manyToOne
+          -
+            - Valid:
+                groups: ['import_field_type_akeneo']
+      -
+        - addConstraints
+        -
+          - manyToMany
+          -
+            - Valid:
+                groups: ['import_field_type_akeneo']
+      -
+        - addConstraints
+        -
+          - 'ref-many'
+          -
+            - Valid:
+                groups: ['import_field_type_akeneo']
+      -
+        - addConstraints
+        -
+          - oneToMany
+          -
+            - Valid:
+                groups: ['import_field_type_akeneo']
+      -
+        - addConstraints
+        -
+          - file
+          -
+            - Valid:
+                groups: ['import_field_type_akeneo']
+      -
+        - addConstraints
+        -
+          - image
+          -
+            - Valid:
+                groups: ['import_field_type_akeneo']
+      -
+        - addConstraints
+        -
+          - multiFile
+          -
+            - Valid:
+                groups: ['import_field_type_akeneo']
+      -
+        - addConstraints
+        -
+          - multiImage
+          -
+            - Valid:
+                groups: ['import_field_type_akeneo']

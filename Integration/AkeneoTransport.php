@@ -13,8 +13,8 @@ use Oro\Bundle\AkeneoBundle\Integration\Iterator\AttributeIterator;
 use Oro\Bundle\AkeneoBundle\Integration\Iterator\BrandIterator;
 use Oro\Bundle\AkeneoBundle\Integration\Iterator\ProductIterator;
 use Oro\Bundle\AkeneoBundle\Settings\DataProvider\SyncProductsDataProvider;
+use Oro\Bundle\CurrencyBundle\Provider\CurrencyProviderInterface;
 use Oro\Bundle\IntegrationBundle\Entity\Transport;
-use Oro\Bundle\MultiCurrencyBundle\Config\MultiCurrencyConfigProvider;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Intl\Intl;
@@ -41,7 +41,7 @@ class AkeneoTransport implements AkeneoTransportInterface
     /** @var AkeneoPimExtendableClientInterface */
     private $client;
 
-    /** @var MultiCurrencyConfigProvider */
+    /** @var CurrencyProviderInterface */
     private $configProvider;
 
     /** @var AkeneoSettings */
@@ -55,7 +55,7 @@ class AkeneoTransport implements AkeneoTransportInterface
 
     public function __construct(
         AkeneoClientFactory $clientFactory,
-        MultiCurrencyConfigProvider $configProvider,
+        CurrencyProviderInterface $configProvider,
         AkeneoSearchBuilder $akeneoSearchBuilder,
         FilesystemMap $filesystemMap,
         LoggerInterface $logger
@@ -114,7 +114,7 @@ class AkeneoTransport implements AkeneoTransportInterface
         return $currencies;
     }
 
-    public function setConfigProvider(MultiCurrencyConfigProvider $configProvider)
+    public function setConfigProvider(CurrencyProviderInterface $configProvider)
     {
         $this->configProvider = $configProvider;
     }

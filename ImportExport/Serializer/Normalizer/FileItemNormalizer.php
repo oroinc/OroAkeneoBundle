@@ -18,9 +18,9 @@ class FileItemNormalizer implements DenormalizerInterface
 
     public function supportsDenormalization($data, $type, $format = null, array $context = [])
     {
-        return is_a($type, FileItem::class, true) &&
-            isset($context['channelType']) &&
-            AkeneoChannel::TYPE === $context['channelType'];
+        return is_a($type, FileItem::class, true)
+            && isset($context['channelType'])
+            && AkeneoChannel::TYPE === $context['channelType'];
     }
 
     public function denormalize($data, $type, $format = null, array $context = [])

@@ -9,6 +9,7 @@ use Oro\Bundle\IntegrationBundle\Entity\Channel as Integration;
 use Oro\Bundle\IntegrationBundle\Provider\LoggerStrategyAwareInterface;
 use Oro\Bundle\IntegrationBundle\Provider\SyncProcessorRegistry;
 use Oro\Bundle\MessageQueueBundle\Entity\Job;
+use Oro\Bundle\SecurityBundle\Authentication\Token\UsernamePasswordOrganizationToken;
 use Oro\Component\MessageQueue\Client\TopicSubscriberInterface;
 use Oro\Component\MessageQueue\Consumption\MessageProcessorInterface;
 use Oro\Component\MessageQueue\Job\JobRunner;
@@ -28,10 +29,9 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
  */
 class SyncIntegrationProcessor implements MessageProcessorInterface, ContainerAwareInterface, TopicSubscriberInterface
 {
-    use LoggerAwareTrait;
-
     use ContainerAwareTrait;
     use IntegrationTokenAwareTrait;
+    use LoggerAwareTrait;
 
     /** @var RegistryInterface */
     private $doctrine;
@@ -106,7 +106,7 @@ class SyncIntegrationProcessor implements MessageProcessorInterface, ContainerAw
 
         $em->getConnection()->getConfiguration()->setSQLLogger(null);
 
-        $this->setTemporaryIntegrationToken($integration);
+        $this->setTemporaryUserIntegrationToken($integration);
         $integration->getTransport()->getSettingsBag()->set('page_size', $body['transport_batch_size']);
 
         $result = $this->jobRunner->runUnique(
@@ -128,6 +128,20 @@ class SyncIntegrationProcessor implements MessageProcessorInterface, ContainerAw
             }
         );
 
+        $this->setTemporaryIntegrationToken($integration);
+
         return $result ? self::ACK : self::REJECT;
+    }
+
+    private function setTemporaryUserIntegrationToken(Integration $integration)
+    {
+        $token = new UsernamePasswordOrganizationToken(
+            $integration->getDefaultUserOwner(),
+            $integration->getDefaultUserOwner()->getUsername(),
+            'main',
+            $integration->getOrganization()
+        );
+        $token->setAttribute('owner_description', 'Integration: ' . $integration->getName());
+        $this->tokenStorage->setToken($token);
     }
 }

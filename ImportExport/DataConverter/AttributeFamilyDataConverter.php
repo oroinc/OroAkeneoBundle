@@ -9,6 +9,7 @@ use Oro\Bundle\AkeneoBundle\Tools\Generator;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager as EntityConfigManager;
 use Oro\Bundle\ImportExportBundle\Context\ContextAwareInterface;
+use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 use Oro\Bundle\LocaleBundle\ImportExport\DataConverter\LocalizedFallbackValueAwareDataConverter;
 use Oro\Bundle\ProductBundle\Entity\Product;
 
@@ -28,6 +29,14 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
     /** @var DoctrineHelper */
     protected $doctrineHelper;
 
+    /** @var ContextInterface */
+    protected $context;
+
+    public function setImportExportContext(ContextInterface $context)
+    {
+        $this->context = $context;
+    }
+
     public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
     {
         $this->doctrineHelper = $doctrineHelper;
@@ -46,7 +55,7 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
         $importedRecord['code'] = AttributeFamilyCodeGenerator::generate($importedRecord['code']);
         $importedRecord['entityClass'] = Product::class;
         $importedRecord['isEnabled'] = true;
-        $importedRecord['channel:id'] = $this->getImportExportContext()->getOption('channel');
+        $importedRecord['channel:id'] = $this->context->getOption('channel');
 
         $this->setLabels($importedRecord);
 

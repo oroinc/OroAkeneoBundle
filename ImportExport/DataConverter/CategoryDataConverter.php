@@ -6,6 +6,7 @@ use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\AkeneoBundle\Tools\Generator;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\ImportExportBundle\Context\ContextAwareInterface;
+use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 use Oro\Bundle\LocaleBundle\ImportExport\DataConverter\LocalizedFallbackValueAwareDataConverter;
 
 class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter implements ContextAwareInterface
@@ -15,6 +16,14 @@ class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter imp
 
     /** @var DoctrineHelper */
     protected $doctrineHelper;
+
+    /** @var ContextInterface */
+    protected $context;
+
+    public function setImportExportContext(ContextInterface $context)
+    {
+        $this->context = $context;
+    }
 
     public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
     {
@@ -29,7 +38,7 @@ class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter imp
         $this->setTitles($importedRecord);
         $this->setRootCategory($importedRecord);
 
-        $importedRecord['channel:id'] = $this->getImportExportContext()->getOption('channel');
+        $importedRecord['channel:id'] = $this->context->getOption('channel');
 
         return parent::convertToImportFormat($importedRecord, $skipNullValues);
     }
@@ -68,7 +77,7 @@ class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter imp
     private function setRootCategory(array &$importedRecord)
     {
         if ($importedRecord['parent']) {
-            $importedRecord['parentCategory:channel:id'] = $this->getImportExportContext()->getOption('channel');
+            $importedRecord['parentCategory:channel:id'] = $this->context->getOption('channel');
             $importedRecord['parentCategory:akeneo_code'] = $importedRecord['parent'];
 
             return;

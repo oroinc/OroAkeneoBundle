@@ -92,10 +92,10 @@ class AkeneoClientFactory
         $this->initProperties($akeneoSettings);
 
         if (
-            $tokensEnabled &&
-            $akeneoSettings->getToken() &&
-            $akeneoSettings->getTokenExpiryDateTime() &&
-            $akeneoSettings->getTokenExpiryDateTime() > new \DateTime('now', new \DateTimeZone('UTC'))
+            $tokensEnabled
+            && $akeneoSettings->getToken()
+            && $akeneoSettings->getTokenExpiryDateTime()
+            && $akeneoSettings->getTokenExpiryDateTime() > new \DateTime('now', new \DateTimeZone('UTC'))
         ) {
             $this->createClientByToken();
         } else {

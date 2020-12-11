@@ -14,4 +14,9 @@ Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings:
     akeneoActiveChannel:
       - NotBlank: ~
 
-
+Oro\Bundle\AttachmentBundle\Entity\File:
+  properties:
+    uuid:
+      - Uuid:
+          strict: false
+          groups: ['import_field_type_akeneo']
