@@ -12,6 +12,7 @@ use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityExtendBundle\Extend\RelationType;
 use Oro\Bundle\ImportExportBundle\Context\ContextAwareInterface;
+use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 use Oro\Bundle\LocaleBundle\Entity\Localization;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\Formatter\DateTimeFormatterInterface;
@@ -55,6 +56,14 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
     /** @var ProductVariantFieldValueHandlerRegistry */
     private $productVariantFieldValueHandlerRegistry;
+
+    /** @var ContextInterface */
+    protected $context;
+
+    public function setImportExportContext(ContextInterface $context): void
+    {
+        $this->context = $context;
+    }
 
     public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
     {
