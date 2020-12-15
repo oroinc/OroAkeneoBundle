@@ -19,6 +19,7 @@ use Oro\Bundle\ProductBundle\Entity\Product;
 use Oro\Bundle\ProductBundle\ImportExport\DataConverter\ProductDataConverter as BaseProductDataConverter;
 use Oro\Bundle\ProductBundle\ProductVariant\Registry\ProductVariantFieldValueHandlerRegistry;
 use Oro\Bundle\ProductBundle\Provider\ProductUnitsProvider;
+use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 
 /**
  * Converts data for imported row.
@@ -56,6 +57,17 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     /** @var ProductVariantFieldValueHandlerRegistry */
     private $productVariantFieldValueHandlerRegistry;
 
+    /** @var ContextInterface */
+    protected $context;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setImportExportContext(ContextInterface $context)
+    {
+        $this->context = $context;
+    }
+    
     public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
     {
         $this->doctrineHelper = $doctrineHelper;
