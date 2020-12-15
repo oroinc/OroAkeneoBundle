@@ -55,6 +55,17 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
     /** @var ProductVariantFieldValueHandlerRegistry */
     private $productVariantFieldValueHandlerRegistry;
+    
+    /** @var ContextInterface */
+    protected $context;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setImportExportContext(ContextInterface $context)
+    {
+        $this->context = $context;
+    }
 
     public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
     {
