@@ -39,6 +39,11 @@ services:
     tags:
       - { name: form.type_extension, extended_type: Oro\Bundle\IntegrationBundle\Form\Type\ChannelType }
 
+  oro_akeneo.form.extension.attachment_acl_extension:
+    class: 'Oro\Bundle\AkeneoBundle\Form\Extension\AttachmentAclExtension'
+    tags:
+      - { name: form.type_extension, alias: oro_entity_config_type, extended_type: Oro\Bundle\EntityConfigBundle\Form\Type\ConfigType }
+
   oro_akeneo.form.extension.product_type:
     class: Oro\Bundle\AkeneoBundle\Form\Extension\ProductTypeExtension
     arguments:
