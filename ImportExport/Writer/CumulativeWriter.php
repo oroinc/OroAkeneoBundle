@@ -43,6 +43,8 @@ class CumulativeWriter implements
         'oro_entity.event_listener.entity_modify_created_updated_properties_listener',
         'oro_redirect.event_listener.slug_change',
         'oro_redirect.event_listener.slug_prototype_change',
+        'oro_website.indexation_request_listener',
+        'oro_website_search.reindex_request.listener',
     ];
 
     public function __construct(
