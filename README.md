@@ -35,6 +35,26 @@ With this extension, you will be able to sync the following data from Akeneo to 
 
 ```
 
+## OroCloud
+
+How to run Schema Update from CLI:
+
+```
+orocloud-cli maintenance:on
+orocloud-cli service:stop
+
+# \Oro\Bundle\EntityExtendBundle\Extend\EntityProcessor copy
+orocloud-cli app:console 'oro:entity-extend:update-config --update-custom'
+orocloud-cli app:console 'oro:entity-extend:cache:warmup'
+orocloud-cli app:console 'oro:entity-extend:update-schema'
+orocloud-cli app:console 'oro:entity-config:cache:warmup'
+
+# sync caches to all nodes
+orocloud-cli cache:rebuild --force-cleanup-existing-cache
+orocloud-cli service:start
+orocloud-cli maintenance:off
+```
+
 ## Dataset
 
 Connector supports and tested on the next dataset:
