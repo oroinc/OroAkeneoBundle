@@ -133,7 +133,7 @@ class ImportStrategyHelper extends BaseImportStrategyHelper
                         '%error%' => $validationError,
                         '%item%' => json_encode(
                             $context->getValue('rawItemData'),
-                            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+                            \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
                         ),
                     ]
                 )

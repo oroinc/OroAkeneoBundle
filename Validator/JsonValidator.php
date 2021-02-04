@@ -26,6 +26,6 @@ class JsonValidator extends ConstraintValidator
      */
     private function isJSON($string)
     {
-        return is_string($string) && is_array(json_decode($string, true)) && JSON_ERROR_NONE == json_last_error();
+        return is_string($string) && is_array(json_decode($string, true)) && \JSON_ERROR_NONE == json_last_error();
     }
 }

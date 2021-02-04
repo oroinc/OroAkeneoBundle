@@ -26,7 +26,7 @@ class AttributeCodeValidator extends ConstraintValidator
      */
     private function isAkeneoConform($value)
     {
-        preg_match_all('/([^a-zA-Z0-9_;])/m', $value, $matches, PREG_SET_ORDER, 0);
+        preg_match_all('/([^a-zA-Z0-9_;])/m', $value, $matches, \PREG_SET_ORDER, 0);
 
         return count($matches) == 0;
     }

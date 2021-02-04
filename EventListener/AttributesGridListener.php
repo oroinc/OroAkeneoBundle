@@ -64,7 +64,7 @@ class AttributesGridListener
                     static function (string $familyName, int $familyId) use ($organization, $ownerIds) {
                         return ($ownerIds[$familyId] ?? null) === $organization->getId();
                     },
-                    ARRAY_FILTER_USE_BOTH
+                    \ARRAY_FILTER_USE_BOTH
                 );
                 $record->setValue('attributeFamilies', $attributeFamilies);
             }

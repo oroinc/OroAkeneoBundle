@@ -52,7 +52,7 @@ class AkeneoSearchBuilder
      */
     public function isJSON($string): bool
     {
-        return is_string($string) && is_array(json_decode($string, true)) && (JSON_ERROR_NONE == json_last_error());
+        return is_string($string) && is_array(json_decode($string, true)) && (\JSON_ERROR_NONE == json_last_error());
     }
 
     private function isValidOption(array $option): bool

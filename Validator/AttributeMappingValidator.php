@@ -18,7 +18,7 @@ class AttributeMappingValidator extends ConstraintValidator
 
     private function isValid($value)
     {
-        preg_match_all('/([a-z0-9_]+[:;]?)+/i', $value, $matches, PREG_SET_ORDER, 0);
+        preg_match_all('/([a-z0-9_]+[:;]?)+/i', $value, $matches, \PREG_SET_ORDER, 0);
 
         return count($matches) == 1;
     }
