@@ -253,7 +253,6 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
                 break;
             case 'image':
                 $importedRecord[$field['name']] = $this->processFileType($value);
-                $importedRecord['Akeneo_alte_311273767'] = [$this->processFileType($value)];
                 break;
             case 'multiFile':
                 $importedRecord[$field['name']] = $this->processFileTypes($value);
