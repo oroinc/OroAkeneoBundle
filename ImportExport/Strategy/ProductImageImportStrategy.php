@@ -32,12 +32,32 @@ class ProductImageImportStrategy extends ConfigurableAddOrReplaceStrategy
             return null;
         }
 
-        return $entity;
+        $itemData = (array)($this->context->getValue('itemData') ?? []);
+        /** @var ProductImage $image */
+        foreach ($existingProduct->getImages() as $image) {
+            if (!$image->getImage()) {
+                continue;
+            }
+
+            if ($image->getImage()->getOriginalFilename() === $entity->getImage()->getOriginalFilename()) {
+                $itemData['image']['uuid'] = $image->getImage()->getUuid();
+
+                $entity = $image;
+            }
+        }
+        $this->context->setValue('itemData', $itemData);
+
+        return parent::beforeProcessEntity($entity);
     }
 
     protected function afterProcessEntity($entity)
     {
-        return $entity;
+        $result = parent::afterProcessEntity($entity);
+        if (!$result && $entity) {
+            $this->processValidationErrors($entity, []);
+        }
+
+        return $result;
     }
 
     protected function updateContextCounters($entity)

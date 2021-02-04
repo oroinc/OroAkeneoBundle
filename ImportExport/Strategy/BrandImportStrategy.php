@@ -3,8 +3,6 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 
 use Doctrine\Common\Collections\Collection;
-use Oro\Bundle\AttachmentBundle\Entity\File;
-use Oro\Bundle\AttachmentBundle\Entity\FileItem;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\EntityConfigBundle\Generator\SlugGenerator;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
@@ -34,35 +32,11 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
     {
         $this->setOwner($entity);
 
-        $fields = $this->fieldHelper->getRelations(Brand::class);
-        foreach ($fields as $field) {
-            if ($this->isFileItemValue($field)) {
-                /** @var Collection $collection */
-                $collection = $this->fieldHelper->getObjectValue($entity, $field['name']);
-                foreach ($collection as $fileItem) {
-                    if ($fileItem instanceof FileItem && !$fileItem->getFile()) {
-                        $collection->removeElement($fileItem);
-                    }
-                }
-            }
-        }
-
         return $entity;
     }
 
     protected function afterProcessEntity($entity)
     {
-        $fields = $this->fieldHelper->getRelations(Brand::class);
-        foreach ($fields as $field) {
-            if ($this->isFileItemValue($field)) {
-                /** @var Collection $collection */
-                $collection = $this->fieldHelper->getObjectValue($entity, $field['name']);
-                foreach ($collection as $fileItem) {
-                    $this->fieldHelper->setObjectValue($fileItem, sprintf('product_%s', $field['name']), $entity);
-                }
-            }
-        }
-
         if ($entity->getSlugPrototypes()->isEmpty()) {
             foreach ($entity->getNames() as $localizedName) {
                 $this->addSlug($entity, $localizedName);
@@ -92,14 +66,6 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
             );
         }
 
-        if ($entity instanceof File) {
-            return $searchContext[$entity->getOriginalFilename()] ?? null;
-        }
-
-        if ($entity instanceof FileItem) {
-            return $searchContext[$entity->getFile()->getOriginalFilename()] ?? null;
-        }
-
         if (is_a($entity, $this->localizedFallbackValueClass, true)) {
             $localizationCode = LocalizationCodeFormatter::formatName($entity->getLocalization());
 
@@ -116,14 +82,6 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
                 Brand::class,
                 ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $this->getChannel()]
             );
-        }
-
-        if ($entity instanceof File) {
-            return $searchContext[$entity->getOriginalFilename()] ?? null;
-        }
-
-        if ($entity instanceof FileItem) {
-            return $searchContext[$entity->getFile()->getOriginalFilename()] ?? null;
         }
 
         if (is_a($entity, $this->localizedFallbackValueClass, true)) {
@@ -256,34 +214,6 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
 
         $fields = $this->fieldHelper->getRelations($entityName);
 
-        if ($this->isFileValue($fields[$fieldName])) {
-            $existingEntity = $this->findExistingEntity($entity);
-            if ($existingEntity) {
-                $file = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
-
-                if ($file instanceof File && $file->getOriginalFilename()) {
-                    return [$file->getOriginalFilename() => $file];
-                }
-            }
-
-            return $searchContext;
-        }
-
-        if ($this->isFileItemValue($fields[$fieldName])) {
-            $existingEntity = $this->findExistingEntity($entity);
-            if ($existingEntity) {
-                $collection = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
-
-                foreach ($collection as $fileItem) {
-                    if ($fileItem instanceof FileItem && $fileItem->getFile()->getOriginalFilename()) {
-                        $searchContext[$fileItem->getFile()->getOriginalFilename()] = $fileItem;
-                    }
-                }
-            }
-
-            return $searchContext;
-        }
-
         if (!$this->isLocalizedFallbackValue($fields[$fieldName])) {
             return $searchContext;
         }
@@ -308,16 +238,6 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
         }
 
         return $searchContext;
-    }
-
-    private function isFileValue(array $field): bool
-    {
-        return $this->fieldHelper->isRelation($field) && is_a($field['related_entity_name'], File::class, true);
-    }
-
-    private function isFileItemValue(array $field): bool
-    {
-        return $this->fieldHelper->isRelation($field) && is_a($field['related_entity_name'], FileItem::class, true);
     }
 
     public function setSlugGenerator(SlugGenerator $slugGenerator): void

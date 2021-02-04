@@ -6,7 +6,6 @@ use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeFamilyCodeGenerator;
 use Oro\Bundle\AkeneoBundle\Tools\Generator;
-use Oro\Bundle\AkeneoBundle\Tools\UUIDGenerator;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
@@ -254,6 +253,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
                 break;
             case 'image':
                 $importedRecord[$field['name']] = $this->processFileType($value);
+                $importedRecord['Akeneo_alte_311273767'] = [$this->processFileType($value)];
                 break;
             case 'multiFile':
                 $importedRecord[$field['name']] = $this->processFileTypes($value);
@@ -444,7 +444,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     {
         $item = array_shift($value);
 
-        return ['uri' => $this->getAttachmentPath($item['data']), 'uuid' => UUIDGenerator::generate($item['data'])];
+        return ['uri' => $this->getAttachmentPath($item['data'])];
     }
 
     private function processFileTypes(array $value): array
@@ -453,7 +453,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
         $paths = [];
         foreach ($items['data'] as $item) {
-            $paths[] = ['uri' => $this->getAttachmentPath($item), 'uuid' => UUIDGenerator::generate($item)];
+            $paths[] = ['uri' => $this->getAttachmentPath($item)];
         }
 
         return $paths;

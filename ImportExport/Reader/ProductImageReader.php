@@ -4,7 +4,6 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\Reader;
 
 use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\AkeneoBundle\Integration\AkeneoFileManager;
-use Oro\Bundle\AkeneoBundle\Tools\UUIDGenerator;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 
@@ -74,7 +73,6 @@ class ProductImageReader extends IteratorBasedReader
                                 'SKU' => $sku,
                                 'Name' => $path,
                                 'uri' => $path,
-                                'uuid' => UUIDGenerator::generate($path),
                             ];
 
                             if ($this->getTransport()->isAkeneoMergeImageToParent() && !empty($item['parent'])) {
@@ -83,7 +81,6 @@ class ProductImageReader extends IteratorBasedReader
                                     'SKU' => $sku,
                                     'Name' => $path,
                                     'uri' => $path,
-                                    'uuid' => UUIDGenerator::generate($path),
                                 ];
                             }
                         }

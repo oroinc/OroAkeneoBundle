@@ -5,7 +5,6 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\AkeneoBundle\Tools\Generator;
-use Oro\Bundle\AkeneoBundle\Tools\UUIDGenerator;
 use Oro\Bundle\ConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityBundle\Helper\FieldHelper;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
@@ -234,7 +233,7 @@ class BrandDataConverter implements DataConverterInterface, ContextAwareInterfac
     {
         $item = array_shift($value);
 
-        return ['uri' => $this->getAttachmentPath($item['data']), 'uuid' => UUIDGenerator::generate($item['data'])];
+        return ['uri' => $this->getAttachmentPath($item['data'])];
     }
 
     private function processFileTypes(array $value): array
@@ -243,7 +242,7 @@ class BrandDataConverter implements DataConverterInterface, ContextAwareInterfac
 
         $paths = [];
         foreach ($items['data'] as $item) {
-            $paths[] = ['uri' => $this->getAttachmentPath($item), 'uuid' => UUIDGenerator::generate($item)];
+            $paths[] = ['uri' => $this->getAttachmentPath($item)];
         }
 
         return $paths;

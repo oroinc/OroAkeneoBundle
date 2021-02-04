@@ -48,17 +48,42 @@ class ProductImportStrategy extends ProductStrategy
         $this->setOwner($entity);
 
         $fields = $this->fieldHelper->getRelations(Product::class);
-        foreach ($fields as $field) {
-            if ($this->isFileItemValue($field)) {
-                /** @var Collection $collection */
-                $collection = $this->fieldHelper->getObjectValue($entity, $field['name']);
-                foreach ($collection as $fileItem) {
-                    if ($fileItem instanceof FileItem && !$fileItem->getFile()) {
-                        $collection->removeElement($fileItem);
+        $itemData = (array)($this->context->getValue('itemData') ?? []);
+        $existingEntity = $this->findExistingEntity($entity);
+        if ($existingEntity instanceof Product) {
+            foreach ($fields as $field) {
+                if (empty($itemData[$field['name']])) {
+                    continue;
+                }
+
+                if ($this->isFileValue($field)) {
+                    $existingValue = $this->fieldHelper->getObjectValue($existingEntity, $field['name']);
+                    if ($existingValue) {
+                        $itemData[$field['name']]['uuid'] = $existingValue->getUuid();
+                    }
+                }
+
+                if ($this->isFileItemValue($field)) {
+                    $existingValues = $this->fieldHelper->getObjectValue($existingEntity, $field['name']);
+                    $uuids = [];
+                    /** @var FileItem $existingValue */
+                    foreach ($existingValues as $key => $existingValue) {
+                        if (!$existingValue->getFile()) {
+                            continue;
+                        }
+
+                        $uuids[$existingValue->getFile()->getOriginalFilename()] = $existingValue->getFile()->getUuid();
+                    }
+
+                    foreach ($itemData[$field['name']] as $key => $data) {
+                        if (array_key_exists(basename($data['uri']), $uuids)) {
+                            $itemData[$field['name']][$key]['file']['uuid'] = $uuids[basename($data['uri'])];
+                        }
                     }
                 }
             }
         }
+        $this->context->setValue('itemData', $itemData);
 
         return parent::beforeProcessEntity($entity);
     }
@@ -96,20 +121,14 @@ class ProductImportStrategy extends ProductStrategy
             $entity->setInventoryStatus($inventoryStatus);
         }
 
-        $fields = $this->fieldHelper->getRelations(Product::class);
-        foreach ($fields as $field) {
-            if ($this->isFileItemValue($field)) {
-                /** @var Collection $collection */
-                $collection = $this->fieldHelper->getObjectValue($entity, $field['name']);
-                foreach ($collection as $fileItem) {
-                    $this->fieldHelper->setObjectValue($fileItem, sprintf('product_%s', $field['name']), $entity);
-                }
-            }
-        }
-
         $this->existingProducts = [];
 
-        return parent::afterProcessEntity($entity);
+        $result = parent::afterProcessEntity($entity);
+        if (!$result && $entity) {
+            $this->processValidationErrors($entity, []);
+        }
+
+        return $result;
     }
 
     protected function populateOwner(Product $entity)
@@ -134,14 +153,6 @@ class ProductImportStrategy extends ProductStrategy
                 Brand::class,
                 ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $this->getChannel()]
             );
-        }
-
-        if ($entity instanceof File) {
-            return $searchContext[$entity->getOriginalFilename()] ?? null;
-        }
-
-        if ($entity instanceof FileItem) {
-            return $searchContext[$entity->getFile()->getOriginalFilename()] ?? null;
         }
 
         if (is_a($entity, $this->localizedFallbackValueClass, true)) {
@@ -177,14 +188,6 @@ class ProductImportStrategy extends ProductStrategy
                 Brand::class,
                 ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $this->getChannel()]
             );
-        }
-
-        if ($entity instanceof File) {
-            return $searchContext[$entity->getOriginalFilename()] ?? null;
-        }
-
-        if ($entity instanceof FileItem) {
-            return $searchContext[$entity->getFile()->getOriginalFilename()] ?? null;
         }
 
         if (is_a($entity, $this->localizedFallbackValueClass, true)) {
@@ -350,34 +353,6 @@ class ProductImportStrategy extends ProductStrategy
         );
 
         $fields = $this->fieldHelper->getRelations($entityName);
-
-        if ($this->isFileValue($fields[$fieldName])) {
-            $existingEntity = $this->findExistingEntity($entity);
-            if ($existingEntity) {
-                $file = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
-
-                if ($file instanceof File && $file->getOriginalFilename()) {
-                    return [$file->getOriginalFilename() => $file];
-                }
-            }
-
-            return $searchContext;
-        }
-
-        if ($this->isFileItemValue($fields[$fieldName])) {
-            $existingEntity = $this->findExistingEntity($entity);
-            if ($existingEntity) {
-                $collection = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
-
-                foreach ($collection as $fileItem) {
-                    if ($fileItem instanceof FileItem && $fileItem->getFile()->getOriginalFilename()) {
-                        $searchContext[$fileItem->getFile()->getOriginalFilename()] = $fileItem;
-                    }
-                }
-            }
-
-            return $searchContext;
-        }
 
         if (!$this->isLocalizedFallbackValue($fields[$fieldName])) {
             return $searchContext;

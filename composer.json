@@ -18,7 +18,7 @@
         ]
     },
     "require": {
-        "oro/commerce": "4.1.*",
+        "oro/commerce": ">=4.1.7",
         "akeneo/api-php-client-ee": "3.0.*",
         "php-http/guzzle6-adapter": "~1.1",
         "php-http/message": "~1.8",

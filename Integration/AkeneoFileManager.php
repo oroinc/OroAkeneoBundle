@@ -2,7 +2,6 @@
 
 namespace Oro\Bundle\AkeneoBundle\Integration;
 
-use Oro\Bundle\AkeneoBundle\Tools\UUIDGenerator;
 use Oro\Bundle\AttachmentBundle\Entity\File;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 use Oro\Bundle\IntegrationBundle\Provider\ConnectorContextMediator;
@@ -59,19 +58,16 @@ class AkeneoFileManager
         $basename = basename($path);
         if (array_key_exists($basename, $this->mediaFiles)) {
             $this->akeneoTransport->downloadAndSaveMediaFile($this->mediaFiles[$basename]);
-            $file->setUuid(UUIDGenerator::generate($basename));
         }
 
         if (array_key_exists($basename, $this->assets)) {
             $this->akeneoTransport->downloadAndSaveAsset(...$this->assets[$basename]);
-            $file->setUuid(UUIDGenerator::generate($basename));
         }
 
         if (array_key_exists($basename, $this->referenceEntityMediaFile)) {
             $this->akeneoTransport->downloadAndSaveReferenceEntityMediaFile(
                 $this->referenceEntityMediaFile[$basename]
             );
-            $file->setUuid(UUIDGenerator::generate($basename));
         }
 
         unset(

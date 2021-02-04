@@ -67,7 +67,6 @@ return PhpCsFixer\Config::create()
             'phpdoc_inline_tag' => false,
             'native_function_invocation' => false,
             'concat_space' => ['spacing' => 'one'],
-            'single_space_after_construct' => false,
             'trailing_comma_in_multiline_array' => false,
             'self_accessor' => false,
             'yoda_style' => false,

@@ -18,6 +18,11 @@ class FileManager extends BaseManager
         parent::setFileFromPath($file, $path);
     }
 
+    public function getTemporaryFileName($suggestedFileName = null)
+    {
+        return parent::getTemporaryFileName();
+    }
+
     public function setAkeneoFileManager(AkeneoFileManager $akeneoFileManager): void
     {
         $this->akeneoFileManager = $akeneoFileManager;
