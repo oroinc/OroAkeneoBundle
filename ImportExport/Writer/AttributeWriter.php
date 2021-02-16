@@ -371,6 +371,7 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
         $attachmentConfig = $attachmentProvider->getConfig($className, $fieldName);
         $attachmentConfig->set('file_applications', ['default', 'commerce']);
         $attachmentConfig->set('acl_protected', true);
+        $attachmentConfig->set('use_dam', false);
         $attachmentConfig->set('maxsize', self::MAX_SIZE);
         $attachmentConfig->set('width', self::MAX_WIDTH);
         $attachmentConfig->set('height', self::MAX_HEIGHT);

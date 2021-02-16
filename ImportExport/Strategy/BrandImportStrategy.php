@@ -32,7 +32,7 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
     {
         $this->setOwner($entity);
 
-        return $entity;
+        return parent::beforeProcessEntity($entity);
     }
 
     protected function afterProcessEntity($entity)
@@ -47,7 +47,12 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
             $this->addSlug($entity, $entity->getDefaultName());
         }
 
-        return $entity;
+        $result = parent::afterProcessEntity($entity);
+        if (!$result && $entity) {
+            $this->processValidationErrors($entity, []);
+        }
+
+        return $result;
     }
 
     private function addSlug(Brand $brand, LocalizedFallbackValue $localizedName): void

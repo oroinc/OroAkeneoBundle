@@ -2,13 +2,25 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Processor;
 
+use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\IntegrationBundle\ImportExport\Processor\StepExecutionAwareImportProcessor;
 use Oro\Bundle\ProductBundle\Entity\Product;
 use Oro\Bundle\ProductBundle\Entity\ProductImage;
 use Oro\Bundle\ProductBundle\Entity\ProductImageType;
 
-class ProductImageImportProcessor extends StepExecutionAwareImportProcessor
+class ProductImageImportProcessor extends StepExecutionAwareImportProcessor implements ClosableInterface
 {
+    public function close()
+    {
+        if ($this->strategy instanceof ClosableInterface) {
+            $this->strategy->close();
+        }
+
+        if ($this->dataConverter instanceof ClosableInterface) {
+            $this->dataConverter->close();
+        }
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -70,6 +82,14 @@ class ProductImageImportProcessor extends StepExecutionAwareImportProcessor
                 continue;
             }
 
+            if (!is_a($image->getImage()->getParentEntityClass(), ProductImage::class, true)) {
+                $image->setImage(null);
+
+                $product->removeImage($image);
+
+                continue;
+            }
+
             $filename = $image->getImage()->getOriginalFilename();
             if (!in_array($filename, array_keys($images))) {
                 $product->removeImage($image);
@@ -77,16 +97,16 @@ class ProductImageImportProcessor extends StepExecutionAwareImportProcessor
                 continue;
             }
 
-            if ($hasMain && $image->hasType(ProductImageType::TYPE_MAIN)) {
+            if ($hasMain && $this->hasType($image, ProductImageType::TYPE_MAIN)) {
                 $image->removeType(ProductImageType::TYPE_MAIN);
             }
 
-            if ($hasListing && $image->hasType(ProductImageType::TYPE_LISTING)) {
+            if ($hasListing && $this->hasType($image, ProductImageType::TYPE_LISTING)) {
                 $image->removeType(ProductImageType::TYPE_LISTING);
             }
 
-            $hasMain = $hasMain || $image->hasType(ProductImageType::TYPE_MAIN);
-            $hasListing = $hasListing || $image->hasType(ProductImageType::TYPE_LISTING);
+            $hasMain = $hasMain || $this->hasType($image, ProductImageType::TYPE_MAIN);
+            $hasListing = $hasListing || $this->hasType($image, ProductImageType::TYPE_LISTING);
 
             unset($images[$filename]);
         }
@@ -112,5 +132,16 @@ class ProductImageImportProcessor extends StepExecutionAwareImportProcessor
         }
 
         return $product;
+    }
+
+    private function hasType(ProductImage $image, string $type): bool
+    {
+        foreach ($image->getTypes() as $imageType) {
+            if ($imageType->getType() === $type) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

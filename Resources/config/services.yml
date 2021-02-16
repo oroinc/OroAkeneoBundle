@@ -74,6 +74,24 @@ services:
     tags:
       - { name: validator.constraint_validator, alias: oro_akeneo.attribute_mapping_validator }
 
+  oro_akeneo.validator.unique_variant_links:
+    class: 'Oro\Bundle\AkeneoBundle\Validator\UniqueProductVariantLinksValidator'
+    decorates: oro_product.validator.unique_variant_links
+    arguments:
+      - '@oro_entity.doctrine_helper'
+      - '@oro_akeneo.validator.unique_variant_links.inner'
+    tags:
+      - { name: validator.constraint_validator, alias: oro_product_unique_variant_links }
+
+  oro_akeneo.validator.unique_variant_links_simple_product:
+    class: 'Oro\Bundle\AkeneoBundle\Validator\UniqueVariantLinksSimpleProductValidator'
+    decorates: oro_product.validator.unique_variant_links_simple_product
+    arguments:
+      - '@oro_entity.doctrine_helper'
+      - '@oro_akeneo.validator.unique_variant_links_simple_product.inner'
+    tags:
+      - { name: validator.constraint_validator, alias: oro_product_unique_variant_links_simple_product }
+
   oro_akeneo.event_subscriber.doctrine:
     class: 'Oro\Bundle\AkeneoBundle\EventSubscriber\DoctrineSubscriber'
     calls:
@@ -130,6 +148,11 @@ services:
     public: true
     arguments:
       - '@oro_akeneo.event_listener.import_export_tags_subscriber.decorator.inner'
+
+  oro_akeneo.event_listener.load_class_metadata:
+    class: Oro\Bundle\AkeneoBundle\EventListener\LoadClassMetadataListener
+    tags:
+      - { name: doctrine.event_listener, event: loadClassMetadata }
 
   oro_akeneo.event_listener.product_collection_variant_reindex_message_send_listener.decorator:
     class: Oro\Bundle\AkeneoBundle\EventListener\ProductCollectionVariantReindexMessageSendListenerDecorator
