@@ -2,8 +2,6 @@
 
 namespace Oro\Bundle\AkeneoBundle\Tools;
 
-use Doctrine\Common\Inflector\Inflector;
-
 /**
  * Generates code which should start with a symbol and contain only alphabetic symbols.
  */
@@ -39,19 +37,5 @@ class Generator
             . mb_substr($value, 0, $maxLength - mb_strlen($prefix . '_' . crc32($value)))
             . '_'
             . crc32($value);
-    }
-
-    /**
-     * @deprecated
-     * @internal
-     */
-    public static function generateCode(
-        string $value,
-        int $maxLength = self::DEFAULT_CODE_LENGTH,
-        string $prefix = self::DEFAULT_CODE_PREFIX
-    ): string {
-        $label = self::generateLabel($value, $maxLength, $prefix);
-
-        return Inflector::tableize(Inflector::classify($label));
     }
 }

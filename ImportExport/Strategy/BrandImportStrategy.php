@@ -5,6 +5,7 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 use Doctrine\Common\Collections\Collection;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\EntityConfigBundle\Generator\SlugGenerator;
+use Oro\Bundle\LocaleBundle\Entity\AbstractLocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\ImportExport\Normalizer\LocalizationCodeFormatter;
 use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStrategy;
@@ -12,7 +13,6 @@ use Oro\Bundle\ProductBundle\Entity\Brand;
 
 class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements ClosableInterface
 {
-    use ImportStrategyAwareHelperTrait;
     use OwnerTrait;
 
     /** @var SlugGenerator */
@@ -39,12 +39,12 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
     {
         if ($entity->getSlugPrototypes()->isEmpty()) {
             foreach ($entity->getNames() as $localizedName) {
-                $this->addSlug($entity, $localizedName);
+                $this->addSlugPrototype($entity, $localizedName);
             }
         }
 
         if (!$entity->getDefaultSlugPrototype() && $entity->getDefaultName()) {
-            $this->addSlug($entity, $entity->getDefaultName());
+            $this->addSlugPrototype($entity, $entity->getDefaultName());
         }
 
         $result = parent::afterProcessEntity($entity);
@@ -55,10 +55,12 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
         return $result;
     }
 
-    private function addSlug(Brand $brand, LocalizedFallbackValue $localizedName): void
+    private function addSlugPrototype(Brand $brand, AbstractLocalizedFallbackValue $localizedName): void
     {
-        $localizedSlug = clone $localizedName;
-        $localizedSlug->setString($this->slugGenerator->slugify($localizedSlug->getString()));
+        $localizedSlug = new LocalizedFallbackValue();
+        $localizedSlug->setString($this->slugGenerator->slugify($localizedName->getString()));
+        $localizedSlug->setFallback($localizedName->getFallback());
+        $localizedSlug->setLocalization($localizedName->getLocalization());
         $brand->addSlugPrototype($localizedSlug);
     }
 
@@ -71,7 +73,7 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
             );
         }
 
-        if (is_a($entity, $this->localizedFallbackValueClass, true)) {
+        if (is_a($entity, AbstractLocalizedFallbackValue::class, true)) {
             $localizationCode = LocalizationCodeFormatter::formatName($entity->getLocalization());
 
             return $searchContext[$localizationCode] ?? null;
@@ -233,7 +235,7 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
         if ($existingEntity) {
             $searchContext = [];
             $sourceCollection = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
-            /** @var LocalizedFallbackValue $sourceValue */
+            /** @var AbstractLocalizedFallbackValue $sourceValue */
             foreach ($sourceCollection as $sourceValue) {
                 $localizationCode = LocalizationCodeFormatter::formatName($sourceValue->getLocalization());
                 $searchContext[$localizationCode] = $sourceValue;

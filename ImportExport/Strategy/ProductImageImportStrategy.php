@@ -12,8 +12,6 @@ use Oro\Bundle\ProductBundle\Entity\ProductImage;
  */
 class ProductImageImportStrategy extends ConfigurableAddOrReplaceStrategy implements ClosableInterface
 {
-    use ImportStrategyAwareHelperTrait;
-
     /**
      * @var Product[]
      */

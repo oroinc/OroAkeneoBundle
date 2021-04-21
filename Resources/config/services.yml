@@ -12,15 +12,9 @@ services:
     arguments:
       - "@oro_entity.doctrine_helper"
       - "@oro_akeneo.encoder.crypter"
-
-  oro_akeneo.security.acl.voter.channel:
-    class: Oro\Bundle\AkeneoBundle\Acl\Voter\CategoryVoter
-    arguments:
-      - "@oro_entity.doctrine_helper"
-    calls:
-      - [setClassName, ['Oro\Bundle\CatalogBundle\Entity\Category']]
-  #        tags:
-  #            - { name: security.voter}
+      - "@psr18.http_client"
+      - "@psr18.http_client"
+      - "@psr18.http_client"
 
   oro_akeneo.event_subscriber.field_config:
     class: Oro\Bundle\AkeneoBundle\EventSubscriber\FieldConfigSubscriber
@@ -102,7 +96,6 @@ services:
   oro_akeneo.strategy.import.helper:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Strategy\ImportStrategyHelper'
     parent: oro_importexport.strategy.import.helper
-    decorates: oro_importexport.strategy.import.helper
     calls:
       - [setDoctrineHelper, ['@oro_entity.doctrine_helper']]
 
@@ -231,6 +224,7 @@ services:
     class: 'Oro\Bundle\AkeneoBundle\Manager\FileManager'
     parent: oro_attachment.file_manager
     decorates: oro_attachment.file_manager
+    decoration_priority: -255
     calls:
       - [setAkeneoFileManager, ["@oro_akeneo.integration.akeneo_file_manager"]]
 
@@ -364,3 +358,22 @@ services:
           -
             - Valid:
                 groups: ['import_field_type_akeneo']
+
+  oro_akeneo.event_listener.attributes_datagrid:
+    class: 'Oro\Bundle\AkeneoBundle\EventListener\AttributesDatagridListener'
+    decorates: oro_entity_config.event_listener.attributes_datagrid
+    arguments:
+      - '@oro_entity.doctrine_helper'
+    tags:
+      - { name: kernel.event_listener, event: oro_datagrid.datagrid.build.before.attributes-grid, method: onBuildBefore }
+      - { name: kernel.event_listener, event: oro_datagrid.orm_datasource.result.after.attributes-grid, method: onResultAfter }
+
+  oro_akeneo.event_listener.deleted_attribute_relation:
+    class: 'Oro\Bundle\AkeneoBundle\EventListener\DeletedAttributeRelationListener'
+    decorates: oro_entity_config.event_listener.deleted_attribute_relation
+    parent: oro_entity_config.event_listener.deleted_attribute_relation
+
+  oro_akeneo.event_listener.deleted_attribute_relation_serialized:
+    class: 'Oro\Bundle\AkeneoBundle\EventListener\DeletedAttributeRelationListener'
+    decorates: oro_serialized_fields.event_listener.deleted_attribute_relation_serialized
+    parent: oro_serialized_fields.event_listener.deleted_attribute_relation_serialized

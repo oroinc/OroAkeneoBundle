@@ -7,6 +7,7 @@ use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\EntityConfigBundle\Generator\SlugGenerator;
 use Oro\Bundle\IntegrationBundle\Entity\Channel;
+use Oro\Bundle\LocaleBundle\Entity\AbstractLocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\ImportExport\Normalizer\LocalizationCodeFormatter;
 use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStrategy;
@@ -16,7 +17,6 @@ use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStr
  */
 class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy implements ClosableInterface
 {
-    use ImportStrategyAwareHelperTrait;
     use OwnerTrait;
 
     /** @var SlugGenerator */
@@ -67,21 +67,23 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
 
         if ($entity->getSlugPrototypes()->isEmpty()) {
             foreach ($entity->getTitles() as $localizedTitle) {
-                $this->addSlug($entity, $localizedTitle);
+                $this->addSlugPrototype($entity, $localizedTitle);
             }
         }
 
         if (!$entity->getDefaultSlugPrototype() && $entity->getDefaultTitle()) {
-            $this->addSlug($entity, $entity->getDefaultTitle());
+            $this->addSlugPrototype($entity, $entity->getDefaultTitle());
         }
 
         return $entity;
     }
 
-    private function addSlug(Category $category, LocalizedFallbackValue $localizedName): void
+    private function addSlugPrototype(Category $category, AbstractLocalizedFallbackValue $localizedName): void
     {
-        $localizedSlug = clone $localizedName;
-        $localizedSlug->setString($this->slugGenerator->slugify($localizedSlug->getString()));
+        $localizedSlug = new LocalizedFallbackValue();
+        $localizedSlug->setString($this->slugGenerator->slugify($localizedName->getString()));
+        $localizedSlug->setFallback($localizedName->getFallback());
+        $localizedSlug->setLocalization($localizedName->getLocalization());
         $category->addSlugPrototype($localizedSlug);
     }
 
@@ -120,7 +122,7 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
             return $category;
         }
 
-        if (is_a($entity, $this->localizedFallbackValueClass, true)) {
+        if (is_a($entity, AbstractLocalizedFallbackValue::class, true)) {
             $localizationCode = LocalizationCodeFormatter::formatName($entity->getLocalization());
 
             return $searchContext[$localizationCode] ?? null;
@@ -292,7 +294,7 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
         if ($existingEntity) {
             $searchContext = [];
             $sourceCollection = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
-            /** @var LocalizedFallbackValue $sourceValue */
+            /** @var AbstractLocalizedFallbackValue $sourceValue */
             foreach ($sourceCollection as $sourceValue) {
                 $localizationCode = LocalizationCodeFormatter::formatName($sourceValue->getLocalization());
                 $searchContext[$localizationCode] = $sourceValue;

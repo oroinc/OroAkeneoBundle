@@ -2,8 +2,8 @@
 
 namespace Oro\Bundle\AkeneoBundle\Integration\Iterator;
 
+use Akeneo\Pim\ApiClient\AkeneoPimClientInterface;
 use Akeneo\Pim\ApiClient\Pagination\ResourceCursorInterface;
-use Oro\Bundle\AkeneoBundle\Integration\AkeneoPimExtendableClientInterface;
 use Psr\Log\LoggerInterface;
 
 class AttributeIterator extends AbstractIterator
@@ -25,7 +25,7 @@ class AttributeIterator extends AbstractIterator
      */
     public function __construct(
         ResourceCursorInterface $resourceCursor,
-        AkeneoPimExtendableClientInterface $client,
+        AkeneoPimClientInterface $client,
         LoggerInterface $logger,
         $attributesFilter = []
     ) {

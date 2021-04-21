@@ -11,7 +11,7 @@ services:
       - '@oro_akeneo.connection.client_factory'
       - '@oro_currency.config.currency'
       - '@oro_akeneo.integration.search_builder'
-      - '@knp_gaufrette.filesystem_map'
+      - '@oro_akeneo.importexport.file_manager_writable'
       - '@logger'
     public: true
     tags:

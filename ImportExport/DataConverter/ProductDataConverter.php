@@ -12,8 +12,8 @@ use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityExtendBundle\Extend\RelationType;
 use Oro\Bundle\ImportExportBundle\Context\ContextAwareInterface;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
+use Oro\Bundle\LocaleBundle\Entity\AbstractLocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\Entity\Localization;
-use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\Formatter\DateTimeFormatterInterface;
 use Oro\Bundle\ProductBundle\Entity\Product;
 use Oro\Bundle\ProductBundle\ImportExport\DataConverter\ProductDataConverter as BaseProductDataConverter;
@@ -35,9 +35,6 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
     /** @var DateTimeFormatterInterface */
     protected $dateTimeFormatter;
-
-    /** @var string */
-    protected $attachmentsDir;
 
     /** @var array */
     protected $akeneoFields = [];
@@ -228,7 +225,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         $importExportConfig = $importExportProvider->getConfig(Product::class, $field['name']);
 
         $isLocalizable = in_array($field['type'], [RelationType::MANY_TO_MANY, RelationType::TO_MANY])
-            && LocalizedFallbackValue::class === $field['related_entity_name'];
+            && is_a($field['related_entity_name'], AbstractLocalizedFallbackValue::class, true);
 
         if ($isLocalizable) {
             $importedRecord[$field['name']] = $this->processRelationType(
@@ -460,7 +457,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
     protected function getAttachmentPath(string $code): string
     {
-        return sprintf('%s/%s', rtrim($this->attachmentsDir, '/'), $code);
+        return $code;
     }
 
     /**
@@ -527,11 +524,6 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     public function setDateTimeFormatter(DateTimeFormatterInterface $dateTimeFormatter): void
     {
         $this->dateTimeFormatter = $dateTimeFormatter;
-    }
-
-    public function setAttachmentsDir(string $attachmentsDir): void
-    {
-        $this->attachmentsDir = $attachmentsDir;
     }
 
     public function close()

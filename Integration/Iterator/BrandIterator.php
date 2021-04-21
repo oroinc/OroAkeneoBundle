@@ -2,8 +2,8 @@
 
 namespace Oro\Bundle\AkeneoBundle\Integration\Iterator;
 
+use Akeneo\Pim\ApiClient\AkeneoPimClientInterface;
 use Akeneo\Pim\ApiClient\Pagination\ResourceCursorInterface;
-use Oro\Bundle\AkeneoBundle\Integration\AkeneoPimExtendableClientInterface;
 use Oro\Bundle\AkeneoBundle\Integration\AkeneoTransportInterface;
 use Psr\Log\LoggerInterface;
 
@@ -14,7 +14,7 @@ class BrandIterator extends AbstractIterator
 
     public function __construct(
         ResourceCursorInterface $resourceCursor,
-        AkeneoPimExtendableClientInterface $client,
+        AkeneoPimClientInterface $client,
         LoggerInterface $logger,
         AkeneoTransportInterface $akeneoTransport
     ) {

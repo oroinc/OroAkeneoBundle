@@ -18,7 +18,7 @@ class FileManager extends BaseManager
         parent::setFileFromPath($file, $path);
     }
 
-    public function getTemporaryFileName($suggestedFileName = null)
+    public function getTemporaryFileName(string $suggestedFileName = null): string
     {
         return parent::getTemporaryFileName();
     }

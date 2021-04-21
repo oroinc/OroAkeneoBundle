@@ -72,7 +72,6 @@ class ProductImageReader extends IteratorBasedReader
                             $images[$sku][$path] = [
                                 'SKU' => $sku,
                                 'Name' => $path,
-                                'uri' => $path,
                             ];
 
                             if ($this->getTransport()->isAkeneoMergeImageToParent() && !empty($item['parent'])) {
@@ -80,7 +79,6 @@ class ProductImageReader extends IteratorBasedReader
                                 $images[$sku][$path] = [
                                     'SKU' => $sku,
                                     'Name' => $path,
-                                    'uri' => $path,
                                 ];
                             }
                         }

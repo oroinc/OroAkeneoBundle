@@ -3,7 +3,7 @@
 namespace Oro\Bundle\DotmailerBundle\Migrations\Data\ORM;
 
 use Doctrine\Common\DataFixtures\AbstractFixture;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Persistence\ObjectManager;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\ProductBundle\Entity\ProductImage;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;

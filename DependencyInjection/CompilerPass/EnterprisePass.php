@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\AkeneoBundle\DependencyInjection\CompilerPass;
 
+use Doctrine\Inflector\Inflector;
 use Oro\Bundle\AkeneoBundle\EventListener\AttributesGridListener;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeEntityGeneratorExtension;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -17,6 +18,7 @@ class EnterprisePass implements CompilerPassInterface
             $definition = new Definition(AttributeEntityGeneratorExtension::class);
             $definition
                 ->setDecoratedService('oro_entity_config_pro.grid.entity_generator.extension.attribute')
+                ->setArguments([new Reference(Inflector::class)])
                 ->setTags(
                     $container
                         ->getDefinition('oro_entity_config_pro.grid.entity_generator.extension.attribute')

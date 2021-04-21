@@ -3,11 +3,9 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Serializer\Normalizer;
 
 use Oro\Bundle\AkeneoBundle\Integration\AkeneoChannel;
-use Oro\Bundle\AttachmentBundle\Entity\File;
 use Oro\Bundle\ImportExportBundle\Serializer\Normalizer\DenormalizerInterface;
-use Oro\Bundle\ProductBundle\Entity\ProductImage;
 
-class FileNormalizer implements DenormalizerInterface
+class AkeneoNormalizerWrapper implements DenormalizerInterface
 {
     /** @var DenormalizerInterface */
     private $fileNormalizer;
@@ -19,18 +17,16 @@ class FileNormalizer implements DenormalizerInterface
 
     public function supportsDenormalization($data, $type, $format = null, array $context = [])
     {
-        return is_a($type, File::class, true)
-            && AkeneoChannel::TYPE === ($context['channelType'] ?? null)
-            && ProductImage::class !== ($context['entityName'] ?? null);
+        $supports = $this->fileNormalizer->supportsDenormalization($data, $type, $format, $context);
+        if ($supports) {
+            return AkeneoChannel::TYPE === ($context['channelType'] ?? null);
+        }
+
+        return $supports;
     }
 
     public function denormalize($data, $type, $format = null, array $context = [])
     {
-        $file = $this->fileNormalizer->denormalize($data, $type, $format, $context);
-        if ($file instanceof File && !$file->getOriginalFilename()) {
-            $file->setOriginalFilename(basename($data['uri']));
-        }
-
-        return $file;
+        return $this->fileNormalizer->denormalize($data, $type, $format, $context);
     }
 }

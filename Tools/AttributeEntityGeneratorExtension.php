@@ -2,19 +2,26 @@
 
 namespace Oro\Bundle\AkeneoBundle\Tools;
 
-use CG\Generator\PhpClass;
-use Doctrine\Common\Inflector\Inflector;
+use Doctrine\Inflector\Inflector;
 use Oro\Bundle\EntityExtendBundle\Tools\ExtendConfigDumper;
 use Oro\Bundle\EntityExtendBundle\Tools\GeneratorExtensions\AbstractEntityGeneratorExtension;
+use Oro\Component\PhpUtils\ClassGenerator;
 
 class AttributeEntityGeneratorExtension extends AbstractEntityGeneratorExtension
 {
-    public function supports(array $schema)
+    private Inflector $inflector;
+
+    public function __construct(Inflector $inflector)
+    {
+        $this->inflector = $inflector;
+    }
+
+    public function supports(array $schema): bool
     {
         return !empty($schema['attribute']);
     }
 
-    public function generate(array $schema, PhpClass $class)
+    public function generate(array $schema, ClassGenerator $class): void
     {
         foreach ($schema['attribute'] as $attributeName => $fields) {
             $this->generateBasicMethods($attributeName, $fields, $class);
@@ -22,7 +29,7 @@ class AttributeEntityGeneratorExtension extends AbstractEntityGeneratorExtension
         }
     }
 
-    private function generateBasicMethods(string $attributeName, array $fields, PhpClass $class): void
+    private function generateBasicMethods(string $attributeName, array $fields, ClassGenerator $class): void
     {
         $getMethodName = $this->generateGetMethodName($attributeName);
         $setMethodName = $this->generateSetMethodName($attributeName);
@@ -47,7 +54,7 @@ class AttributeEntityGeneratorExtension extends AbstractEntityGeneratorExtension
             if ($class->hasMethod($getFieldMethodName)) {
                 $getMethodBody .= $this->generateCondition(
                     $fieldData['organization_id'],
-                    sprintf('   return $this->%s();', $getFieldMethodName)
+                    \sprintf('   return $this->%s();', $getFieldMethodName)
                 );
                 $getMethodBody .= "\n";
             }
@@ -56,7 +63,7 @@ class AttributeEntityGeneratorExtension extends AbstractEntityGeneratorExtension
             if ($class->hasMethod($setFieldMethodName)) {
                 $setMethodBody .= $this->generateCondition(
                     $fieldData['organization_id'],
-                    sprintf('   return $this->%s($value);', $setFieldMethodName)
+                    \sprintf('   return $this->%s($value);', $setFieldMethodName)
                 );
                 $setMethodBody .= "\n";
             }
@@ -65,12 +72,11 @@ class AttributeEntityGeneratorExtension extends AbstractEntityGeneratorExtension
         $getMethodBody = $getMethodBody ? $getMethodBody .= 'return null;' : $initialGetMethodBody;
         $setMethodBody = $setMethodBody ? $setMethodBody .= 'return $this;' : $initialSetMethodBody;
 
-        $class
-            ->setMethod($this->generateClassMethod($getMethodName, $getMethodBody))
-            ->setMethod($this->generateClassMethod($setMethodName, $setMethodBody, ['value']));
+        $class->addMethod($getMethodName)->addBody($getMethodBody);
+        $class->addMethod($setMethodName)->addBody($setMethodBody)->addParameter('value');
     }
 
-    private function generateRelationDefaultMethods(string $attributeName, array $fields, PhpClass $class): void
+    private function generateRelationDefaultMethods(string $attributeName, array $fields, ClassGenerator $class): void
     {
         $defaultAttributeName = ExtendConfigDumper::DEFAULT_PREFIX . $attributeName;
         $getMethodName = $this->generateGetMethodName($defaultAttributeName);
@@ -115,9 +121,8 @@ class AttributeEntityGeneratorExtension extends AbstractEntityGeneratorExtension
             $getMethodBody .= 'return null;';
             $setMethodBody .= 'return $this;';
 
-            $class
-                ->setMethod($this->generateClassMethod($getMethodName, $getMethodBody))
-                ->setMethod($this->generateClassMethod($setMethodName, $setMethodBody, ['value']));
+            $class->addMethod($getMethodName)->addBody($getMethodBody);
+            $class->addMethod($setMethodName)->addBody($setMethodBody)->addParameter('value');
         }
     }
 
@@ -133,11 +138,11 @@ class AttributeEntityGeneratorExtension extends AbstractEntityGeneratorExtension
 
     private function generateGetMethodName(string $fieldName): string
     {
-        return 'get' . ucfirst(Inflector::camelize($fieldName));
+        return 'get' . ucfirst($this->inflector->camelize($fieldName));
     }
 
     private function generateSetMethodName(string $fieldName): string
     {
-        return 'set' . ucfirst(Inflector::camelize($fieldName));
+        return 'set' . ucfirst($this->inflector->camelize($fieldName));
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Processor;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\ImportExportBundle\Processor\ProcessorInterface;
 

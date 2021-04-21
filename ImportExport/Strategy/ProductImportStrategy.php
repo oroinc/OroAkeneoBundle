@@ -8,7 +8,7 @@ use Oro\Bundle\AttachmentBundle\Entity\FileItem;
 use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\EntityExtendBundle\Entity\AbstractEnumValue;
 use Oro\Bundle\EntityExtendBundle\Tools\ExtendHelper;
-use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
+use Oro\Bundle\LocaleBundle\Entity\AbstractLocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\ImportExport\Normalizer\LocalizationCodeFormatter;
 use Oro\Bundle\ProductBundle\Entity\Brand;
 use Oro\Bundle\ProductBundle\Entity\Product;
@@ -19,7 +19,6 @@ use Oro\Bundle\ProductBundle\ImportExport\Strategy\ProductStrategy;
  */
 class ProductImportStrategy extends ProductStrategy
 {
-    use ImportStrategyAwareHelperTrait;
     use OwnerTrait;
 
     /**
@@ -155,7 +154,7 @@ class ProductImportStrategy extends ProductStrategy
             );
         }
 
-        if (is_a($entity, $this->localizedFallbackValueClass, true)) {
+        if (is_a($entity, AbstractLocalizedFallbackValue::class, true)) {
             $localizationCode = LocalizationCodeFormatter::formatName($entity->getLocalization());
 
             return $searchContext[$localizationCode] ?? null;
@@ -368,7 +367,7 @@ class ProductImportStrategy extends ProductStrategy
         if ($existingEntity) {
             $searchContext = [];
             $sourceCollection = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
-            /** @var LocalizedFallbackValue $sourceValue */
+            /** @var AbstractLocalizedFallbackValue $sourceValue */
             foreach ($sourceCollection as $sourceValue) {
                 $localizationCode = LocalizationCodeFormatter::formatName($sourceValue->getLocalization());
                 $searchContext[$localizationCode] = $sourceValue;

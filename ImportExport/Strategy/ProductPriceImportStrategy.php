@@ -11,7 +11,6 @@ use Oro\Bundle\PricingBundle\ImportExport\Strategy\ProductPriceImportStrategy as
 class ProductPriceImportStrategy extends BaseStrategy
 {
     use AkeneoIntegrationTrait;
-    use ImportStrategyAwareHelperTrait;
 
     /**
      * {@inheritdoc}

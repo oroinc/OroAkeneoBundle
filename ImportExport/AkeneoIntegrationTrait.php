@@ -4,7 +4,6 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport;
 
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
-use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 use Oro\Bundle\IntegrationBundle\Entity\Channel;
 
 /**
@@ -15,18 +14,7 @@ trait AkeneoIntegrationTrait
     /** @var AkeneoSettings */
     protected $transport;
 
-    /**
-     * @deprecated
-     */
-    public function getImportExportContext(): ContextInterface
-    {
-        return $this->context;
-    }
-
-    /**
-     * @return AkeneoSettings
-     */
-    private function getTransport()
+    private function getTransport(): ?AkeneoSettings
     {
         if ($this->transport) {
             return $this->transport;

@@ -13,8 +13,8 @@ use Oro\Bundle\EntityExtendBundle\Extend\RelationType;
 use Oro\Bundle\ImportExportBundle\Context\ContextAwareInterface;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 use Oro\Bundle\ImportExportBundle\Converter\DataConverterInterface;
+use Oro\Bundle\LocaleBundle\Entity\AbstractLocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\Entity\Localization;
-use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\ProductBundle\Entity\Brand;
 
 class BrandDataConverter implements DataConverterInterface, ContextAwareInterface
@@ -36,9 +36,6 @@ class BrandDataConverter implements DataConverterInterface, ContextAwareInterfac
     /** @var EntityConfigManager */
     private $entityConfigManager;
 
-    /** @var string */
-    private $attachmentsDir;
-
     /** @var ContextInterface */
     protected $context;
 
@@ -51,14 +48,12 @@ class BrandDataConverter implements DataConverterInterface, ContextAwareInterfac
         DoctrineHelper $doctrineHelper,
         FieldHelper $fieldHelper,
         EntityConfigManager $entityConfigManager,
-        ConfigManager $configManager,
-        string $attachmentsDir
+        ConfigManager $configManager
     ) {
         $this->doctrineHelper = $doctrineHelper;
         $this->fieldHelper = $fieldHelper;
         $this->entityConfigManager = $entityConfigManager;
         $this->configManager = $configManager;
-        $this->attachmentsDir = $attachmentsDir;
     }
 
     public function convertToExportFormat(array $exportedRecord, $skipNullValues = true)
@@ -116,7 +111,7 @@ class BrandDataConverter implements DataConverterInterface, ContextAwareInterfac
         $importExportConfig = $importExportProvider->getConfig(Brand::class, $field['name']);
 
         $isLocalizable = in_array($field['type'], [RelationType::MANY_TO_MANY, RelationType::TO_MANY])
-            && LocalizedFallbackValue::class === $field['related_entity_name'];
+            && is_a($field['related_entity_name'], AbstractLocalizedFallbackValue::class, true);
 
         if ($isLocalizable) {
             $importedRecord[$field['name']] = $this->processRelationType(
@@ -250,7 +245,7 @@ class BrandDataConverter implements DataConverterInterface, ContextAwareInterfac
 
     protected function getAttachmentPath(string $code): string
     {
-        return sprintf('%s/%s', rtrim($this->attachmentsDir, '/'), $code);
+        return $code;
     }
 
     private function processBasicType(array $value)

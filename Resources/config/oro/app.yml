@@ -2,3 +2,9 @@ oro_message_queue:
     time_before_stale:
         jobs:
             'oro_integration:sync_integration': 21600
+
+knp_gaufrette:
+    filesystems:
+        akeneo:
+            adapter: import_files
+            alias: akeneo_filesystem

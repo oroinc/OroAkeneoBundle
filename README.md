@@ -16,13 +16,32 @@ With this extension, you will be able to sync the following data from Akeneo to 
 
 ## Compatibility
 
-| Connector |     Status     | OroCommerce |    Akeneo      | Build |
+| Connector |     Status     | OroCommerce |    Akeneo       | Build |
 |-----------|----------------|-------------|----------------|-------|
 |    1.6    | Not maintained |     1.6     | 2.3, 3.2, 4.0* | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=1.6)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
 |    3.1    | Active (2020)  |     3.1     | 2.3, 3.2, 4.0* | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=3.1)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
 |    4.1    | Active (2021)  |     4.1     | 2.3, 3.2, 4.0* | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=4.1)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
+|    4.2    | Active (2022)  |     4.2     | 3.2, 4.0, 5.0  | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=4.2)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
 
 **Akeneo 4.0 supported using older client versions, with no new features available.**
+
+## Installation
+
+1. Add composer package
+
+```
+# Akeneo 3.2 and 4.0
+composer require "oro/commerce-akeneo:4.2.*" "akeneo/api-php-client-ee:5.*"
+
+# Akeneo 5.0
+composer require "oro/commerce-akeneo:4.2.*" "akeneo/api-php-client-ee:6.*"
+```
+
+2. Follow [Setup Guide](https://doc.oroinc.com/backend/setup/upgrade-to-new-version)
+
+3. Configure [Message Queue](https://doc.oroinc.com/backend/mq/consumer/#options)
+
+** Recommended time limit option values is 30 seconds `--time-limit=+30seconds`
 
 ## Schema
 
@@ -42,15 +61,7 @@ How to run Schema Update from CLI:
 ```
 orocloud-cli maintenance:on
 orocloud-cli service:stop
-
-# \Oro\Bundle\EntityExtendBundle\Extend\EntityProcessor copy
-orocloud-cli app:console 'oro:entity-extend:update-config --update-custom'
-orocloud-cli app:console 'oro:entity-extend:cache:warmup'
-orocloud-cli app:console 'oro:entity-extend:update-schema'
-orocloud-cli app:console 'oro:entity-config:cache:warmup'
-
-# sync caches to all nodes
-orocloud-cli cache:rebuild --force-cleanup-existing-cache
+orocloud-cli app:console 'oro:entity-extend:update'
 orocloud-cli service:start
 orocloud-cli maintenance:off
 ```
@@ -68,32 +79,6 @@ Connector supports and tested on the next dataset:
 * Attributes: 400, 5% localizable, 2% scopable, 1% localizable and scopable, 100% usable in grid
 * Attribute Families: 50, up to 100 Attributes per Attribute Family
 * Products: 50000, including images
-
-## Installation
-
-1. To apply patches you must have the following in your composer file:
-```
-{
-  "require": {
-      "cweagans/composer-patches": "~1.6"
-  },
-  "extra": {
-      "enable-patching": true
-  }
-}
-```
-
-2. Add composer package
-
-```
-composer require "oro/commerce-akeneo:3.1.*"
-```
-
-3. Follow [Setup Guide](https://doc.oroinc.com/backend/setup/upgrade-to-new-version)
-
-4. Configure [Message Queue](https://doc.oroinc.com/backend/mq/consumer/#options)
-
-** Recommended time limit option values is 30 seconds `--time-limit=+30seconds`
 
 ## Setting up the Integration on the Oro Side
 

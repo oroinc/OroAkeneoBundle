@@ -2,9 +2,8 @@
 
 namespace Oro\Bundle\AkeneoBundle\Integration;
 
+use Akeneo\Pim\ApiClient\AkeneoPimClientInterface;
 use Akeneo\Pim\ApiClient\Exception\NotFoundHttpException;
-use Gaufrette\Filesystem;
-use Knp\Bundle\GaufretteBundle\FilesystemMap;
 use Oro\Bundle\AkeneoBundle\Client\AkeneoClientFactory;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\Form\Type\AkeneoSettingsType;
@@ -14,6 +13,7 @@ use Oro\Bundle\AkeneoBundle\Integration\Iterator\BrandIterator;
 use Oro\Bundle\AkeneoBundle\Integration\Iterator\ProductIterator;
 use Oro\Bundle\AkeneoBundle\Settings\DataProvider\SyncProductsDataProvider;
 use Oro\Bundle\CurrencyBundle\Provider\CurrencyProviderInterface;
+use Oro\Bundle\GaufretteBundle\FileManager;
 use Oro\Bundle\IntegrationBundle\Entity\Transport;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
@@ -38,7 +38,7 @@ class AkeneoTransport implements AkeneoTransportInterface
     /** @var AkeneoClientFactory */
     private $clientFactory;
 
-    /** @var AkeneoPimExtendableClientInterface */
+    /** @var AkeneoPimClientInterface */
     private $client;
 
     /** @var CurrencyProviderInterface */
@@ -50,20 +50,20 @@ class AkeneoTransport implements AkeneoTransportInterface
     /** @var AkeneoSearchBuilder */
     private $akeneoSearchBuilder;
 
-    /** @var Filesystem */
-    private $filesystem;
+    /** @var FileManager */
+    private $fileManager;
 
     public function __construct(
         AkeneoClientFactory $clientFactory,
         CurrencyProviderInterface $configProvider,
         AkeneoSearchBuilder $akeneoSearchBuilder,
-        FilesystemMap $filesystemMap,
+        FileManager $fileManager,
         LoggerInterface $logger
     ) {
         $this->clientFactory = $clientFactory;
         $this->configProvider = $configProvider;
         $this->akeneoSearchBuilder = $akeneoSearchBuilder;
-        $this->filesystem = $filesystemMap->get('importexport');
+        $this->fileManager = $fileManager;
         $this->logger = $logger;
     }
 
@@ -329,13 +329,16 @@ class AkeneoTransport implements AkeneoTransportInterface
 
     public function downloadAndSaveMediaFile(string $code): void
     {
-        $path = sprintf('akeneo/%s', $code);
-        if ($this->filesystem->has($path)) {
+        if ($this->fileManager->hasFile($code)) {
             return;
         }
 
         try {
-            $content = $this->client->getProductMediaFileApi()->download($code)->getContents();
+            $content = $this->client
+                ->getProductMediaFileApi()
+                ->download($code)
+                ->getBody()
+                ->getContents();
         } catch (\Throwable $e) {
             $this->logger->critical(
                 'Error on downloading media file.',
@@ -346,7 +349,7 @@ class AkeneoTransport implements AkeneoTransportInterface
         }
 
         try {
-            $this->filesystem->write($path, $content, true);
+            $this->fileManager->writeToStorage($content, $code);
         } catch (\Throwable $e) {
             $this->logger->critical(
                 'Error during saving media file.',
@@ -359,13 +362,16 @@ class AkeneoTransport implements AkeneoTransportInterface
 
     public function downloadAndSaveAsset(string $code, string $file): void
     {
-        $path = sprintf('akeneo/%s', $file);
-        if ($this->filesystem->has($path)) {
+        if ($this->fileManager->hasFile($code)) {
             return;
         }
 
         try {
-            $content = $this->client->getAssetReferenceFileApi()->downloadFromNotLocalizableAsset($code)->getContents();
+            $content = $this->client
+                ->getAssetReferenceFileApi()
+                ->downloadFromNotLocalizableAsset($code)
+                ->getBody()
+                ->getContents();
         } catch (\Throwable $e) {
             $this->logger->critical(
                 'Error on downloading asset.',
@@ -376,7 +382,7 @@ class AkeneoTransport implements AkeneoTransportInterface
         }
 
         try {
-            $this->filesystem->write($path, $content, true);
+            $this->fileManager->writeToStorage($content, $code);
         } catch (\Throwable $e) {
             $this->logger->critical(
                 'Error during saving asset.',
@@ -389,13 +395,16 @@ class AkeneoTransport implements AkeneoTransportInterface
 
     public function downloadAndSaveReferenceEntityMediaFile(string $code): void
     {
-        $path = sprintf('akeneo/%s', $code);
-        if ($this->filesystem->has($path)) {
+        if ($this->fileManager->hasFile($code)) {
             return;
         }
 
         try {
-            $content = $this->client->getReferenceEntityMediaFileApi()->download($code)->getContents();
+            $content = $this->client
+                ->getReferenceEntityMediaFileApi()
+                ->download($code)
+                ->getBody()
+                ->getContents();
         } catch (\Throwable $e) {
             $this->logger->critical(
                 'Error on downloading asset.',
@@ -406,7 +415,7 @@ class AkeneoTransport implements AkeneoTransportInterface
         }
 
         try {
-            $this->filesystem->write($path, $content, true);
+            $this->fileManager->writeToStorage($content, $code);
         } catch (\Throwable $e) {
             $this->logger->critical(
                 'Error during saving asset.',
@@ -464,8 +473,8 @@ class AkeneoTransport implements AkeneoTransportInterface
             return;
         }
 
-        foreach ($this->client->getMeasureFamilyApi()->all() as $measurementFamily) {
-            foreach (($measurementFamily['units'] ?? []) as $unit) {
+        foreach ($this->client->getMeasureFamilyApi()->all() as $measureFamily) {
+            foreach (($measureFamily['units'] ?? []) as $unit) {
                 $this->measureFamilies[$unit['code']] = $unit['symbol'];
             }
         }
