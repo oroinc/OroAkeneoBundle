@@ -2,14 +2,12 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 
-use Doctrine\Common\Collections\Collection;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\EntityConfigBundle\Generator\SlugGenerator;
 use Oro\Bundle\IntegrationBundle\Entity\Channel;
 use Oro\Bundle\LocaleBundle\Entity\AbstractLocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
-use Oro\Bundle\LocaleBundle\ImportExport\Normalizer\LocalizationCodeFormatter;
 use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStrategy;
 
 /**
@@ -17,7 +15,9 @@ use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStr
  */
 class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy implements ClosableInterface
 {
-    use OwnerTrait;
+    use LocalizedFallbackValueAwareStrategyTrait;
+    use StrategyRelationsTrait;
+    use StrategyValidationTrait;
 
     /** @var SlugGenerator */
     private $slugGenerator;
@@ -40,15 +40,11 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
         $this->existingCategories = [];
         $this->rootCategoryId = null;
 
-        $this->clearOwnerCache();
-
         $this->databaseHelper->onClear();
     }
 
     protected function beforeProcessEntity($entity)
     {
-        $this->setOwner($entity);
-
         if ($entity instanceof Category) {
             $parent = $entity->getParentCategory();
             if ($parent instanceof Category && !$parent->getId()) {
@@ -57,14 +53,12 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
             }
         }
 
-        return $entity;
+        return parent::beforeProcessEntity($entity);
     }
 
     /** @param Category $entity */
     protected function afterProcessEntity($entity)
     {
-        $this->existingCategories = [];
-
         if ($entity->getSlugPrototypes()->isEmpty()) {
             foreach ($entity->getTitles() as $localizedTitle) {
                 $this->addSlugPrototype($entity, $localizedTitle);
@@ -75,7 +69,7 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
             $this->addSlugPrototype($entity, $entity->getDefaultTitle());
         }
 
-        return $entity;
+        return parent::afterProcessEntity($entity);
     }
 
     private function addSlugPrototype(Category $category, AbstractLocalizedFallbackValue $localizedName): void
@@ -109,123 +103,32 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
 
     protected function findExistingEntity($entity, array $searchContext = [])
     {
-        if ($entity instanceof Category && $entity->getAkeneoCode()) {
-            $category = $this->databaseHelper->findOneBy(
-                Category::class,
-                ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $this->getChannel()]
-            );
-
-            if ($category) {
-                $this->existingCategories[$entity->getAkeneoCode()] = $category;
-            }
-
-            return $category;
+        if ($entity instanceof Category && array_key_exists($entity->getAkeneoCode(), $this->existingCategories)) {
+            return $this->existingCategories[$entity->getAkeneoCode()];
         }
 
-        if (is_a($entity, AbstractLocalizedFallbackValue::class, true)) {
-            $localizationCode = LocalizationCodeFormatter::formatName($entity->getLocalization());
+        $entity = $this->findExistingEntityTrait($entity, $searchContext);
 
-            return $searchContext[$localizationCode] ?? null;
+        if ($entity instanceof Category) {
+            $this->existingCategories[$entity->getAkeneoCode()] = $entity;
         }
 
-        return parent::findExistingEntity($entity, $searchContext);
+        return $entity;
     }
 
     protected function findExistingEntityByIdentityFields($entity, array $searchContext = [])
     {
-        if ($entity instanceof Category && $entity->getAkeneoCode()) {
-            $category = $this->databaseHelper->findOneBy(
-                Category::class,
-                ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $this->getChannel()]
-            );
-
-            if ($category) {
-                $this->existingCategories[$entity->getAkeneoCode()] = $category;
-            }
-
-            return $category;
+        if ($entity instanceof Category && array_key_exists($entity->getAkeneoCode(), $this->existingCategories)) {
+            return $this->existingCategories[$entity->getAkeneoCode()];
         }
 
-        if (is_a($entity, $this->localizedFallbackValueClass, true)) {
-            $localizationCode = LocalizationCodeFormatter::formatName($entity->getLocalization());
+        $entity = $this->findExistingEntityByIdentityFieldsTrait($entity, $searchContext);
 
-            return $searchContext[$localizationCode] ?? null;
+        if ($entity instanceof Category) {
+            $this->existingCategories[$entity->getAkeneoCode()] = $entity;
         }
 
-        return parent::findExistingEntityByIdentityFields($entity, $searchContext);
-    }
-
-    /**
-     * @param object $entity
-     *
-     * @see \Oro\Bundle\ImportExportBundle\Strategy\Import\ImportStrategyHelper::importEntity
-     * @see \Oro\Bundle\AkeneoBundle\ImportExport\Strategy\ImportStrategyHelper::importEntity
-     * @see \Oro\Bundle\ImportExportBundle\Strategy\Import\ConfigurableAddOrReplaceStrategy::updateRelations
-     *
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     */
-    protected function updateRelations($entity, array $itemData = null)
-    {
-        $entityName = $this->doctrineHelper->getEntityClass($entity);
-        $fields = $this->fieldHelper->getFields($entityName, true);
-
-        foreach ($fields as $field) {
-            if ($this->fieldHelper->isRelation($field)) {
-                $fieldName = $field['name'];
-                $isFullRelation = $this->fieldHelper->getConfigValue($entityName, $fieldName, 'full', false);
-                $isPersistRelation = $this->databaseHelper->isCascadePersist($entityName, $fieldName);
-
-                $searchContext = $this->generateSearchContextForRelationsUpdate(
-                    $entity,
-                    $entityName,
-                    $fieldName,
-                    $isPersistRelation
-                );
-
-                if ($this->fieldHelper->isSingleRelation($field)) {
-                    // single relation
-                    $relationEntity = $this->getObjectValue($entity, $fieldName);
-                    if ($relationEntity) {
-                        $relationItemData = $this->fieldHelper->getItemData($itemData, $fieldName);
-                        $relationEntity = $this->processEntity(
-                            $relationEntity,
-                            $isFullRelation,
-                            $isPersistRelation,
-                            $relationItemData,
-                            $searchContext,
-                            true
-                        );
-                    }
-                    $this->fieldHelper->setObjectValue($entity, $fieldName, $relationEntity);
-                } elseif ($this->fieldHelper->isMultipleRelation($field)) {
-                    // multiple relation
-                    $relationCollection = $this->getObjectValue($entity, $fieldName);
-                    if ($relationCollection instanceof Collection) {
-                        $collectionItemData = $this->fieldHelper->getItemData($itemData, $fieldName);
-                        foreach ($relationCollection as $collectionEntity) {
-                            $entityItemData = $this->fieldHelper->getItemData(array_shift($collectionItemData));
-                            $existingCollectionEntity = $this->processEntity(
-                                $collectionEntity,
-                                $isFullRelation,
-                                $isPersistRelation,
-                                $entityItemData,
-                                $searchContext,
-                                true
-                            );
-
-                            if ($existingCollectionEntity) {
-                                if (!$relationCollection->contains($existingCollectionEntity)) {
-                                    $relationCollection->removeElement($collectionEntity);
-                                    $relationCollection->add($existingCollectionEntity);
-                                }
-
-                                $this->cacheInverseFieldRelation($entityName, $fieldName, $existingCollectionEntity);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        return $entity;
     }
 
     /**
@@ -257,70 +160,8 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
         return parent::isFieldExcluded($entityName, $fieldName, $itemData);
     }
 
-    protected function mapCollections(Collection $importedCollection, Collection $sourceCollection)
-    {
-    }
-
-    protected function setLocalizationKeys($entity, array $field)
-    {
-    }
-
-    protected function removeNotInitializedEntities($entity, array $field, array $relations)
-    {
-    }
-
-    protected function generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation)
-    {
-        $searchContext = parent::generateSearchContextForRelationsUpdate(
-            $entity,
-            $entityName,
-            $fieldName,
-            $isPersistRelation
-        );
-
-        $fields = $this->fieldHelper->getRelations($entityName);
-
-        if (!$this->isLocalizedFallbackValue($fields[$fieldName])) {
-            return $searchContext;
-        }
-
-        /** @var Collection $importedCollection */
-        $importedCollection = $this->fieldHelper->getObjectValue($entity, $fieldName);
-        if ($importedCollection->isEmpty()) {
-            return $searchContext;
-        }
-
-        $existingEntity = $this->findExistingEntity($entity);
-        if ($existingEntity) {
-            $searchContext = [];
-            $sourceCollection = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
-            /** @var AbstractLocalizedFallbackValue $sourceValue */
-            foreach ($sourceCollection as $sourceValue) {
-                $localizationCode = LocalizationCodeFormatter::formatName($sourceValue->getLocalization());
-                $searchContext[$localizationCode] = $sourceValue;
-            }
-
-            return $searchContext;
-        }
-
-        return $searchContext;
-    }
-
     public function setSlugGenerator(SlugGenerator $slugGenerator): void
     {
         $this->slugGenerator = $slugGenerator;
-    }
-
-    protected function validateBeforeProcess($entity)
-    {
-        $validationErrors = $this->strategyHelper->validateEntity($entity, null, ['import_field_type_akeneo']);
-        if ($validationErrors) {
-            $this->context->incrementErrorEntriesCount();
-            $this->strategyHelper->addValidationErrors($validationErrors, $this->context);
-
-            return null;
-        }
-
-        return $entity;
     }
 }

@@ -73,7 +73,6 @@ services:
     arguments:
       index_1: '@oro_akeneo.strategy.import.helper'
     calls:
-      - [ setOwnerHelper, [ '@oro_akeneo.importexport.strategy.default_owner_helper' ] ]
       - [ setSlugGenerator, [ '@oro_entity_config.slug.generator' ] ]
 
   oro_akeneo.importexport.processor.category:
@@ -181,7 +180,6 @@ services:
       index_1: '@oro_akeneo.strategy.import.helper'
     calls:
       - [ setAttributeManager, [ '@oro_entity_config.manager.attribute_manager' ] ]
-      - [ setOwnerHelper, [ '@oro_akeneo.importexport.strategy.default_owner_helper' ] ]
       - [ setConfigManager, [ '@oro_entity_config.config_manager' ] ]
 
   oro_akeneo.importexport.processor.attribute_family:
@@ -239,8 +237,6 @@ services:
     parent: oro_product.importexport.strategy.product
     arguments:
       index_1: '@oro_akeneo.strategy.import.helper'
-    calls:
-      - [ setOwnerHelper, [ '@oro_akeneo.importexport.strategy.default_owner_helper' ] ]
 
   oro_akeneo.importexport.processor.product:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Processor\ProductImportProcessor'
@@ -393,7 +389,6 @@ services:
     arguments:
       index_1: '@oro_akeneo.strategy.import.helper'
     calls:
-      - [ setOwnerHelper, [ '@oro_akeneo.importexport.strategy.default_owner_helper' ] ]
       - [ setSlugGenerator, [ '@oro_entity_config.slug.generator' ] ]
 
   oro_akeneo.importexport.data_converter.brand:
@@ -404,12 +399,33 @@ services:
       - '@oro_entity_config.config_manager'
       - '@oro_config.manager'
 
-  oro_akeneo.importexport.event_listener.file:
+  oro_akeneo.importexport.event_listener.file_normalizer:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\EventListener\FileNormalizerListener'
     tags:
       - { name: kernel.event_listener, event: oro.import_export.after_denormalize_entity, method: afterDenormalize }
 
-  oro_akeneo.importexport.event_listener.product_image:
+  oro_akeneo.importexport.event_listener.product_image_normalizer:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\EventListener\ProductImageNormalizerListener'
     tags:
       - { name: kernel.event_listener, event: oro.import_export.after_denormalize_entity, method: afterDenormalize }
+
+  oro_akeneo.importexport.event_listener.closable_strategy:
+    class: 'Oro\Bundle\AkeneoBundle\ImportExport\EventListener\ClosableStrategyEventListener'
+    tags:
+      - { name: kernel.event_listener, event: oro_importexport.strategy.process_after, method: onProcessAfter, priority: -256 }
+
+  oro_akeneo.importexport.event_listener.file_strategy:
+    class: 'Oro\Bundle\AkeneoBundle\ImportExport\EventListener\FileStrategyEventListener'
+    arguments:
+      - '@oro_entity.helper.field_helper'
+    tags:
+      - { name: kernel.event_listener, event: oro_importexport.strategy.process_before, method: onProcessBefore, priority: 256 }
+
+  oro_akeneo.importexport.event_listener.owner_strategy:
+    class: 'Oro\Bundle\AkeneoBundle\ImportExport\EventListener\OwnerStrategyEventListener'
+    arguments:
+      - '@oro_entity.doctrine_helper'
+      - '@oro_akeneo.importexport.strategy.default_owner_helper'
+    tags:
+      - { name: kernel.event_listener, event: oro_importexport.strategy.process_before, method: onProcessBefore, priority: 256 }
+      - { name: doctrine.event_listener, event: onClear }

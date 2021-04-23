@@ -2,8 +2,8 @@
 
 namespace Oro\Bundle\AkeneoBundle\Client;
 
-use Akeneo\Pim\ApiClient\AkeneoPimClientBuilder;
 use Akeneo\Pim\ApiClient\AkeneoPimClientInterface;
+use Akeneo\PimEnterprise\ApiClient\AkeneoPimEnterpriseClientBuilder;
 use Oro\Bundle\AkeneoBundle\Encoder\Crypter;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
@@ -117,9 +117,9 @@ class AkeneoClientFactory
         return $this->client;
     }
 
-    private function getClientBuilder(): AkeneoPimClientBuilder
+    private function getClientBuilder(): AkeneoPimEnterpriseClientBuilder
     {
-        $clientBuilder = new AkeneoPimClientBuilder($this->akeneoUrl);
+        $clientBuilder = new AkeneoPimEnterpriseClientBuilder($this->akeneoUrl);
         $clientBuilder->setHttpClient($this->httpClient);
         $clientBuilder->setRequestFactory($this->requestFactory);
         $clientBuilder->setStreamFactory($this->streamFactory);

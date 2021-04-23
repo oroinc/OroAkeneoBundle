@@ -2,7 +2,6 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 
-use Doctrine\Common\Collections\Collection;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeFamily;
 use Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeGroup;
@@ -11,19 +10,17 @@ use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityConfigBundle\Entity\FieldConfigModel;
 use Oro\Bundle\EntityConfigBundle\Manager\AttributeManager;
 use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
-use Oro\Bundle\LocaleBundle\Entity\AbstractLocalizedFallbackValue;
-use Oro\Bundle\LocaleBundle\ImportExport\Normalizer\LocalizationCodeFormatter;
 use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStrategy;
 use Oro\Bundle\ProductBundle\Entity\Product;
 
 /**
  * Strategy to import attribute families.
- *
- * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy implements ClosableInterface
 {
-    use OwnerTrait;
+    use LocalizedFallbackValueAwareStrategyTrait;
+    use StrategyRelationsTrait;
+    use StrategyValidationTrait;
 
     private const GROUP_CODE_GENERAL = 'general';
     private const GROUP_CODE_IMAGES = 'images';
@@ -54,32 +51,18 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
         $this->cachedEntities = [];
 
         $this->databaseHelper->onClear();
-
-        $this->clearOwnerCache();
     }
 
     public function beforeProcessEntity($entity)
     {
         $this->removeInactiveAttributes($entity);
         $this->setSystemAttributes($entity);
-        $this->setOwner($entity);
 
-        return $entity;
-    }
-
-    protected function afterProcessEntity($entity)
-    {
         return $entity;
     }
 
     protected function findExistingEntity($entity, array $searchContext = [])
     {
-        if (is_a($entity, AbstractLocalizedFallbackValue::class, true)) {
-            $localizationCode = LocalizationCodeFormatter::formatName($entity->getLocalization());
-
-            return $searchContext[$localizationCode] ?? null;
-        }
-
         if (is_a($entity, AttributeGroup::class)) {
             $family = $this->findExistingEntity($entity->getAttributeFamily());
             if ($family instanceof AttributeFamily) {
@@ -93,17 +76,11 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
             return null;
         }
 
-        return parent::findExistingEntity($entity, $searchContext);
+        return $this->findExistingEntityTrait($entity, $searchContext);
     }
 
     protected function findExistingEntityByIdentityFields($entity, array $searchContext = [])
     {
-        if (is_a($entity, $this->localizedFallbackValueClass, true)) {
-            $localizationCode = LocalizationCodeFormatter::formatName($entity->getLocalization());
-
-            return $searchContext[$localizationCode] ?? null;
-        }
-
         if (is_a($entity, AttributeGroup::class)) {
             $family = $this->findExistingEntity($entity->getAttributeFamily());
             if ($family instanceof AttributeFamily) {
@@ -117,7 +94,7 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
             return null;
         }
 
-        return parent::findExistingEntityByIdentityFields($entity, $searchContext);
+        return $this->findExistingEntityByIdentityFieldsTrait($entity, $searchContext);
     }
 
     private function removeInactiveAttributes(AttributeFamily $entity)
@@ -188,79 +165,6 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
         }
 
         return null;
-    }
-
-    /**
-     * @param object $entity
-     *
-     * @see \Oro\Bundle\ImportExportBundle\Strategy\Import\ImportStrategyHelper::importEntity
-     * @see \Oro\Bundle\AkeneoBundle\ImportExport\Strategy\ImportStrategyHelper::importEntity
-     * @see \Oro\Bundle\ImportExportBundle\Strategy\Import\ConfigurableAddOrReplaceStrategy::updateRelations
-     *
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     */
-    protected function updateRelations($entity, array $itemData = null)
-    {
-        $entityName = $this->doctrineHelper->getEntityClass($entity);
-        $fields = $this->fieldHelper->getFields($entityName, true);
-
-        foreach ($fields as $field) {
-            if ($this->fieldHelper->isRelation($field)) {
-                $fieldName = $field['name'];
-                $isFullRelation = $this->fieldHelper->getConfigValue($entityName, $fieldName, 'full', false);
-                $isPersistRelation = $this->databaseHelper->isCascadePersist($entityName, $fieldName);
-
-                $searchContext = $this->generateSearchContextForRelationsUpdate(
-                    $entity,
-                    $entityName,
-                    $fieldName,
-                    $isPersistRelation
-                );
-
-                if ($this->fieldHelper->isSingleRelation($field)) {
-                    // single relation
-                    $relationEntity = $this->getObjectValue($entity, $fieldName);
-                    if ($relationEntity) {
-                        $relationItemData = $this->fieldHelper->getItemData($itemData, $fieldName);
-                        $relationEntity = $this->processEntity(
-                            $relationEntity,
-                            $isFullRelation,
-                            $isPersistRelation,
-                            $relationItemData,
-                            $searchContext,
-                            true
-                        );
-                    }
-                    $this->fieldHelper->setObjectValue($entity, $fieldName, $relationEntity);
-                } elseif ($this->fieldHelper->isMultipleRelation($field)) {
-                    // multiple relation
-                    $relationCollection = $this->getObjectValue($entity, $fieldName);
-                    if ($relationCollection instanceof Collection) {
-                        $collectionItemData = $this->fieldHelper->getItemData($itemData, $fieldName);
-                        foreach ($relationCollection as $collectionEntity) {
-                            $entityItemData = $this->fieldHelper->getItemData(array_shift($collectionItemData));
-                            $existingCollectionEntity = $this->processEntity(
-                                $collectionEntity,
-                                $isFullRelation,
-                                $isPersistRelation,
-                                $entityItemData,
-                                $searchContext,
-                                true
-                            );
-
-                            if ($existingCollectionEntity) {
-                                if (!$relationCollection->contains($existingCollectionEntity)) {
-                                    $relationCollection->removeElement($collectionEntity);
-                                    $relationCollection->add($existingCollectionEntity);
-                                }
-
-                                $this->cacheInverseFieldRelation($entityName, $fieldName, $existingCollectionEntity);
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -369,18 +273,6 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
         return $imagesGroup;
     }
 
-    protected function mapCollections(Collection $importedCollection, Collection $sourceCollection)
-    {
-    }
-
-    protected function setLocalizationKeys($entity, array $field)
-    {
-    }
-
-    protected function removeNotInitializedEntities($entity, array $field, array $relations)
-    {
-    }
-
     protected function combineIdentityValues($entity, $entityClass, array $searchContext)
     {
         if (is_a($entity, AttributeGroup::class)) {
@@ -391,55 +283,5 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
         }
 
         return parent::combineIdentityValues($entity, $entityClass, $searchContext);
-    }
-
-    protected function generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation)
-    {
-        $searchContext = parent::generateSearchContextForRelationsUpdate(
-            $entity,
-            $entityName,
-            $fieldName,
-            $isPersistRelation
-        );
-
-        $fields = $this->fieldHelper->getRelations($entityName);
-
-        if (!$this->isLocalizedFallbackValue($fields[$fieldName])) {
-            return $searchContext;
-        }
-
-        /** @var Collection $importedCollection */
-        $importedCollection = $this->fieldHelper->getObjectValue($entity, $fieldName);
-        if ($importedCollection->isEmpty()) {
-            return $searchContext;
-        }
-
-        $existingEntity = $this->findExistingEntity($entity);
-        if ($existingEntity) {
-            $searchContext = [];
-            $sourceCollection = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
-            /** @var AbstractLocalizedFallbackValue $sourceValue */
-            foreach ($sourceCollection as $sourceValue) {
-                $localizationCode = LocalizationCodeFormatter::formatName($sourceValue->getLocalization());
-                $searchContext[$localizationCode] = $sourceValue;
-            }
-
-            return $searchContext;
-        }
-
-        return $searchContext;
-    }
-
-    protected function validateBeforeProcess($entity)
-    {
-        $validationErrors = $this->strategyHelper->validateEntity($entity, null, ['import_field_type_akeneo']);
-        if ($validationErrors) {
-            $this->context->incrementErrorEntriesCount();
-            $this->strategyHelper->addValidationErrors($validationErrors, $this->context);
-
-            return null;
-        }
-
-        return $entity;
     }
 }

@@ -64,31 +64,8 @@ class ProductImageImportStrategy extends ConfigurableAddOrReplaceStrategy implem
         return parent::beforeProcessEntity($entity);
     }
 
-    protected function afterProcessEntity($entity)
-    {
-        $result = parent::afterProcessEntity($entity);
-        if (!$result && $entity) {
-            $this->processValidationErrors($entity, []);
-        }
-
-        return $result;
-    }
-
     protected function updateContextCounters($entity)
     {
-    }
-
-    protected function validateBeforeProcess($entity)
-    {
-        $validationErrors = $this->strategyHelper->validateEntity($entity, null, ['import_field_type_akeneo']);
-        if ($validationErrors) {
-            $this->context->incrementErrorEntriesCount();
-            $this->strategyHelper->addValidationErrors($validationErrors, $this->context);
-
-            return null;
-        }
-
-        return $entity;
     }
 
     protected function isFieldExcluded($entityName, $fieldName, $itemData = null)

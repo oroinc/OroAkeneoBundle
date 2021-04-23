@@ -2,15 +2,9 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 
-use Doctrine\Common\Collections\Collection;
-use Oro\Bundle\AttachmentBundle\Entity\File;
-use Oro\Bundle\AttachmentBundle\Entity\FileItem;
 use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\EntityExtendBundle\Entity\AbstractEnumValue;
 use Oro\Bundle\EntityExtendBundle\Tools\ExtendHelper;
-use Oro\Bundle\LocaleBundle\Entity\AbstractLocalizedFallbackValue;
-use Oro\Bundle\LocaleBundle\ImportExport\Normalizer\LocalizationCodeFormatter;
-use Oro\Bundle\ProductBundle\Entity\Brand;
 use Oro\Bundle\ProductBundle\Entity\Product;
 use Oro\Bundle\ProductBundle\ImportExport\Strategy\ProductStrategy;
 
@@ -19,7 +13,9 @@ use Oro\Bundle\ProductBundle\ImportExport\Strategy\ProductStrategy;
  */
 class ProductImportStrategy extends ProductStrategy
 {
-    use OwnerTrait;
+    use LocalizedFallbackValueAwareStrategyTrait;
+    use StrategyRelationsTrait;
+    use StrategyValidationTrait;
 
     /**
      * @var Product[]
@@ -35,56 +31,9 @@ class ProductImportStrategy extends ProductStrategy
 
         $this->existingProducts = [];
 
-        $this->clearOwnerCache();
-
         $this->databaseHelper->onClear();
 
         parent::close();
-    }
-
-    protected function beforeProcessEntity($entity)
-    {
-        $this->setOwner($entity);
-
-        $fields = $this->fieldHelper->getRelations(Product::class);
-        $itemData = (array)($this->context->getValue('itemData') ?? []);
-        $existingEntity = $this->findExistingEntity($entity);
-        if ($existingEntity instanceof Product) {
-            foreach ($fields as $field) {
-                if (empty($itemData[$field['name']])) {
-                    continue;
-                }
-
-                if ($this->isFileValue($field)) {
-                    $existingValue = $this->fieldHelper->getObjectValue($existingEntity, $field['name']);
-                    if ($existingValue) {
-                        $itemData[$field['name']]['uuid'] = $existingValue->getUuid();
-                    }
-                }
-
-                if ($this->isFileItemValue($field)) {
-                    $existingValues = $this->fieldHelper->getObjectValue($existingEntity, $field['name']);
-                    $uuids = [];
-                    /** @var FileItem $existingValue */
-                    foreach ($existingValues as $key => $existingValue) {
-                        if (!$existingValue->getFile()) {
-                            continue;
-                        }
-
-                        $uuids[$existingValue->getFile()->getOriginalFilename()] = $existingValue->getFile()->getUuid();
-                    }
-
-                    foreach ($itemData[$field['name']] as $key => $data) {
-                        if (array_key_exists(basename($data['uri']), $uuids)) {
-                            $itemData[$field['name']][$key]['file']['uuid'] = $uuids[basename($data['uri'])];
-                        }
-                    }
-                }
-            }
-        }
-        $this->context->setValue('itemData', $itemData);
-
-        return parent::beforeProcessEntity($entity);
     }
 
     protected function afterProcessEntity($entity)
@@ -122,12 +71,7 @@ class ProductImportStrategy extends ProductStrategy
 
         $this->existingProducts = [];
 
-        $result = parent::afterProcessEntity($entity);
-        if (!$result && $entity) {
-            $this->processValidationErrors($entity, []);
-        }
-
-        return $result;
+        return parent::afterProcessEntity($entity);
     }
 
     protected function populateOwner(Product $entity)
@@ -140,27 +84,7 @@ class ProductImportStrategy extends ProductStrategy
             return $this->existingProducts[$entity->getSku()];
         }
 
-        if ($entity instanceof Category && $entity->getAkeneoCode()) {
-            return $this->databaseHelper->findOneBy(
-                Category::class,
-                ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $this->getChannel()]
-            );
-        }
-
-        if ($entity instanceof Brand && $entity->getAkeneoCode()) {
-            return $this->databaseHelper->findOneBy(
-                Brand::class,
-                ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $this->getChannel()]
-            );
-        }
-
-        if (is_a($entity, AbstractLocalizedFallbackValue::class, true)) {
-            $localizationCode = LocalizationCodeFormatter::formatName($entity->getLocalization());
-
-            return $searchContext[$localizationCode] ?? null;
-        }
-
-        $entity = parent::findExistingEntity($entity, $searchContext);
+        $entity = $this->findExistingEntityTrait($entity, $searchContext);
 
         if ($entity instanceof Product) {
             $this->existingProducts[$entity->getSku()] = $entity;
@@ -175,106 +99,13 @@ class ProductImportStrategy extends ProductStrategy
             return $this->existingProducts[$entity->getSku()];
         }
 
-        if ($entity instanceof Category && $entity->getAkeneoCode()) {
-            return $this->databaseHelper->findOneBy(
-                Category::class,
-                ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $this->getChannel()]
-            );
-        }
-
-        if ($entity instanceof Brand && $entity->getAkeneoCode()) {
-            return $this->databaseHelper->findOneBy(
-                Brand::class,
-                ['akeneo_code' => $entity->getAkeneoCode(), 'channel' => $this->getChannel()]
-            );
-        }
-
-        if (is_a($entity, $this->localizedFallbackValueClass, true)) {
-            $localizationCode = LocalizationCodeFormatter::formatName($entity->getLocalization());
-
-            return $searchContext[$localizationCode] ?? null;
-        }
-
-        $entity = parent::findExistingEntityByIdentityFields($entity, $searchContext);
+        $entity = $this->findExistingEntityByIdentityFieldsTrait($entity, $searchContext);
 
         if ($entity instanceof Product) {
             $this->existingProducts[$entity->getSku()] = $entity;
         }
 
         return $entity;
-    }
-
-    /**
-     * @param object $entity
-     *
-     * @see \Oro\Bundle\ImportExportBundle\Strategy\Import\ImportStrategyHelper::importEntity
-     * @see \Oro\Bundle\AkeneoBundle\ImportExport\Strategy\ImportStrategyHelper::importEntity
-     * @see \Oro\Bundle\ImportExportBundle\Strategy\Import\ConfigurableAddOrReplaceStrategy::updateRelations
-     *
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     */
-    protected function updateRelations($entity, array $itemData = null)
-    {
-        $entityName = $this->doctrineHelper->getEntityClass($entity);
-        $fields = $this->fieldHelper->getFields($entityName, true);
-
-        foreach ($fields as $field) {
-            if ($this->fieldHelper->isRelation($field)) {
-                $fieldName = $field['name'];
-                $isFullRelation = $this->fieldHelper->getConfigValue($entityName, $fieldName, 'full', false);
-                $isPersistRelation = $this->databaseHelper->isCascadePersist($entityName, $fieldName);
-
-                $searchContext = $this->generateSearchContextForRelationsUpdate(
-                    $entity,
-                    $entityName,
-                    $fieldName,
-                    $isPersistRelation
-                );
-
-                if ($this->fieldHelper->isSingleRelation($field)) {
-                    // single relation
-                    $relationEntity = $this->getObjectValue($entity, $fieldName);
-                    if ($relationEntity) {
-                        $relationItemData = $this->fieldHelper->getItemData($itemData, $fieldName);
-                        $relationEntity = $this->processEntity(
-                            $relationEntity,
-                            $isFullRelation,
-                            $isPersistRelation,
-                            $relationItemData,
-                            $searchContext,
-                            true
-                        );
-                    }
-                    $this->fieldHelper->setObjectValue($entity, $fieldName, $relationEntity);
-                } elseif ($this->fieldHelper->isMultipleRelation($field)) {
-                    // multiple relation
-                    $relationCollection = $this->getObjectValue($entity, $fieldName);
-                    if ($relationCollection instanceof Collection) {
-                        $collectionItemData = $this->fieldHelper->getItemData($itemData, $fieldName);
-                        foreach ($relationCollection as $collectionEntity) {
-                            $entityItemData = $this->fieldHelper->getItemData(array_shift($collectionItemData));
-                            $existingCollectionEntity = $this->processEntity(
-                                $collectionEntity,
-                                $isFullRelation,
-                                $isPersistRelation,
-                                $entityItemData,
-                                $searchContext,
-                                true
-                            );
-
-                            if ($existingCollectionEntity) {
-                                if (!$relationCollection->contains($existingCollectionEntity)) {
-                                    $relationCollection->removeElement($collectionEntity);
-                                    $relationCollection->add($existingCollectionEntity);
-                                }
-
-                                $this->cacheInverseFieldRelation($entityName, $fieldName, $existingCollectionEntity);
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -328,77 +159,5 @@ class ProductImportStrategy extends ProductStrategy
         }
 
         return parent::isFieldExcluded($entityName, $fieldName, $itemData);
-    }
-
-    protected function mapCollections(Collection $importedCollection, Collection $sourceCollection)
-    {
-    }
-
-    protected function setLocalizationKeys($entity, array $field)
-    {
-    }
-
-    protected function removeNotInitializedEntities($entity, array $field, array $relations)
-    {
-    }
-
-    protected function generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation)
-    {
-        $searchContext = parent::generateSearchContextForRelationsUpdate(
-            $entity,
-            $entityName,
-            $fieldName,
-            $isPersistRelation
-        );
-
-        $fields = $this->fieldHelper->getRelations($entityName);
-
-        if (!$this->isLocalizedFallbackValue($fields[$fieldName])) {
-            return $searchContext;
-        }
-
-        /** @var Collection $importedCollection */
-        $importedCollection = $this->fieldHelper->getObjectValue($entity, $fieldName);
-        if ($importedCollection->isEmpty()) {
-            return $searchContext;
-        }
-
-        $existingEntity = $this->findExistingEntity($entity);
-        if ($existingEntity) {
-            $searchContext = [];
-            $sourceCollection = $this->fieldHelper->getObjectValue($existingEntity, $fieldName);
-            /** @var AbstractLocalizedFallbackValue $sourceValue */
-            foreach ($sourceCollection as $sourceValue) {
-                $localizationCode = LocalizationCodeFormatter::formatName($sourceValue->getLocalization());
-                $searchContext[$localizationCode] = $sourceValue;
-            }
-
-            return $searchContext;
-        }
-
-        return $searchContext;
-    }
-
-    private function isFileValue(array $field): bool
-    {
-        return $this->fieldHelper->isRelation($field) && is_a($field['related_entity_name'], File::class, true);
-    }
-
-    private function isFileItemValue(array $field): bool
-    {
-        return $this->fieldHelper->isRelation($field) && is_a($field['related_entity_name'], FileItem::class, true);
-    }
-
-    protected function validateBeforeProcess($entity)
-    {
-        $validationErrors = $this->strategyHelper->validateEntity($entity, null, ['import_field_type_akeneo']);
-        if ($validationErrors) {
-            $this->context->incrementErrorEntriesCount();
-            $this->strategyHelper->addValidationErrors($validationErrors, $this->context);
-
-            return null;
-        }
-
-        return $entity;
     }
 }

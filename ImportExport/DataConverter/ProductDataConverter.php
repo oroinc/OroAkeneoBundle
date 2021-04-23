@@ -6,7 +6,6 @@ use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeFamilyCodeGenerator;
 use Oro\Bundle\AkeneoBundle\Tools\Generator;
-use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityExtendBundle\Extend\RelationType;
@@ -25,7 +24,7 @@ use Oro\Bundle\ProductBundle\Provider\ProductUnitsProvider;
  *
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
-class ProductDataConverter extends BaseProductDataConverter implements ContextAwareInterface, ClosableInterface
+class ProductDataConverter extends BaseProductDataConverter implements ContextAwareInterface
 {
     use AkeneoIntegrationTrait;
     use LocalizationAwareTrait;
@@ -524,12 +523,6 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     public function setDateTimeFormatter(DateTimeFormatterInterface $dateTimeFormatter): void
     {
         $this->dateTimeFormatter = $dateTimeFormatter;
-    }
-
-    public function close()
-    {
-        $this->akeneoFields = [];
-        $this->systemFields = [];
     }
 
     /**
