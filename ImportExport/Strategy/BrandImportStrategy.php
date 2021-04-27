@@ -9,7 +9,9 @@ use Oro\Bundle\LocaleBundle\Entity\LocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStrategy;
 use Oro\Bundle\ProductBundle\Entity\Brand;
 
-class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements ClosableInterface
+class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
+    ClosableInterface,
+    ExistingEntityAwareInterface
 {
     use LocalizedFallbackValueAwareStrategyTrait;
     use StrategyRelationsTrait;
@@ -48,6 +50,11 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
         $localizedSlug->setFallback($localizedName->getFallback());
         $localizedSlug->setLocalization($localizedName->getLocalization());
         $brand->addSlugPrototype($localizedSlug);
+    }
+
+    public function getExistingEntity(object $entity, array $searchContext = []): ?object
+    {
+        return parent::findExistingEntity($entity, $searchContext);
     }
 
     protected function updateContextCounters($entity)

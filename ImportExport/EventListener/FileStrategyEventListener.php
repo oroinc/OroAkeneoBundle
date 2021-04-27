@@ -3,6 +3,7 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\EventListener;
 
 use Doctrine\Common\Util\ClassUtils;
+use Oro\Bundle\AkeneoBundle\ImportExport\Strategy\ExistingEntityAwareInterface;
 use Oro\Bundle\AttachmentBundle\Entity\File;
 use Oro\Bundle\AttachmentBundle\Entity\FileItem;
 use Oro\Bundle\EntityBundle\Helper\FieldHelper;
@@ -21,12 +22,12 @@ class FileStrategyEventListener
     public function onProcessBefore(StrategyEvent $event)
     {
         $strategy = $event->getStrategy();
-        if (!method_exists($strategy, 'findExistingEntityTrait')) {
+        if (!$strategy instanceof ExistingEntityAwareInterface) {
             return;
         }
 
         $entity = $event->getEntity();
-        $existingEntity = $strategy->findExistingEntityTrait($entity);
+        $existingEntity = $strategy->getExistingEntity($entity);
         if (!$existingEntity) {
             return;
         }

@@ -11,7 +11,7 @@ use Oro\Bundle\ProductBundle\ImportExport\Strategy\ProductStrategy;
 /**
  * Strategy to import products.
  */
-class ProductImportStrategy extends ProductStrategy
+class ProductImportStrategy extends ProductStrategy implements ExistingEntityAwareInterface
 {
     use LocalizedFallbackValueAwareStrategyTrait;
     use StrategyRelationsTrait;
@@ -91,6 +91,11 @@ class ProductImportStrategy extends ProductStrategy
         }
 
         return $entity;
+    }
+
+    public function getExistingEntity(object $entity, array $searchContext = []): ?object
+    {
+        return parent::findExistingEntity($entity, $searchContext);
     }
 
     protected function findExistingEntityByIdentityFields($entity, array $searchContext = [])
