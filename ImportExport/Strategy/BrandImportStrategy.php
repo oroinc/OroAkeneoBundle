@@ -10,7 +10,9 @@ use Oro\Bundle\LocaleBundle\ImportExport\Normalizer\LocalizationCodeFormatter;
 use Oro\Bundle\LocaleBundle\ImportExport\Strategy\LocalizedFallbackValueAwareStrategy;
 use Oro\Bundle\ProductBundle\Entity\Brand;
 
-class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements ClosableInterface
+class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
+    ClosableInterface,
+    ExistingEntityAwareInterface
 {
     use ImportStrategyAwareHelperTrait;
     use OwnerTrait;
@@ -96,6 +98,11 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
         }
 
         return parent::findExistingEntityByIdentityFields($entity, $searchContext);
+    }
+
+    public function getExistingEntity($entity, array $searchContext = [])
+    {
+        return parent::findExistingEntity($entity, $searchContext);
     }
 
     /**

@@ -422,3 +422,10 @@ services:
       - '@oro_entity_config.config_manager'
       - '@oro_config.manager'
       - '%kernel.project_dir%/var/import_export/akeneo'
+
+  oro_akeneo.importexport.event_listener.file_strategy:
+    class: 'Oro\Bundle\AkeneoBundle\ImportExport\EventListener\FileStrategyEventListener'
+    arguments:
+      - '@oro_entity.helper.field_helper'
+    tags:
+      - { name: kernel.event_listener, event: oro_importexport.strategy.process_before, method: onProcessBefore, priority: 256 }

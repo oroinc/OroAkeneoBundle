@@ -3,8 +3,6 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 
 use Doctrine\Common\Collections\Collection;
-use Oro\Bundle\AttachmentBundle\Entity\File;
-use Oro\Bundle\AttachmentBundle\Entity\FileItem;
 use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\EntityExtendBundle\Entity\AbstractEnumValue;
 use Oro\Bundle\EntityExtendBundle\Tools\ExtendHelper;
@@ -17,7 +15,7 @@ use Oro\Bundle\ProductBundle\ImportExport\Strategy\ProductStrategy;
 /**
  * Strategy to import products.
  */
-class ProductImportStrategy extends ProductStrategy
+class ProductImportStrategy extends ProductStrategy implements ExistingEntityAwareInterface
 {
     use ImportStrategyAwareHelperTrait;
     use OwnerTrait;
@@ -46,44 +44,6 @@ class ProductImportStrategy extends ProductStrategy
     protected function beforeProcessEntity($entity)
     {
         $this->setOwner($entity);
-
-        $fields = $this->fieldHelper->getRelations(Product::class);
-        $itemData = (array)($this->context->getValue('itemData') ?? []);
-        $existingEntity = $this->findExistingEntity($entity);
-        if ($existingEntity instanceof Product) {
-            foreach ($fields as $field) {
-                if (empty($itemData[$field['name']])) {
-                    continue;
-                }
-
-                if ($this->isFileValue($field)) {
-                    $existingValue = $this->fieldHelper->getObjectValue($existingEntity, $field['name']);
-                    if ($existingValue) {
-                        $itemData[$field['name']]['uuid'] = $existingValue->getUuid();
-                    }
-                }
-
-                if ($this->isFileItemValue($field)) {
-                    $existingValues = $this->fieldHelper->getObjectValue($existingEntity, $field['name']);
-                    $uuids = [];
-                    /** @var FileItem $existingValue */
-                    foreach ($existingValues as $key => $existingValue) {
-                        if (!$existingValue->getFile()) {
-                            continue;
-                        }
-
-                        $uuids[$existingValue->getFile()->getOriginalFilename()] = $existingValue->getFile()->getUuid();
-                    }
-
-                    foreach ($itemData[$field['name']] as $key => $data) {
-                        if (array_key_exists(basename($data['uri']), $uuids)) {
-                            $itemData[$field['name']][$key]['file']['uuid'] = $uuids[basename($data['uri'])];
-                        }
-                    }
-                }
-            }
-        }
-        $this->context->setValue('itemData', $itemData);
 
         return parent::beforeProcessEntity($entity);
     }
@@ -203,6 +163,11 @@ class ProductImportStrategy extends ProductStrategy
         }
 
         return $entity;
+    }
+
+    public function getExistingEntity($entity, array $searchContext = [])
+    {
+        return parent::findExistingEntity($entity, $searchContext);
     }
 
     /**
@@ -378,16 +343,6 @@ class ProductImportStrategy extends ProductStrategy
         }
 
         return $searchContext;
-    }
-
-    private function isFileValue(array $field): bool
-    {
-        return $this->fieldHelper->isRelation($field) && is_a($field['related_entity_name'], File::class, true);
-    }
-
-    private function isFileItemValue(array $field): bool
-    {
-        return $this->fieldHelper->isRelation($field) && is_a($field['related_entity_name'], FileItem::class, true);
     }
 
     protected function validateBeforeProcess($entity)
