@@ -100,7 +100,7 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
         return parent::findExistingEntityByIdentityFields($entity, $searchContext);
     }
 
-    public function getExistingEntity($entity, array $searchContext = [])
+    public function getExistingEntity(object $entity, array $searchContext = []): ?object
     {
         return parent::findExistingEntity($entity, $searchContext);
     }
