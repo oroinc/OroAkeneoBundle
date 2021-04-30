@@ -188,6 +188,18 @@ services:
       - '@oro_akeneo.layout.data_provider.file_applications.inner'
       - '@oro_entity_config.provider.attribute'
 
+  oro_akeneo.layout.block_type.attribute_group:
+    class: 'Oro\Bundle\AkeneoBundle\Layout\Block\Type\AttributeGroupType'
+    decorates: oro_entity_config.block_type.attribute_group
+    decoration_priority: -255
+    arguments:
+      - '@oro_entity_config.attribute_render_registry'
+      - '@oro_entity_config.manager.attribute_manager'
+      - '@oro_entity_config.layout.chain_attribute_block_type_mapper'
+      - '@oro_akeneo.layout.block_type.attribute_group.inner'
+    tags:
+      - { name: layout.block_type, alias: attribute_group }
+
   oro_akeneo.product_variant.type_handler.string_type_handle:
     class: 'Oro\Bundle\AkeneoBundle\ProductVariant\TypeHandler\StringTypeHandler'
     arguments:
