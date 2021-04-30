@@ -48,7 +48,7 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
      */
     public function getMigrationVersion()
     {
-        return 'v1_14';
+        return 'v1_15';
     }
 
     /**

@@ -265,6 +265,7 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
             $this->saveDatagridConfig($className, $fieldName);
             $this->saveViewConfig($className, $fieldName);
             $this->saveFormConfig($className, $fieldName);
+            $this->saveFrontendConfig($className, $fieldName);
             $this->saveAttachmentConfig($className, $fieldName, $fieldConfigModel->getType());
             $this->saveSearchConfig($className, $fieldName, $type->isSearchable($fieldConfigModel));
 
@@ -348,6 +349,16 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
         $provider = $this->configManager->getProvider('form');
         $config = $provider->getConfig($className, $fieldName);
         $config->set('is_enabled', false);
+
+        $this->configManager->persist($config);
+    }
+
+    private function saveFrontendConfig(string $className, string $fieldName): void
+    {
+        $provider = $this->configManager->getProvider('frontend');
+        $config = $provider->getConfig($className, $fieldName);
+        $config->set('is_displayable', false);
+        $config->set('is_editable', false);
 
         $this->configManager->persist($config);
     }
