@@ -7,7 +7,6 @@ use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\IntegrationBundle\Authentication\Token\IntegrationTokenAwareTrait;
 use Oro\Bundle\IntegrationBundle\Entity\Channel as Integration;
 use Oro\Bundle\IntegrationBundle\Provider\SyncProcessorRegistry;
-use Oro\Bundle\SecurityBundle\Authentication\Token\UsernamePasswordOrganizationToken;
 use Oro\Component\MessageQueue\Client\TopicSubscriberInterface;
 use Oro\Component\MessageQueue\Consumption\MessageProcessorInterface;
 use Oro\Component\MessageQueue\Job\Job;
@@ -91,7 +90,7 @@ class ImportProductProcessor implements MessageProcessorInterface, TopicSubscrib
             return self::REJECT;
         }
 
-        $this->setTemporaryUserIntegrationToken($integration);
+        $this->setTemporaryIntegrationToken($integration);
 
         $result = $this->jobRunner->runDelayed(
             $body['jobId'],
@@ -108,20 +107,6 @@ class ImportProductProcessor implements MessageProcessorInterface, TopicSubscrib
             }
         );
 
-        $this->setTemporaryIntegrationToken($integration);
-
         return $result ? self::ACK : self::REJECT;
-    }
-
-    private function setTemporaryUserIntegrationToken(Integration $integration)
-    {
-        $token = new UsernamePasswordOrganizationToken(
-            $integration->getDefaultUserOwner(),
-            $integration->getDefaultUserOwner()->getUsername(),
-            'main',
-            $integration->getOrganization()
-        );
-        $token->setAttribute('owner_description', 'Integration: ' . $integration->getName());
-        $this->tokenStorage->setToken($token);
     }
 }

@@ -58,7 +58,7 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
         $this->removeInactiveAttributes($entity);
         $this->setSystemAttributes($entity);
 
-        return $entity;
+        return parent::beforeProcessEntity($entity);
     }
 
     protected function findExistingEntity($entity, array $searchContext = [])
