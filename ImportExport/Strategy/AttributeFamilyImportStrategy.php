@@ -65,7 +65,7 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
         $this->setSystemAttributes($entity);
         $this->setOwner($entity);
 
-        return $entity;
+        return parent::beforeProcessEntity($entity);
     }
 
     protected function afterProcessEntity($entity)
