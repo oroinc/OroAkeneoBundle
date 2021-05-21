@@ -54,7 +54,7 @@ class ReferenceEntityMediaFileApi implements ReferenceEntityMediaFileApiInterfac
             [
                 'name' => 'file',
                 'contents' => $mediaFile,
-            ]
+            ],
         ];
 
         $response = $this->resourceClient->createMultipartResource(static::MEDIA_FILE_CREATE_URI, [], $requestParts);
