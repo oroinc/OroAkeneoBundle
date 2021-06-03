@@ -1,0 +1,23 @@
+--- src/Oro/Bundle/DistributionBundle/OroDistributionBundle.php	2020-02-21 13:14:59.578000000 +0200
++++ src/Oro/Bundle/DistributionBundle/OroDistributionBundle.php	2020-11-23 13:07:51.547305953 +0200
+@@ -2,6 +2,8 @@
+ 
+ namespace Oro\Bundle\DistributionBundle;
+ 
++use Monolog\ErrorHandler;
++use Psr\Log\LogLevel;
+ use Oro\Bundle\DistributionBundle\DependencyInjection\Compiler\CacheConfigurationPass;
+ use Oro\Bundle\DistributionBundle\DependencyInjection\Compiler\HiddenRoutesPass;
+ use Symfony\Component\DependencyInjection\ContainerBuilder;
+@@ -22,4 +24,11 @@
+         $container->addCompilerPass(new CacheConfigurationPass());
+         $container->addCompilerPass(new HiddenRoutesPass());
+     }
++
++    public function boot()
++    {
++        if (PHP_SAPI === 'cli') {
++            ErrorHandler::register($this->container->get('logger'), false, false, LogLevel::CRITICAL);
++        }
++    }
+ }
