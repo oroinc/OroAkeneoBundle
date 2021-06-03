@@ -16,11 +16,10 @@ With this extension, you will be able to sync the following data from Akeneo to 
 
 ## Compatibility
 
-| Connector |     Status     | OroCommerce |    Akeneo      | Build |
+| Connector | Status | OroCommerce |    Akeneo      | Build |
 |-----------|----------------|-------------|----------------|-------|
-|    1.6    | Not maintained |     1.6     | 2.3, 3.2, 4.0* | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=1.6)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
-|    3.1    | Active (2020)  |     3.1     | 2.3, 3.2, 4.0* | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=3.1)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
-|    4.1    | Active (2021)  |     4.1     | 2.3, 3.2, 4.0* | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=4.1)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
+|    1.6    |  EOL   |     1.6     | 2.3, 3.2, 4.0* | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=1.6)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
+|    3.1    |  EOL   |     3.1     | 2.3, 3.2, 4.0* | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=3.1)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
 
 **Akeneo 4.0 supported using older client versions, with no new features available.**
 
