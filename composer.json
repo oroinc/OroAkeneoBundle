@@ -20,17 +20,5 @@
     "require": {
         "oro/commerce": "4.2.*",
         "akeneo/api-php-client-ee": "5.* || 6.*"
-    },
-    "repositories": {
-        "oro": {
-            "type": "composer",
-            "url": "https://packagist.orocrm.com"
-        },
-        "asset-packagist": {
-            "type": "composer",
-            "url": "https://asset-packagist.orocrm.com"
-        }
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    }
 }

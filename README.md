@@ -16,14 +16,14 @@ With this extension, you will be able to sync the following data from Akeneo to 
 
 ## Compatibility
 
-| Connector |     Status     | OroCommerce |    Akeneo       | Build |
-|-----------|----------------|-------------|----------------|-------|
-|    1.6    | Not maintained |     1.6     | 2.3, 3.2, 4.0* | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=1.6)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
-|    3.1    | Active (2020)  |     3.1     | 2.3, 3.2, 4.0* | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=3.1)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
-|    4.1    | Active (2021)  |     4.1     | 2.3, 3.2, 4.0* | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=4.1)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
-|    4.2    | Active (2022)  |     4.2     | 3.2, 4.0, 5.0  | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=4.2)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
+| Connector | Status | OroCommerce |    Akeneo      | Build |
+|-----------|--------|-------------|----------------|-------|
+|    1.6    |  EOL   |     1.6     | 2.3, 3.2, 4.0* |       |
+|    3.1    |  EOL   |     3.1     | 2.3, 3.2, 4.0* |       |
+|    4.1    |  2021  |     4.1     | 2.3, 3.2, 4.0* | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=4.1)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
+|    4.2    |  2022  |     4.2     | 3.2, 4.0, 5.0  | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=4.2)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
 
-**Akeneo 4.0 supported using older client versions, with no new features available.**
+** Akeneo supported using older client versions, new features are not available.**
 
 ## Installation
 
@@ -56,15 +56,7 @@ composer require "oro/commerce-akeneo:4.2.*" "akeneo/api-php-client-ee:6.*"
 
 ## OroCloud
 
-How to run Schema Update from CLI:
-
-```
-orocloud-cli maintenance:on
-orocloud-cli service:stop
-orocloud-cli app:console 'oro:entity-extend:update'
-orocloud-cli service:start
-orocloud-cli maintenance:off
-```
+[Application Schema Update](https://doc.oroinc.com/cloud/maintenance/basic-use/#application-schema-update)
 
 ## Dataset
 
