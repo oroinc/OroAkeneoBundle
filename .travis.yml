@@ -2,6 +2,7 @@ language: php
 
 php:
     - '7.4'
+    - '8.0'
 
 install:
     - php -r "copy('https://cs.symfony.com/download/php-cs-fixer-v2.phar', 'php-cs-fixer.phar');"
