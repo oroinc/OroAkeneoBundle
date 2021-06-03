@@ -16,13 +16,13 @@ With this extension, you will be able to sync the following data from Akeneo to 
 
 ## Compatibility
 
-| Connector |     Status     | OroCommerce |    Akeneo      | Build |
-|-----------|----------------|-------------|----------------|-------|
-|    1.6    | Not maintained |     1.6     | 2.3, 3.2, 4.0* | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=1.6)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
-|    3.1    | Active (2020)  |     3.1     | 2.3, 3.2, 4.0* | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=3.1)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
-|    4.1    | Active (2021)  |     4.1     | 2.3, 3.2, 4.0* | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=4.1)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
+| Connector | Status | OroCommerce |    Akeneo      | Build |
+|-----------|--------|-------------|----------------|-------|
+|    1.6    |  EOL   |     1.6     | 2.3, 3.2, 4.0* |       |
+|    3.1    |  EOL   |     3.1     | 2.3, 3.2, 4.0* |       |
+|    4.1    |  2021  |     4.1     | 2.3, 3.2, 4.0* | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=4.1)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
 
-**Akeneo 4.0 supported using older client versions, with no new features available.**
+** Akeneo supported using older client versions, new features are not available.**
 
 ## Schema
 
@@ -37,23 +37,7 @@ With this extension, you will be able to sync the following data from Akeneo to 
 
 ## OroCloud
 
-How to run Schema Update from CLI:
-
-```
-orocloud-cli maintenance:on
-orocloud-cli service:stop
-
-# \Oro\Bundle\EntityExtendBundle\Extend\EntityProcessor copy
-orocloud-cli app:console 'oro:entity-extend:update-config --update-custom'
-orocloud-cli app:console 'oro:entity-extend:cache:warmup'
-orocloud-cli app:console 'oro:entity-extend:update-schema'
-orocloud-cli app:console 'oro:entity-config:cache:warmup'
-
-# sync caches to all nodes
-orocloud-cli cache:rebuild --force-cleanup-existing-cache
-orocloud-cli service:start
-orocloud-cli maintenance:off
-```
+[Application Schema Update](https://doc.oroinc.com/cloud/maintenance/basic-use/#application-schema-update)
 
 ## Dataset
 
@@ -71,27 +55,15 @@ Connector supports and tested on the next dataset:
 
 ## Installation
 
-1. To apply patches you must have the following in your composer file:
-```
-{
-  "require": {
-      "cweagans/composer-patches": "~1.6"
-  },
-  "extra": {
-      "enable-patching": true
-  }
-}
-```
-
-2. Add composer package
+1. Add composer package
 
 ```
 composer require "oro/commerce-akeneo:3.1.*"
 ```
 
-3. Follow [Setup Guide](https://doc.oroinc.com/backend/setup/upgrade-to-new-version)
+2. Follow [Setup Guide](https://doc.oroinc.com/backend/setup/upgrade-to-new-version)
 
-4. Configure [Message Queue](https://doc.oroinc.com/backend/mq/consumer/#options)
+3. Configure [Message Queue](https://doc.oroinc.com/backend/mq/consumer/#options)
 
 ** Recommended time limit option values is 30 seconds `--time-limit=+30seconds`
 
