@@ -249,12 +249,10 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
                                 true
                             );
 
+                            $key = $relationCollection->indexOf($collectionEntity);
+                            $relationCollection->removeElement($collectionEntity);
                             if ($existingCollectionEntity) {
-                                if (!$relationCollection->contains($existingCollectionEntity)) {
-                                    $relationCollection->removeElement($collectionEntity);
-                                    $relationCollection->add($existingCollectionEntity);
-                                }
-
+                                $relationCollection->set($key, $existingCollectionEntity);
                                 $this->cacheInverseFieldRelation($entityName, $fieldName, $existingCollectionEntity);
                             }
                         }
