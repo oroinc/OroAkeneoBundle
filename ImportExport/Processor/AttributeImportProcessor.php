@@ -53,10 +53,12 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
             $this->cacheProvider->save('attribute_fieldNameMapping', $this->fieldNameMapping);
             $this->cacheProvider->save('attribute_fieldTypeMapping', $this->fieldTypeMapping);
 
-            $this->updateAttributeLabelTranslationContext($item, $object->getFieldName());
+            $itemData = $this->context->getValue('itemData');
+
+            $this->updateAttributeLabelTranslationContext($itemData, $object->getFieldName());
             $this->cacheProvider->save('attribute_attributeLabels', $this->attributeLabels);
 
-            $this->updateOptionLabelTranslationContext($item, $object->getFieldName());
+            $this->updateOptionLabelTranslationContext($itemData, $object->getFieldName());
             $this->cacheProvider->save('attribute_optionLabels', $this->optionLabels);
         }
 
