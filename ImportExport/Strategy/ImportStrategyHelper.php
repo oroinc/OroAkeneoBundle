@@ -93,7 +93,7 @@ class ImportStrategyHelper extends BaseImportStrategyHelper
     /**
      * {@inheritdoc}
      */
-    private function getEntityPropertiesByClassName($entityClassName)
+    protected function getEntityPropertiesByClassName($entityClassName)
     {
         /*
          * In case if we work with configured entities then we should use fieldHelper

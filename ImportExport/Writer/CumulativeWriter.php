@@ -83,7 +83,10 @@ class CumulativeWriter implements
                 $this->optionalListenerManager->getListeners()
             );
             foreach ($this->forceListeners as $forceListener) {
-                $this->optionalListenerManager->enableListener($forceListener);
+                try {
+                    $this->optionalListenerManager->enableListener($forceListener);
+                } catch (\InvalidArgumentException $e) {
+                }
             }
 
             $this->writer->write($this->items);
