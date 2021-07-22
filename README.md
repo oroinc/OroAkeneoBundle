@@ -126,7 +126,9 @@ Create a new integration to start synchronizing data from Akeneo to OroCommerce.
    * Attributes Mapping - Mappings to copy values from Akeneo attributes to system or custom Product Attributes.
 
      **Example 1:** `name:names;` - `name` (text) attribute from Akeneo imported as Product Attribute `Akeneo_name` and additionaly copied to `names` Product Attribute.
+     
      **Example 2:** `description:descriptions;` - `description` (text) attribute from Akeneo imported as Product Attribute `Akeneo_description` and additionaly copied to `descriptions` Product Attribute.
+     
      **Example 3:** `meta_titles:metaTitles;` - `meta_titles` (text) attribute from Akeneo imported as Product Attribute `Akeneo_meta_titles` and additionaly copied to `metaTitles` Product Attribute.
 
      **Note:** Akeneo attribute and Product Attribute types should match (both Akeneo_name and names are Many to many to Localized fallback value entity).
