@@ -63,4 +63,6 @@ interface AkeneoTransportInterface extends TransportInterface
     public function downloadAndSaveAsset(string $code, string $file): void;
 
     public function downloadAndSaveReferenceEntityMediaFile(string $code): void;
+
+    public function downloadAndSaveAssetMediaFile(string $code): void;
 }

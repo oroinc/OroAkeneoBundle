@@ -17,6 +17,9 @@ class AkeneoFileManager
     /** @var string[] */
     private $referenceEntityMediaFile = [];
 
+    /** @var string[] */
+    private $assetMediaFile = [];
+
     /** @var AkeneoTransport */
     private $akeneoTransport;
 
@@ -46,7 +49,12 @@ class AkeneoFileManager
 
     public function registerReferenceEntityMediaFile(string $uri): void
     {
-        $this->assets[basename($uri)] = $uri;
+        $this->referenceEntityMediaFile[basename($uri)] = $uri;
+    }
+
+    public function registerAssetMediaFile(string $uri): void
+    {
+        $this->assetMediaFile[basename($uri)] = $uri;
     }
 
     public function download(File $file, string $path): void
@@ -70,10 +78,15 @@ class AkeneoFileManager
             );
         }
 
+        if (array_key_exists($basename, $this->assetMediaFile)) {
+            $this->akeneoTransport->downloadAndSaveAssetMediaFile($this->assetMediaFile[$basename]);
+        }
+
         unset(
             $this->mediaFiles[$basename],
             $this->assets[$basename],
-            $this->referenceEntityMediaFile[$basename]
+            $this->referenceEntityMediaFile[$basename],
+            $this->assetMediaFile[$basename]
         );
     }
 }

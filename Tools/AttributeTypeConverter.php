@@ -21,6 +21,7 @@ class AttributeTypeConverter
         'akeneo_reference_entity' => 'enum',
         'pim_catalog_multiselect' => 'multiEnum',
         'pim_assets_collection' => 'multiFile',
+        'pim_catalog_asset_collection' => 'multiFile',
         'akeneo_reference_entity_collection' => 'multiEnum',
     ];
 

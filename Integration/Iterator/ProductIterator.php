@@ -18,6 +18,8 @@ class ProductIterator extends AbstractIterator
 
     private $assets = [];
 
+    private $assetsFamily = [];
+
     public function __construct(
         ResourceCursorInterface $resourceCursor,
         AkeneoPimClientInterface $client,
@@ -94,26 +96,72 @@ class ProductIterator extends AbstractIterator
     {
         foreach ($product['values'] as $code => &$values) {
             foreach ($values as $key => &$value) {
-                if ($value['type'] !== 'pim_assets_collection') {
-                    continue;
+                if ($value['type'] === 'pim_assets_collection') {
+                    $data = [];
+                    $source = (array)$value['data'];
+                    $value['data'] = [];
+                    foreach ($source as $assetCode) {
+                        if (array_key_exists($assetCode, $this->assets)) {
+                            $data = $this->assets[$assetCode];
+
+                            continue;
+                        }
+
+                        $assetData = $this->client->getAssetApi()->get($assetCode);
+                        $assets = $assetData['reference_files'] ?? [];
+                        foreach ($assets as $asset) {
+                            if (empty($asset['code'])) {
+                                continue;
+                            }
+
+                            $this->assets[$assetCode][] = $asset['code'];
+                            $data[$assetCode] = $this->assets[$assetCode];
+                        }
+                    }
+                    $value['data'] = $data;
                 }
 
-                $codes = [];
-                foreach ((array)$value['data'] as &$code) {
-                    if (array_key_exists($code, $this->assets)) {
-                        $codes[$code] = $this->assets[$code];
-
+                if ($value['type'] === 'pim_catalog_asset_collection') {
+                    $data = [];
+                    $source = (array)$value['data'];
+                    $value['data'] = [];
+                    $assetFamily = $this->attributes[$code]['reference_data_name'] ?? null;
+                    if (!$assetFamily) {
                         continue;
                     }
 
-                    $asset = $this->client->getAssetApi()->get($code);
-                    if (!empty($asset['reference_files'][0]['code'])) {
-                        $this->assets[$code] = $asset['reference_files'][0]['code'];
-
-                        $codes[$code] = $this->assets[$code];
+                    $assetFamilyData = $this->getAssetsFamily($assetFamily);
+                    $valueField = $assetFamilyData['attribute_as_main_media'] ?? null;
+                    if (!$valueField) {
+                        continue;
                     }
+
+                    foreach ($source as $assetCode) {
+                        if (array_key_exists($assetFamily . $assetCode, $this->assets)) {
+                            $data = array_merge($data, $this->assets[$assetFamily . $assetCode]);
+
+                            continue;
+                        }
+
+                        $this->assets[$assetFamily . $assetCode] = [];
+
+                        $assetData = $this->client->getAssetManagerApi()->get($assetFamily, $assetCode);
+                        $assets = $assetData['values'][$valueField] ?? [];
+                        foreach ($assets as $asset) {
+                            if (empty($asset['data'])) {
+                                continue;
+                            }
+
+                            if (!pathinfo($asset['data'], \PATHINFO_EXTENSION)) {
+                                continue;
+                            }
+
+                            $this->assets[$assetFamily . $assetCode][$assetCode] = $asset['data'];
+                            $data[$assetCode] = $asset['data'];
+                        }
+                    }
+                    $value['data'] = $data;
                 }
-                $value['data'] = $codes;
             }
         }
     }
@@ -129,5 +177,16 @@ class ProductIterator extends AbstractIterator
         }
 
         $product['sku'] = (string)$sku;
+    }
+
+    private function getAssetsFamily(string $assetFamily): array
+    {
+        if (array_key_exists($assetFamily, $this->assetsFamily)) {
+            return $this->assetsFamily[$assetFamily] ?? [];
+        }
+
+        $this->assetsFamily[$assetFamily] = $this->client->getAssetFamilyApi()->get($assetFamily);
+
+        return $this->assetsFamily[$assetFamily] ?? [];
     }
 }

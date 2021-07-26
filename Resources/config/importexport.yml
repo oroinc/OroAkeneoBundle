@@ -131,6 +131,7 @@ services:
     calls:
       - [ setDoctrineHelper, [ '@oro_entity.doctrine_helper' ] ]
       - [ setConfigManager, [ '@oro_config.manager' ] ]
+      - [ setTranslator, [ '@translator' ] ]
 
   oro_akeneo.importexport.strategy.attribute:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Strategy\AttributeImportStrategy'

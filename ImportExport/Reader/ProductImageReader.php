@@ -63,7 +63,12 @@ class ProductImageReader extends IteratorBasedReader
                             continue;
                         }
 
-                        if (!in_array($value['type'], ['pim_catalog_image', 'pim_assets_collection'])) {
+                        $imageAttributes = [
+                            'pim_catalog_image',
+                            'pim_assets_collection',
+                            'pim_catalog_asset_collection',
+                        ];
+                        if (!in_array($value['type'], $imageAttributes)) {
                             continue;
                         }
 
@@ -115,6 +120,12 @@ class ProductImageReader extends IteratorBasedReader
 
                         if (in_array($value['type'], ['pim_catalog_image'])) {
                             $this->akeneoFileManager->registerMediaFile($value['data']);
+                        }
+
+                        if (in_array($value['type'], ['pim_catalog_asset_collection'])) {
+                            foreach ($value['data'] as $data) {
+                                $this->akeneoFileManager->registerAssetMediaFile($data);
+                            }
                         }
 
                         if (in_array($value['type'], ['pim_assets_collection'])) {
