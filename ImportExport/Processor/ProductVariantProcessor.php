@@ -55,7 +55,7 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
     public function process($items)
     {
         $parentSkus = array_column($items, 'parent');
-        $variantSkus = array_values(array_filter(array_column($items, 'variant')));
+        $variantSkus = array_values(array_column($items, 'variant'));
 
         $parentSku = reset($parentSkus);
 
@@ -70,8 +70,13 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
         $parentProduct = $productRepository->findOneBySku($parentSku);
         if (!$parentProduct instanceof Product) {
             $context->incrementErrorEntriesCount();
-
-            $errorMessages = [$this->translator->trans('oro.product.product_by_sku.not_found', [], 'validators')];
+            $errorMessages = [
+                $this->translator->trans(
+                    'oro.akeneo.validator.product_by_sku.not_found',
+                    ['%sku%' => $parentSku],
+                    'validators'
+                ),
+            ];
             $this->strategyHelper->addValidationErrors($errorMessages, $context);
 
             return null;
@@ -91,6 +96,8 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
                 $parentProduct->removeVariantLink($variantLink);
                 $variantProduct->setStatus(Product::STATUS_DISABLED);
                 $objectManager->remove($variantLink);
+                $context->incrementDeleteCount();
+
                 continue;
             }
 
@@ -98,6 +105,8 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
                 $parentProduct->removeVariantLink($variantLink);
                 $variantProduct->setStatus(Product::STATUS_DISABLED);
                 $objectManager->remove($variantLink);
+                $context->incrementDeleteCount();
+
                 continue;
             }
 
@@ -106,21 +115,35 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
             unset($variantSkusUppercase[$variantProduct->getSkuUppercase()]);
         }
 
-        $variantLinks = [];
         foreach ($variantSkusUppercase as $variantSku) {
             $variantProduct = $productRepository->findOneBySku($variantSku);
-            if ($variantProduct instanceof Product) {
-                $variantLink = new ProductVariantLink();
-                $variantLink->setProduct($variantProduct);
-                $variantLink->setParentProduct($parentProduct);
+            if (!$variantProduct instanceof Product) {
+                $context->incrementErrorEntriesCount();
 
-                $variantProduct->addParentVariantLink($variantLink);
-                $parentProduct->addVariantLink($variantLink);
+                $errorMessages = [
+                    $this->translator->trans(
+                        'oro.akeneo.validator.product_by_sku.not_found',
+                        ['%sku%' => $variantSku],
+                        'validators'
+                    ),
+                ];
+                $this->strategyHelper->addValidationErrors($errorMessages, $context);
 
-                $variantProduct->setStatus(Product::STATUS_ENABLED);
-
-                $variantLinks[$variantProduct->getSku()] = $variantLink;
+                continue;
             }
+
+            $variantLink = new ProductVariantLink();
+            $variantLink->setProduct($variantProduct);
+            $variantLink->setParentProduct($parentProduct);
+
+            $variantProduct->addParentVariantLink($variantLink);
+            $parentProduct->addVariantLink($variantLink);
+
+            $variantProduct->setStatus(Product::STATUS_ENABLED);
+
+            $context->incrementAddCount();
+
+            $objectManager->persist($variantLink);
         }
 
         $validationErrors = $this->strategyHelper->validateEntity($parentProduct);
@@ -142,6 +165,16 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
 
         if ($parentProduct->getVariantLinks()->isEmpty()) {
             $parentProduct->setStatus(Product::STATUS_DISABLED);
+
+            $context->incrementErrorEntriesCount();
+            $errorMessages = [
+                $this->translator->trans(
+                    'oro.akeneo.validator.product_variants.empty',
+                    ['%sku%' => $parentSku],
+                    'validators'
+                ),
+            ];
+            $this->strategyHelper->addValidationErrors($errorMessages, $context);
         }
 
         $context->incrementUpdateCount();

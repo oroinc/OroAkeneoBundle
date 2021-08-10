@@ -22,8 +22,15 @@ class AsyncProcessor implements ProcessorInterface
     {
         $sku = $item['sku'];
 
-        if (!empty($item['family_variant']) && empty($this->variants[$sku])) {
-            $this->variants[$sku][''] = ['parent' => $sku, 'variant' => false];
+        if (!empty($item['family_variant'])) {
+            if (isset($item['parent'], $this->variants[$sku])) {
+                $parent = $item['parent'];
+                foreach (array_keys($this->variants[$sku]) as $sku) {
+                    $this->variants[$parent][$sku] = ['parent' => $parent, 'variant' => $sku];
+                }
+            }
+
+            return;
         }
 
         if (empty($item['parent'])) {
@@ -31,8 +38,8 @@ class AsyncProcessor implements ProcessorInterface
         }
 
         $parent = $item['parent'];
+
         $this->variants[$parent][$sku] = ['parent' => $parent, 'variant' => $sku];
-        unset($this->variants[$sku]['']);
     }
 
     public function initialize()
@@ -43,28 +50,7 @@ class AsyncProcessor implements ProcessorInterface
 
     public function flush()
     {
-        if (!$this->variants) {
-            return;
-        }
-
-        $resolvedVariants = [];
-
-        foreach ($this->variants as $parent => $variants) {
-            foreach ($variants as $variantKey => $variant) {
-                if (array_key_exists($variantKey, $this->variants)) {
-                    foreach ($this->variants[$variantKey] as $resolvedVariantKey => $resolvedVariant) {
-                        $resolvedVariant['parent'] = $parent;
-                        $resolvedVariants[$parent][$resolvedVariantKey] = $resolvedVariant;
-                    }
-
-                    continue;
-                }
-
-                $resolvedVariants[$parent][$variantKey] = $variant;
-            }
-        }
-
-        $this->cacheProvider->save('product_variants', $resolvedVariants);
+        $this->cacheProvider->save('product_variants', $this->variants);
         $this->variants = [];
     }
 }
