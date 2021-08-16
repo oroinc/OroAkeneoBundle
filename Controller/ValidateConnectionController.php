@@ -7,6 +7,7 @@ use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\IntegrationBundle\Entity\Channel;
 use Oro\Bundle\IntegrationBundle\Form\Type\ChannelType;
 use Oro\Bundle\SecurityBundle\Annotation\Acl;
+use Psr\Http\Client\ClientExceptionInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -78,7 +79,7 @@ class ValidateConnectionController extends AbstractController
                     $akeneoCurrencies = $transport->getMergedCurrencies();
                     $akeneoLocales = $transport->getLocales();
             }
-        } catch (ExceptionInterface $e) {
+        } catch (ClientExceptionInterface | ExceptionInterface $e) {
             $success = false;
             $message = $e->getMessage();
         } catch (\Exception $e) {
