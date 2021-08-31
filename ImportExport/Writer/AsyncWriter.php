@@ -8,6 +8,7 @@ use Akeneo\Bundle\BatchBundle\Step\StepExecutionAwareInterface;
 use Doctrine\Common\Cache\CacheProvider;
 use Oro\Bundle\AkeneoBundle\Async\Topics;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
+use Oro\Bundle\MessageQueueBundle\Client\BufferedMessageProducer;
 use Oro\Component\MessageQueue\Client\Message;
 use Oro\Component\MessageQueue\Client\MessagePriority;
 use Oro\Component\MessageQueue\Client\MessageProducerInterface;
@@ -103,6 +104,11 @@ class AsyncWriter implements
                             MessagePriority::HIGH
                         )
                     );
+
+                    if ($this->messageProducer instanceof BufferedMessageProducer
+                        && $this->messageProducer->isBufferingEnabled()) {
+                        $this->messageProducer->flushBuffer();
+                    }
 
                     return true;
                 }
