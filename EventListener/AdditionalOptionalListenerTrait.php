@@ -15,4 +15,9 @@ trait AdditionalOptionalListenerTrait
     {
         $this->enabled = false;
     }
+
+    public function setEnabled($enabled = true)
+    {
+        $this->enabled = (bool)$enabled;
+    }
 }

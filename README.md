@@ -81,8 +81,8 @@ Create a new integration to start synchronizing data from Akeneo to OroCommerce.
 2. Select "Akeneo" for Type to load additional integration-related fields to finish the configuration.
 3. In the "General" section, specify the name for the integration (e.g., Akeneo) and the following credentials required for successful connection to Akeneo API:
    * Akeneo URL - the address of your Akeneo account.
-   * UserClientId -  an identifier that authenticates your account. To create the ID, go to "System > API connections" in the Akeneo application.
-   * User Secret - a key that is generated in "System > API connections" of the Akeneo application.
+   * User ClientId -  an identifier that authenticates your account. To create the ID, go to "System > Connections" in the Akeneo application.
+   * User Secret - a key that is generated in "System > Connections" of the Akeneo application.
    * Akeneo Username - the name that the administrator will use to log into the Akeneo application.
    * Akeneo Password - the password that the admin will use to log into the Akeneo application.
 4. Click "Check Akeneo Connection" once you have filled in all the settings fields. A corresponding message pops up when the connection fails/is successful.
@@ -92,6 +92,8 @@ Create a new integration to start synchronizing data from Akeneo to OroCommerce.
       If some data of the selected channel has been changed after the initial synchronization, click "Refresh Channels" to reset the current configuration and retrieve the newly updated data from Akeneo.
 
    * Sync Products - The setting that defines which product type you want to synchronize. By default, we sync all products, bu you can choose to sync only the published ones by selecting the corresponding option.
+   * Product Unit Attribute Name - Text attribute from Akeneo which contains product unit name.
+   * Product Unit Precision Attribute Name - Numeric attribute from Akeneo which contains unit precision.
    * Currency - The currency options retrieved from Akeneo. If some currency is unavailable in OroCommerce, it will not be imported. Select one or several currencies for your products from the list. In case of no currency selected, the corresponding error message pops up that will require you to choose at least one currency.
 
      If the currency has been updated since the initial synchronization, click "Refresh Channels" to reset the current configuration and retrieve the newly updated data from Akeneo.
@@ -103,7 +105,7 @@ Create a new integration to start synchronizing data from Akeneo to OroCommerce.
       If the locales have been updated since the initial synchronization, click "Refresh Channels" to reset the current configuration and retrieve the newly updated data from Akeneo.
 
    * Root Category - The root content node in the Oro application where you import the categories from Akeneo. You can create a specific parent category in the master catalog that would store all the categories uploaded from Akeneo. Select this category from the dropdown list.
-   * Pricelist - The price list to which you will import the prices from Akeneo. This price list will help distinguish the Akeneo prices from those of other price lists provided that a product has several price options. Select the necessary pricelist from the dropdown list or create a new one directly from the integration page by clicking "+" next to the list.
+   * Price List - The price list to which you will import the prices from Akeneo. This price list will help distinguish the Akeneo prices from those of other price lists provided that a product has several price options. Select the necessary pricelist from the dropdown list or create a new one directly from the integration page by clicking "+" next to the list.
    * Product Filter - The filter that enables you to embed the necessary code that would sync only the products you desire. As this filter is passed via API request, it must be filled in JSON format. More details on the format and filter options available for the products can be found in the [Filters section](https://api.akeneo.com/documentation/filter.html) of the Akeneo PIM documentation.
 
      **Note:** Your input is validated on the go. If you get a validation warning, ensure to correct the code or any issues reported.
@@ -121,8 +123,25 @@ Create a new integration to start synchronizing data from Akeneo to OroCommerce.
      **Note:** The filter extends Attribute Filter, no need to list attribute codes twice.
 
    * Merge Images From Simple Products To Configurable Product: Copy images from Simple products to their Configurable parent products.
+   * Multilevel Products - Enable or disable separate configurable products created from two levels product model (the 1st one a "root product model" and the 2nd one a "sub product model" in Akeneo).
+   * Attributes Mapping - Mappings to copy values from Akeneo attributes to system or custom Product Attributes.
 
-   * Connectors - The connectors that enable you to sync either the category or products or both by selecting/deselecting the relevant connector. The attribute family connector is mandatory and cannot be disabled.
+     **Example 1:** `name:names;` - `name` (text) attribute from Akeneo imported as Product Attribute `Akeneo_name` and additionaly copied to `names` Product Attribute.
+     
+     **Example 2:** `description:descriptions;` - `description` (text) attribute from Akeneo imported as Product Attribute `Akeneo_description` and additionaly copied to `descriptions` Product Attribute.
+     
+     **Example 3:** `meta_titles:metaTitles;` - `meta_titles` (text) attribute from Akeneo imported as Product Attribute `Akeneo_meta_titles` and additionaly copied to `metaTitles` Product Attribute.
+
+     **Note:** Akeneo attribute and Product Attribute types should match (both Akeneo_name and names are Many to many to Localized fallback value entity).
+
+   * Brand Reference Entity Code - Reference entity code to import as Brand entity and link to products.
+   * Brand Attributes Mapping - Mappings to copy values from Akeneo attributes to system or custom Brand fields.
+
+     **Example:** `label:names;` - `label` (text) attribute from Akeneo imported `names` Brand field.
+     
+     **Note:** It's not possible to add fields to Brand, existing fields are available only.
+
+   * Connectors - The connectors that enable you to sync either the category or products or both by selecting/deselecting the relevant connector.
    * Default Owner - The Owner determines the list of users who can manage the integration and the data synchronized with it. All entities imported within the integration will be assigned to the selected user. By default, the field is prepopulated with the user creating the integration.
 
 4. The Statuses field displays the log of the integration including the date and status of the connector execution, and the statistics it provides.
@@ -142,9 +161,10 @@ To start the synchronization manually, click "Schedule Sync" on the top right. W
 
 **Note:** Every time you synchronize **new** product attributes from Akeneo, the `Update Schema` button appears on the top right of the Akeneo integration page and the Product Attributes page (`Products > Product Attributes`). Refresh the integration update page and click the `Update Schema` button to apply the changes and enable the product attributes. Otherwise, the attributes will be unavailable. Keep in mind that updating schema sets the Oro instance to the maintenance mode, so it is recommended to check if no critical processes are running before clicking the button.
 
-**Note:** Click `Update Cache` button at `System > Localization > Translations` get translation applied. This action required for older versions of OroCommerce.
+**Note:** Click `Update Cache` button at `System > Localization > Translations` to get translation applied.
 
 Once the schema update is complete, you can schedule another sync. To schedule full sync now, press the "Schedule Sync" button one more time.
+
 ## Limitations
 
 Because of the differences between Akeneo and OroCommerce, you should take into account a few limitations.
@@ -154,9 +174,8 @@ Because of the differences between Akeneo and OroCommerce, you should take into 
 * Akeneo date field type can have a different value for every locale. The same behavior is not possible in OroCommerce. For this reason, it is imported as a localized fallback value.
 * Akeneo multi-select fields can have different values per locale. In OroCommerce, all the values from the various locales are combined.
 * Akeneo select fields can have different values per locale. In OroCommerce, the value from the default locale is used.
-* In OroCommerce. the Akeneo image field type is saved not as an attribute, but as a product image.
-* In OroCommerce, products are validated which can cause some products to be skipped during import because the field requirements are different in Akeneo. Check the details in an integration status. For example:
-* SKUs in Akeneo can contain spaces. In OroCommerce, the spaces are unacceptable. 
+* In OroCommerce, products are validated which can cause some products to be skipped during import because the field requirements are different in Akeneo. Check the details in an integration status.
+* SKUs in Akeneo can contain spaces. Change `oro_product.sku.regex_pattern` parameter to extend SKU validation. 
 * An attribute family is not required in Akeneo. In OroCommerce, an attribute family is always required.
 * OroCommerce does not support multiple categories, only the first category listed is used for product assignment.
 * OroCommerce does not support prices per currency, only the last price per currency listed is used for product assignment.

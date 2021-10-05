@@ -9,6 +9,7 @@ use Oro\Bundle\AkeneoBundle\Tools\FieldConfigModelFieldNameGenerator;
 use Oro\Bundle\AkeneoBundle\Tools\Generator;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityConfigBundle\ImportExport\DataConverter\EntityFieldDataConverter;
+use Symfony\Component\Translation\TranslatorInterface;
 
 /**
  * Converts data to import format.
@@ -23,9 +24,17 @@ class AttributeDataConverter extends EntityFieldDataConverter
     /** @var DoctrineHelper */
     protected $doctrineHelper;
 
+    /** @var TranslatorInterface */
+    protected $translator;
+
     public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
     {
         $this->doctrineHelper = $doctrineHelper;
+    }
+
+    public function setTranslator(TranslatorInterface $translator)
+    {
+        $this->translator = $translator;
     }
 
     /**
@@ -35,7 +44,28 @@ class AttributeDataConverter extends EntityFieldDataConverter
     {
         $type = AttributeTypeConverter::convert($importedRecord['type']);
         if (!$type) {
-            throw new InvalidItemException(sprintf('Type "%s" is not supported', $type), $importedRecord);
+            $message = sprintf(
+                'Attribute "%s" type "%s" is not supported',
+                $importedRecord['code'],
+                $importedRecord['type']
+            );
+
+            if ($this->translator instanceof TranslatorInterface) {
+                $this->context->addError(
+                    $this->translator->trans(
+                        'oro.akeneo.error',
+                        [
+                            '%error%' => $message,
+                            '%item%' => json_encode(
+                                $importedRecord,
+                                \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
+                            ),
+                        ]
+                    )
+                );
+            }
+
+            throw new InvalidItemException($message, $importedRecord);
         }
 
         $importedRecord['type'] = $type;

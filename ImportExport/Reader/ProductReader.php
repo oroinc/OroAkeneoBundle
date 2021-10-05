@@ -48,6 +48,12 @@ class ProductReader extends IteratorBasedReader
                         $this->akeneoFileManager->registerMediaFile($value['data']);
                     }
 
+                    if (in_array($value['type'], ['pim_catalog_asset_collection'])) {
+                        foreach ($value['data'] as $data) {
+                            $this->akeneoFileManager->registerAssetMediaFile($data);
+                        }
+                    }
+
                     if (in_array($value['type'], ['pim_assets_collection'])) {
                         if (!is_array($value['data'])) {
                             continue;
