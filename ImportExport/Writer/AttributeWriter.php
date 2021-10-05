@@ -2,11 +2,11 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Writer;
 
-use Akeneo\Bundle\BatchBundle\Entity\StepExecution;
-use Akeneo\Bundle\BatchBundle\Step\StepExecutionAwareInterface;
 use Doctrine\Common\Cache\CacheProvider;
 use Oro\Bundle\AkeneoBundle\Config\ChangesAwareInterface;
 use Oro\Bundle\AkeneoBundle\Tools\EnumSynchronizer;
+use Oro\Bundle\BatchBundle\Entity\StepExecution;
+use Oro\Bundle\BatchBundle\Step\StepExecutionAwareInterface;
 use Oro\Bundle\EntityBundle\EntityConfig\DatagridScope;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityConfigBundle\Attribute\AttributeTypeRegistry;

@@ -26,7 +26,7 @@ class ProductConnector extends AbstractConnector implements ConnectorInterface, 
     /**
      * {@inheritdoc}
      */
-    public function getLabel()
+    public function getLabel(): string
     {
         return 'oro.akeneo.connector.product.label';
     }

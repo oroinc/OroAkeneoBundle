@@ -4,14 +4,14 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\Serializer\Normalizer;
 
 use Oro\Bundle\AkeneoBundle\Integration\AkeneoChannel;
 use Oro\Bundle\AttachmentBundle\Entity\FileItem;
-use Oro\Bundle\ImportExportBundle\Serializer\Normalizer\DenormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 
-class FileItemNormalizer implements DenormalizerInterface
+class FileItemNormalizer implements ContextAwareDenormalizerInterface
 {
-    /** @var DenormalizerInterface */
+    /** @var ContextAwareDenormalizerInterface */
     private $fileNormalizer;
 
-    public function __construct(DenormalizerInterface $fileNormalizer)
+    public function __construct(ContextAwareDenormalizerInterface $fileNormalizer)
     {
         $this->fileNormalizer = $fileNormalizer;
     }

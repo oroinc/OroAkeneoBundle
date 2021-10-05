@@ -11,7 +11,7 @@ use Oro\Bundle\ProductBundle\Entity\Brand;
  */
 class BrandConnector extends AbstractConnector
 {
-    public function getLabel()
+    public function getLabel(): string
     {
         return 'oro.akeneo.connector.brand.label';
     }

@@ -3,6 +3,7 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 
 use Doctrine\Common\Collections\Collection;
+use Oro\Bundle\EntityBundle\Provider\EntityFieldProvider;
 
 /**
  * @property $doctrineHelper
@@ -28,7 +29,10 @@ trait StrategyRelationsTrait
     protected function updateRelations($entity, array $itemData = null)
     {
         $entityName = $this->doctrineHelper->getEntityClass($entity);
-        $fields = $this->fieldHelper->getFields($entityName, true);
+        $fields = $this->fieldHelper->getEntityFields(
+            $entityName,
+            EntityFieldProvider::OPTION_WITH_RELATIONS
+        );
 
         foreach ($fields as $field) {
             if ($this->fieldHelper->isRelation($field)) {

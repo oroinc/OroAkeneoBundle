@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Step;
 
-use Akeneo\Bundle\BatchBundle\Entity\StepExecution;
+use Oro\Bundle\BatchBundle\Entity\StepExecution;
 use Oro\Bundle\BatchBundle\Step\ItemStep as BaseItemStep;
 
 class ItemStep extends BaseItemStep

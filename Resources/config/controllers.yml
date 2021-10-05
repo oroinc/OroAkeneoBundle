@@ -1,0 +1,13 @@
+services:
+    _defaults:
+        public: true
+
+    Oro\Bundle\AkeneoBundle\Controller\ValidateConnectionController:
+        arguments:
+            - '@oro_currency.config.currency'
+            - '@translator'
+            - '@oro_akeneo.integration.transport'
+        calls:
+            - [setContainer, ['@Psr\Container\ContainerInterface']]
+        tags:
+            - { name: container.service_subscriber }

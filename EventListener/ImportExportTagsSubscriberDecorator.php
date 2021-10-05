@@ -11,12 +11,17 @@ use Oro\Bundle\ImportExportBundle\Event\LoadTemplateFixturesEvent;
 use Oro\Bundle\ImportExportBundle\Event\NormalizeEntityEvent;
 use Oro\Bundle\ImportExportBundle\Event\StrategyEvent;
 use Oro\Bundle\TagBundle\EventListener\ImportExportTagsSubscriber;
+use Oro\Bundle\TagBundle\Manager\TagImportManager;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Contracts\Service\ServiceSubscriberInterface;
 
 /**
  * Tags lazy processing
  */
-class ImportExportTagsSubscriberDecorator implements AdditionalOptionalListenerInterface, EventSubscriberInterface
+class ImportExportTagsSubscriberDecorator implements
+    AdditionalOptionalListenerInterface,
+    EventSubscriberInterface,
+    ServiceSubscriberInterface
 {
     use AdditionalOptionalListenerTrait;
 
@@ -115,5 +120,12 @@ class ImportExportTagsSubscriberDecorator implements AdditionalOptionalListenerI
         }
 
         $this->innerSubscriber->addTagsIntoFixtures($event);
+    }
+
+    public static function getSubscribedServices()
+    {
+        return [
+            'oro_tag.tag_import.manager' => TagImportManager::class,
+        ];
     }
 }

@@ -8,6 +8,7 @@ use Oro\Bundle\AkeneoBundle\Tools\Generator;
 use Oro\Bundle\ConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityBundle\Helper\FieldHelper;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
+use Oro\Bundle\EntityBundle\Provider\EntityFieldProvider;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager as EntityConfigManager;
 use Oro\Bundle\EntityExtendBundle\Extend\RelationType;
 use Oro\Bundle\ImportExportBundle\Context\ContextAwareInterface;
@@ -64,7 +65,7 @@ class BrandDataConverter implements DataConverterInterface, ContextAwareInterfac
     public function convertToImportFormat(array $importedRecord, $skipNullValues = true)
     {
         $record = [];
-        $fields = $this->fieldHelper->getFields(Brand::class, true);
+        $fields = $this->fieldHelper->getEntityFields(Brand::class, EntityFieldProvider::OPTION_WITH_RELATIONS);
         $fieldsByName = [];
         foreach ($fields as $field) {
             $fieldsByName[$field['name']] = $field;

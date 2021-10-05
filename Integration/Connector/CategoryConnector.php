@@ -17,7 +17,7 @@ class CategoryConnector extends AbstractConnector
     /**
      * {@inheritdoc}
      */
-    public function getLabel()
+    public function getLabel(): string
     {
         return 'oro.akeneo.connector.category.label';
     }

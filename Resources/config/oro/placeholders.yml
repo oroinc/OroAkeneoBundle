@@ -1,7 +1,7 @@
 placeholders:
   items:
     akeneo_schema_update:
-      template: OroAkeneoBundle:Button:schema_update.html.twig
+      template: '@@OroAkeneo/Button/schema_update.html.twig'
       applicable: '@oro_akeneo.placeholder.schema_update_filter->isApplicable($entity$, Oro\Bundle\ProductBundle\Entity\Product)'
       data:
         entity_id: '@oro_entity_config.config_manager->getConfigModelId(Oro\Bundle\ProductBundle\Entity\Product)'

@@ -16,7 +16,7 @@ class AttributeFamilyConnector extends AbstractConnector
     /**
      * {@inheritdoc}
      */
-    public function getLabel()
+    public function getLabel(): string
     {
         return 'oro.akeneo.connector.attribute_family.label';
     }

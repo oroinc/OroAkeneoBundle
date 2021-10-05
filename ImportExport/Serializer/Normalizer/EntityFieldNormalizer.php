@@ -10,7 +10,7 @@ class EntityFieldNormalizer extends BaseEntityFieldNormalizer
     /**
      * {@inheritdoc}
      */
-    public function supportsDenormalization($data, $type, $format = null, array $context = [])
+    public function supportsDenormalization($data, $type, $format = null, array $context = []): bool
     {
         return is_array($data)
             && is_a($type, 'Oro\Bundle\EntityConfigBundle\Entity\FieldConfigModel', true)

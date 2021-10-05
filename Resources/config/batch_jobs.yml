@@ -78,13 +78,13 @@ connector:
             reader: oro_akeneo.importexport.reader.product
             processor: oro_akeneo.importexport.processor.product
             writer: oro_akeneo.importexport.writer.cumulative.persistent_batch_writer
-        import_images:
-          title: import
-          class: Oro\Bundle\AkeneoBundle\ImportExport\Step\ItemStep
-          services:
-            reader: oro_akeneo.importexport.reader.product_image
-            processor: oro_akeneo.importexport.processor.product_image
-            writer: oro_akeneo.importexport.writer.cumulative.persistent_batch_writer
+#        import_images:
+#          title: import
+#          class: Oro\Bundle\AkeneoBundle\ImportExport\Step\ItemStep
+#          services:
+#            reader: oro_akeneo.importexport.reader.product_image
+#            processor: oro_akeneo.importexport.processor.product_image
+#            writer: oro_akeneo.importexport.writer.cumulative.persistent_batch_writer
         import_prices:
           title: import
           class: Oro\Bundle\BatchBundle\Step\ItemStep

@@ -2,14 +2,14 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 
-use Akeneo\Bundle\BatchBundle\Item\InvalidItemException;
 use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\AkeneoBundle\Tools\AttributeTypeConverter;
 use Oro\Bundle\AkeneoBundle\Tools\FieldConfigModelFieldNameGenerator;
 use Oro\Bundle\AkeneoBundle\Tools\Generator;
+use Oro\Bundle\BatchBundle\Exception\InvalidItemException;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityConfigBundle\ImportExport\DataConverter\EntityFieldDataConverter;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Converts data to import format.

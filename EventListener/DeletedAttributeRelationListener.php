@@ -2,17 +2,32 @@
 
 namespace Oro\Bundle\AkeneoBundle\EventListener;
 
-use Doctrine\Common\Inflector\Inflector;
+use Doctrine\Inflector\Inflector;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeGroupRelation;
 use Oro\Bundle\EntityConfigBundle\EventListener\DeletedAttributeRelationListener as BaseListener;
+use Oro\Bundle\EntityConfigBundle\Provider\DeletedAttributeProviderInterface;
 use Oro\Component\MessageQueue\Client\Message;
 use Oro\Component\MessageQueue\Client\MessagePriority;
+use Oro\Component\MessageQueue\Client\MessageProducerInterface;
 
 class DeletedAttributeRelationListener extends BaseListener
 {
     /** @var array */
     protected $deletedAttributesNames = [];
+
+    /** @var Inflector */
+    private $inflector;
+
+    public function __construct(
+        MessageProducerInterface $messageProducer,
+        DeletedAttributeProviderInterface $deletedAttributeProvider,
+        Inflector $inflector
+    ) {
+        parent::__construct($messageProducer, $deletedAttributeProvider, $inflector);
+
+        $this->inflector = $inflector;
+    }
 
     public function onFlush(OnFlushEventArgs $eventArgs)
     {
@@ -32,7 +47,7 @@ class DeletedAttributeRelationListener extends BaseListener
         foreach ($this->deletedAttributes as $attributeFamilyId => $attributeIds) {
             $attributes = $this->deletedAttributeProvider->getAttributesByIds($attributeIds);
             foreach ($attributes as &$attribute) {
-                $attribute = Inflector::camelize($attribute->getFieldName());
+                $attribute = $this->inflector->camelize($attribute->getFieldName());
             }
 
             $this->deletedAttributesNames[$attributeFamilyId] = array_merge(

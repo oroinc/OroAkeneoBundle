@@ -136,7 +136,7 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
         $this->configManager = $configManager;
     }
 
-    public function setImportExportContext(ContextInterface $context)
+    public function setImportExportContext(ContextInterface $context): void
     {
         $context->setValue('entity_id', $this->configManager->getConfigModelId($this->entityConfigModelClassName));
 

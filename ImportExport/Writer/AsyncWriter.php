@@ -2,12 +2,12 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Writer;
 
-use Akeneo\Bundle\BatchBundle\Entity\StepExecution;
-use Akeneo\Bundle\BatchBundle\Item\ItemWriterInterface;
-use Akeneo\Bundle\BatchBundle\Step\StepExecutionAwareInterface;
 use Doctrine\Common\Cache\CacheProvider;
 use Oro\Bundle\AkeneoBundle\Async\Topics;
+use Oro\Bundle\BatchBundle\Entity\StepExecution;
+use Oro\Bundle\BatchBundle\Item\ItemWriterInterface;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
+use Oro\Bundle\BatchBundle\Step\StepExecutionAwareInterface;
 use Oro\Bundle\MessageQueueBundle\Client\BufferedMessageProducer;
 use Oro\Component\MessageQueue\Client\Message;
 use Oro\Component\MessageQueue\Client\MessagePriority;
@@ -105,8 +105,7 @@ class AsyncWriter implements
                         )
                     );
 
-                    if ($this->messageProducer instanceof BufferedMessageProducer
-                        && $this->messageProducer->isBufferingEnabled()) {
+                    if ($this->messageProducer instanceof BufferedMessageProducer && $this->messageProducer->isBufferingEnabled()) {
                         $this->messageProducer->flushBuffer();
                     }
 

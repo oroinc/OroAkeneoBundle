@@ -2,13 +2,13 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Step;
 
-use Akeneo\Bundle\BatchBundle\Item\InvalidItemException;
+use Oro\Bundle\BatchBundle\Exception\InvalidItemException;
 use Oro\Bundle\BatchBundle\Step\StepExecutionWarningHandlerInterface;
 use Oro\Bundle\BatchBundle\Step\StepExecutor as BaseStepExecutor;
 
 class StepExecutor extends BaseStepExecutor
 {
-    public function execute(StepExecutionWarningHandlerInterface $warningHandler = null)
+    public function execute(StepExecutionWarningHandlerInterface $warningHandler = null): void
     {
         try {
             $stopExecution = false;

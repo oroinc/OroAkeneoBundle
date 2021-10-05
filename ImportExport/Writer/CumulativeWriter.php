@@ -2,15 +2,15 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Writer;
 
-use Akeneo\Bundle\BatchBundle\Entity\StepExecution;
-use Akeneo\Bundle\BatchBundle\Item\ItemWriterInterface;
-use Akeneo\Bundle\BatchBundle\Step\StepExecutionAwareInterface;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\UnitOfWork;
 use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\AkeneoBundle\EventListener\AdditionalOptionalListenerManager;
+use Oro\Bundle\BatchBundle\Entity\StepExecution;
+use Oro\Bundle\BatchBundle\Item\ItemWriterInterface;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
+use Oro\Bundle\BatchBundle\Step\StepExecutionAwareInterface;
 use Oro\Bundle\BatchBundle\Step\StepExecutionRestoreInterface;
 use Oro\Bundle\PlatformBundle\Manager\OptionalListenerManager;
 

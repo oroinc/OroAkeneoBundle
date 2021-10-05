@@ -4,6 +4,8 @@ namespace Oro\Bundle\AkeneoBundle\Controller;
 
 use Akeneo\Pim\ApiClient\Exception\ExceptionInterface;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
+use Oro\Bundle\AkeneoBundle\Integration\AkeneoTransportInterface;
+use Oro\Bundle\CurrencyBundle\Provider\CurrencyProviderInterface;
 use Oro\Bundle\IntegrationBundle\Entity\Channel;
 use Oro\Bundle\IntegrationBundle\Form\Type\ChannelType;
 use Oro\Bundle\SecurityBundle\Annotation\Acl;
@@ -13,11 +15,31 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ValidateConnectionController extends AbstractController
 {
     const CONNECTION_SUCCESSFUL_MESSAGE = 'oro.akeneo.connection.successfull';
     const CONNECTION_ERROR_MESSAGE = 'oro.akeneo.connection.error';
+
+    /** @var CurrencyProviderInterface */
+    private $currencyProvider;
+
+    /** @var TranslatorInterface */
+    private $translator;
+
+    /** @var AkeneoTransportInterface */
+    private $akeneoTransport;
+
+    public function __construct(
+        CurrencyProviderInterface $currencyProvider,
+        TranslatorInterface $translator,
+        AkeneoTransportInterface $akeneoTransport
+    ) {
+        $this->currencyProvider = $currencyProvider;
+        $this->translator = $translator;
+        $this->akeneoTransport = $akeneoTransport;
+    }
 
     /**
      * @Route(path="/validate-akeneo-connection/{channelId}/", name="oro_akeneo_validate_connection", methods={"POST"})
@@ -53,38 +75,35 @@ class ValidateConnectionController extends AbstractController
             $akeneoSettings->setPassword($akeneoSettingsEntity->getPassword());
         }
 
-        $currencyConfig = $this->container->get('oro_currency.config.currency');
-
         $akeneoChannelNames = [];
         $akeneoCurrencies = [];
         $akeneoLocales = [];
 
         try {
-            $transport = $this->get('oro_akeneo.integration.transport');
-            $transport->init($akeneoSettings, false);
+            $this->akeneoTransport->init($akeneoSettings, false);
             $success = true;
-            $message = self::CONNECTION_SUCCESSFUL_MESSAGE;
+            $message = $this->translator->trans(self::CONNECTION_SUCCESSFUL_MESSAGE);
             switch ($request->get('synctype', 'all')) {
                 case 'channels':
-                    $akeneoChannelNames = $transport->getChannels();
+                    $akeneoChannelNames = $this->akeneoTransport->getChannels();
                     break;
                 case 'currencies':
-                    $akeneoCurrencies = $transport->getMergedCurrencies();
+                    $akeneoCurrencies = $this->akeneoTransport->getMergedCurrencies();
                     break;
                 case 'locales':
-                    $akeneoLocales = $transport->getLocales();
+                    $akeneoLocales = $this->akeneoTransport->getLocales();
                     break;
                 default:
-                    $akeneoChannelNames = $transport->getChannels();
-                    $akeneoCurrencies = $transport->getMergedCurrencies();
-                    $akeneoLocales = $transport->getLocales();
+                    $akeneoChannelNames = $this->akeneoTransport->getChannels();
+                    $akeneoCurrencies = $this->akeneoTransport->getMergedCurrencies();
+                    $akeneoLocales = $this->akeneoTransport->getLocales();
             }
         } catch (ClientExceptionInterface | ExceptionInterface $e) {
             $success = false;
             $message = $e->getMessage();
         } catch (\Exception $e) {
             $success = false;
-            $message = self::CONNECTION_ERROR_MESSAGE;
+            $message = $this->translator->trans(self::CONNECTION_ERROR_MESSAGE);
         }
 
         return new JsonResponse(
@@ -93,8 +112,8 @@ class ValidateConnectionController extends AbstractController
                 'akeneoCurrencies' => $akeneoCurrencies,
                 'akeneoLocales' => $akeneoLocales,
                 'success' => $success,
-                'message' => $this->get('translator')->trans($message),
-                'currencyList' => $currencyConfig->getCurrencies(),
+                'message' => $message,
+                'currencyList' => $this->currencyProvider->getCurrencies(),
             ]
         );
     }

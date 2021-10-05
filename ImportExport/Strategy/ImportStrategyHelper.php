@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Util\ClassUtils;
 use Oro\Bundle\AkeneoBundle\Integration\AkeneoChannel;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
+use Oro\Bundle\EntityBundle\Provider\EntityFieldProvider;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 use Oro\Bundle\ImportExportBundle\Exception\InvalidArgumentException;
 use Oro\Bundle\ImportExportBundle\Strategy\Import\ImportStrategyHelper as BaseImportStrategyHelper;
@@ -101,9 +102,9 @@ class ImportStrategyHelper extends BaseImportStrategyHelper
          * that mustn't be changed by import/export
          */
         if ($this->extendConfigProvider->hasConfig($entityClassName)) {
-            $properties = $this->fieldHelper->getFields(
+            $properties = $this->fieldHelper->getEntityFields(
                 $entityClassName,
-                true
+                EntityFieldProvider::OPTION_WITH_RELATIONS
             );
 
             return array_column($properties, 'name');
@@ -122,7 +123,9 @@ class ImportStrategyHelper extends BaseImportStrategyHelper
     public function addValidationErrors(array $validationErrors, ContextInterface $context, $errorPrefix = null)
     {
         if (AkeneoChannel::TYPE !== $context->getOption('channelType')) {
-            return parent::addValidationErrors($validationErrors, $context, $errorPrefix);
+            parent::addValidationErrors($validationErrors, $context, $errorPrefix);
+
+            return;
         }
 
         foreach ($validationErrors as $validationError) {

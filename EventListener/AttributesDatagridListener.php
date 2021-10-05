@@ -23,7 +23,7 @@ class AttributesDatagridListener
     {
         $event->getConfig()->offsetSetByPath(
             '[columns][attributeFamilies][template]',
-            'OroAkeneoBundle:Datagrid:attributeFamilies.html.twig'
+            '@OroAkeneo/Datagrid/attributeFamilies.html.twig'
         );
     }
 
