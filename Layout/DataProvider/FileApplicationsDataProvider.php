@@ -25,14 +25,14 @@ class FileApplicationsDataProvider extends BaseFileApplicationsDataProvider
     {
         $isValidForField = $this->applicationsDataProvider->isValidForField($className, $fieldName);
         if (!$isValidForField) {
-            return $isValidForField;
+            return (bool)$isValidForField;
         }
 
         if (!$this->configProvider->hasConfig($className, $fieldName)) {
             return false;
         }
 
-        $config = $this->configProvider->getConfig($className, $fieldName);
+        $config = (bool)$this->configProvider->getConfig($className, $fieldName);
 
         return $config->get('visible');
     }
