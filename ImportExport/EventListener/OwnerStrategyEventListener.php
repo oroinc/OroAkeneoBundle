@@ -37,7 +37,7 @@ class OwnerStrategyEventListener
 
     protected function getChannel(ContextInterface $context)
     {
-        if (!$this->channel) {
+        if (!$this->channel && $context->getOption('channel')) {
             $this->channel = $this->doctrineHelper->getEntityReference(
                 Channel::class,
                 $context->getOption('channel')
