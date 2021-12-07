@@ -13,7 +13,7 @@ class ProductVariantReader extends IteratorBasedReader
         $variants = $this->stepExecution
                 ->getJobExecution()
                 ->getExecutionContext()
-                ->get('variants') ?? [];
+                ->get('jobData')['variants'] ?? [];
 
         $this->stepExecution->setReadCount(count($variants));
 

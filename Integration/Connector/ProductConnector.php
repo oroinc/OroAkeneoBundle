@@ -76,7 +76,7 @@ class ProductConnector extends AbstractConnector implements ConnectorInterface, 
         $items = $this->stepExecution
             ->getJobExecution()
             ->getExecutionContext()
-            ->get('items');
+            ->get('jobData')['items'] ?? [];
 
         if ($items) {
             return new \ArrayIterator();
@@ -85,7 +85,7 @@ class ProductConnector extends AbstractConnector implements ConnectorInterface, 
         $variants = $this->stepExecution
             ->getJobExecution()
             ->getExecutionContext()
-            ->get('variants');
+            ->get('jobData')['variants'] ?? [];
 
         if ($variants) {
             return new \ArrayIterator();

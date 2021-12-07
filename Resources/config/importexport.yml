@@ -316,7 +316,8 @@ services:
     arguments:
       - '@oro_message_queue.job.runner'
       - '@oro_message_queue.message_producer'
-      - '@oro_message_queue.job.processor'
+      - '@oro_entity.doctrine_helper'
+      - '@oro_message_queue.job.manager'
     calls:
       - [setCacheProvider, ["@oro_akeneo.importexport.cache"]]
 

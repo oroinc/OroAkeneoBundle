@@ -58,7 +58,7 @@ Connector supports and tested on the next dataset:
 1. Add composer package
 
 ```
-composer require "oro/commerce-akeneo:3.1.*"
+composer require "oro/commerce-akeneo:4.1.*"
 ```
 
 2. Follow [Setup Guide](https://doc.oroinc.com/backend/setup/upgrade-to-new-version)
