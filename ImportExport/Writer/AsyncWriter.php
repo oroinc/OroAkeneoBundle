@@ -8,12 +8,13 @@ use Akeneo\Bundle\BatchBundle\Step\StepExecutionAwareInterface;
 use Doctrine\Common\Cache\CacheProvider;
 use Oro\Bundle\AkeneoBundle\Async\Topics;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
+use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\MessageQueueBundle\Client\BufferedMessageProducer;
+use Oro\Bundle\MessageQueueBundle\Entity\Job;
+use Oro\Bundle\MessageQueueBundle\Job\JobManager;
 use Oro\Component\MessageQueue\Client\Message;
 use Oro\Component\MessageQueue\Client\MessagePriority;
 use Oro\Component\MessageQueue\Client\MessageProducerInterface;
-use Oro\Component\MessageQueue\Job\Job;
-use Oro\Component\MessageQueue\Job\JobProcessor;
 use Oro\Component\MessageQueue\Job\JobRunner;
 
 class AsyncWriter implements
@@ -41,17 +42,22 @@ class AsyncWriter implements
     /** @var CacheProvider */
     private $cacheProvider;
 
-    /** @var JobProcessor */
-    private $jobProcessor;
+    /** @var DoctrineHelper */
+    private $doctrineHelper;
+
+    /** @var JobManager */
+    private $jobManager;
 
     public function __construct(
         JobRunner $jobRunner,
         MessageProducerInterface $messageProducer,
-        JobProcessor $jobProcessor
+        DoctrineHelper $doctrineHelper,
+        JobManager $jobManager
     ) {
         $this->jobRunner = $jobRunner;
         $this->messageProducer = $messageProducer;
-        $this->jobProcessor = $jobProcessor;
+        $this->doctrineHelper = $doctrineHelper;
+        $this->jobManager = $jobManager;
     }
 
     public function initialize()
@@ -75,47 +81,39 @@ class AsyncWriter implements
 
         $this->stepExecution->setWriteCount($this->size);
 
-        $setRootJob = \Closure::bind(
-            function ($property, $value) {
-                $this->{$property} = $value;
-            },
-            $this->jobRunner,
-            $this->jobRunner
-        );
+        $jobRunner = $this->jobRunner->getJobRunnerForChildJob($this->getRootJob());
 
         try {
-            $setRootJob('rootJob', $this->getRootJob());
-
-            $this->jobRunner->createDelayed(
+            /** @var Job $child */
+            $child = $jobRunner->createDelayed(
                 $jobName,
-                function (JobRunner $jobRunner, Job $child) use ($items, $channelId) {
-                    $this->messageProducer->send(
-                        Topics::IMPORT_PRODUCTS,
-                        new Message(
-                            [
-                                'integrationId' => $channelId,
-                                'jobId' => $child->getId(),
-                                'connector' => 'product',
-                                'connector_parameters' => [
-                                    'items' => $items,
-                                    'incremented_read' => true,
-                                ],
-                            ],
-                            MessagePriority::HIGH
-                        )
-                    );
-
-                    if ($this->messageProducer instanceof BufferedMessageProducer
-                        && $this->messageProducer->isBufferingEnabled()) {
-                        $this->messageProducer->flushBuffer();
-                    }
-
-                    return true;
+                function (JobRunner $jobRunner, Job $child): Job {
+                    return $child;
                 }
             );
-        } finally {
-            $setRootJob('rootJob', null);
 
+            $child->setData(['items' => $items]);
+            $this->jobManager->saveJob($child);
+            $this->doctrineHelper->getEntityManager($child)->clear();
+
+            $this->messageProducer->send(
+                Topics::IMPORT_PRODUCTS,
+                new Message(
+                    [
+                        'integrationId' => $channelId,
+                        'jobId' => $child->getId(),
+                        'connector' => 'product',
+                        'connector_parameters' => ['incremented_read' => true],
+                    ],
+                    MessagePriority::HIGH
+                )
+            );
+
+            if ($this->messageProducer instanceof BufferedMessageProducer
+                && $this->messageProducer->isBufferingEnabled()) {
+                $this->messageProducer->flushBuffer();
+            }
+        } finally {
             $this->key++;
         }
     }
@@ -132,16 +130,9 @@ class AsyncWriter implements
 
         $channelId = $this->stepExecution->getJobExecution()->getExecutionContext()->get('channel');
 
-        $setRootJob = \Closure::bind(
-            function ($property, $value) {
-                $this->{$property} = $value;
-            },
-            $this->jobRunner,
-            $this->jobRunner
-        );
+        $jobRunner = $this->jobRunner->getJobRunnerForChildJob($this->getRootJob());
 
         try {
-            $setRootJob('rootJob', $this->getRootJob());
             $chunks = array_chunk($variants, self::VARIANTS_BATCH_SIZE, true);
 
             foreach ($chunks as $key => $chunk) {
@@ -151,30 +142,38 @@ class AsyncWriter implements
                     self::VARIANTS_BATCH_SIZE * $key + 1,
                     self::VARIANTS_BATCH_SIZE * $key + count($chunk)
                 );
-                $this->jobRunner->createDelayed(
-                    $jobName,
-                    function (JobRunner $jobRunner, Job $child) use ($channelId, $chunk) {
-                        $this->messageProducer->send(
-                            Topics::IMPORT_PRODUCTS,
-                            new Message(
-                                [
-                                    'integrationId' => $channelId,
-                                    'jobId' => $child->getId(),
-                                    'connector' => 'product',
-                                    'connector_parameters' => [
-                                        'variants' => $chunk,
-                                    ],
-                                ],
-                                MessagePriority::HIGH
-                            )
-                        );
 
-                        return true;
+                /** @var Job $child */
+                $child = $jobRunner->createDelayed(
+                    $jobName,
+                    function (JobRunner $jobRunner, Job $child): Job {
+                        return $child;
                     }
                 );
+
+                $child->setData(['variants' => $chunk]);
+                $this->jobManager->saveJob($child);
+                $this->doctrineHelper->getEntityManager($child)->clear();
+
+                $this->messageProducer->send(
+                    Topics::IMPORT_PRODUCTS,
+                    new Message(
+                        [
+                            'integrationId' => $channelId,
+                            'jobId' => $child->getId(),
+                            'connector' => 'product',
+                            'connector_parameters' => ['incremented_read' => false],
+                        ],
+                        MessagePriority::HIGH
+                    )
+                );
+
+                if ($this->messageProducer instanceof BufferedMessageProducer
+                    && $this->messageProducer->isBufferingEnabled()) {
+                    $this->messageProducer->flushBuffer();
+                }
             }
         } finally {
-            $setRootJob('rootJob', null);
         }
     }
 
@@ -185,7 +184,7 @@ class AsyncWriter implements
             throw new \InvalidArgumentException('Root job id is empty');
         }
 
-        $rootJob = $this->jobProcessor->findJobById($rootJobId);
+        $rootJob = $this->doctrineHelper->getEntityManager(Job::class)->getReference(Job::class, $rootJobId);
         if (!$rootJob) {
             throw new \InvalidArgumentException('Root job is empty');
         }

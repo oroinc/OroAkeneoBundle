@@ -14,7 +14,7 @@ class JsonValidator extends ConstraintValidator
     public function validate($value, Constraint $constraint)
     {
         /* @var JsonConstraint $constraint */
-        if (!$this->isJSON($value) && strlen($value) > 0) {
+        if (!$this->isJSON($value) && $value !== '') {
             $this->context->addViolation($constraint->message);
         }
     }

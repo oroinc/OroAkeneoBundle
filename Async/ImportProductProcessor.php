@@ -97,10 +97,14 @@ class ImportProductProcessor implements MessageProcessorInterface, TopicSubscrib
             function (JobRunner $jobRunner, Job $child) use ($integration, $body) {
                 $this->doctrineHelper->refreshIncludingUnitializedRelations($integration);
                 $processor = $this->syncProcessorRegistry->getProcessorForIntegration($integration);
+
+                $connectorParameters = $body['connector_parameters'] ?? [];
+                $connectorParameters['jobData'] = $child->getData();
+
                 $status = $processor->process(
                     $integration,
                     $body['connector'] ?? null,
-                    $body['connector_parameters'] ?? []
+                    $connectorParameters
                 );
 
                 return $status;

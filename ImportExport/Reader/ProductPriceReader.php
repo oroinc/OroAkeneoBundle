@@ -13,7 +13,7 @@ class ProductPriceReader extends IteratorBasedReader
         $items = $this->stepExecution
                 ->getJobExecution()
                 ->getExecutionContext()
-                ->get('items') ?? [];
+                ->get('jobData')['items'] ?? [];
 
         $prices = [];
 

@@ -22,7 +22,7 @@ class ProductReader extends IteratorBasedReader
         $items = $this->stepExecution
                 ->getJobExecution()
                 ->getExecutionContext()
-                ->get('items') ?? [];
+                ->get('jobData')['items'] ?? [];
 
         if (!empty($items)) {
             $this->processFileTypeDownload($items, $context);
