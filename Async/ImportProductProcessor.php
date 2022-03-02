@@ -3,13 +3,15 @@
 namespace Oro\Bundle\AkeneoBundle\Async;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Oro\Bundle\AkeneoBundle\Tools\CacheProviderTrait;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\IntegrationBundle\Authentication\Token\IntegrationTokenAwareTrait;
 use Oro\Bundle\IntegrationBundle\Entity\Channel as Integration;
+use Oro\Bundle\IntegrationBundle\Entity\FieldsChanges;
 use Oro\Bundle\IntegrationBundle\Provider\SyncProcessorRegistry;
+use Oro\Bundle\MessageQueueBundle\Entity\Job;
 use Oro\Component\MessageQueue\Client\TopicSubscriberInterface;
 use Oro\Component\MessageQueue\Consumption\MessageProcessorInterface;
-use Oro\Component\MessageQueue\Job\Job;
 use Oro\Component\MessageQueue\Job\JobRunner;
 use Oro\Component\MessageQueue\Transport\MessageInterface;
 use Oro\Component\MessageQueue\Transport\SessionInterface;
@@ -19,6 +21,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 class ImportProductProcessor implements MessageProcessorInterface, TopicSubscriberInterface
 {
+    use CacheProviderTrait;
     use IntegrationTokenAwareTrait;
 
     /** @var DoctrineHelper */
@@ -98,14 +101,29 @@ class ImportProductProcessor implements MessageProcessorInterface, TopicSubscrib
                 $this->doctrineHelper->refreshIncludingUnitializedRelations($integration);
                 $processor = $this->syncProcessorRegistry->getProcessorForIntegration($integration);
 
-                $connectorParameters = $body['connector_parameters'] ?? [];
-                $connectorParameters['jobData'] = $child->getData();
+                $em = $this->doctrineHelper->getEntityManager(FieldsChanges::class);
+                /** @var FieldsChanges $fieldsChanges */
+                $fieldsChanges = $em
+                    ->getRepository(FieldsChanges::class)
+                    ->findOneBy(['entityId' => $child->getId(), 'entityClass' => Job::class]);
+
+                if (!$fieldsChanges) {
+                    $this->logger->error(
+                        sprintf('Source data from Akeneo not found for job: %s', $child->getId())
+                    );
+
+                    return false;
+                }
+
+                $this->cacheProvider->save('akeneo', $fieldsChanges->getChangedFields());
 
                 $status = $processor->process(
                     $integration,
                     $body['connector'] ?? null,
-                    $connectorParameters
+                    $body['connector_parameters'] ?? []
                 );
+
+                $em->clear(FieldsChanges::class);
 
                 return $status;
             }

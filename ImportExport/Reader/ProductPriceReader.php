@@ -2,18 +2,18 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Reader;
 
+use Oro\Bundle\AkeneoBundle\Tools\CacheProviderTrait;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 
 class ProductPriceReader extends IteratorBasedReader
 {
+    use CacheProviderTrait;
+
     protected function initializeFromContext(ContextInterface $context)
     {
         parent::initializeFromContext($context);
 
-        $items = $this->stepExecution
-                ->getJobExecution()
-                ->getExecutionContext()
-                ->get('jobData')['items'] ?? [];
+        $items = $this->cacheProvider->fetch('akeneo')['items'] ?? [];
 
         $prices = [];
 

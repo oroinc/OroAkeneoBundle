@@ -129,6 +129,8 @@ services:
       - '@security.token_storage'
       - '@logger'
       - '@oro_integration.processor_registry'
+    calls:
+      - [ setCacheProvider, [ '@oro_akeneo.importexport.cache' ] ]
     tags:
       - { name: 'oro_message_queue.client.message_processor', topicName: 'oro.integration.akeneo.product' }
 
