@@ -5,27 +5,27 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\Writer;
 use Akeneo\Bundle\BatchBundle\Entity\StepExecution;
 use Akeneo\Bundle\BatchBundle\Item\ItemWriterInterface;
 use Akeneo\Bundle\BatchBundle\Step\StepExecutionAwareInterface;
-use Doctrine\Common\Cache\CacheProvider;
+use Doctrine\DBAL\Platforms\MySqlPlatform;
+use Doctrine\DBAL\Types\Types;
 use Oro\Bundle\AkeneoBundle\Async\Topics;
+use Oro\Bundle\AkeneoBundle\Tools\CacheProviderTrait;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
+use Oro\Bundle\IntegrationBundle\Entity\FieldsChanges;
 use Oro\Bundle\MessageQueueBundle\Client\BufferedMessageProducer;
 use Oro\Bundle\MessageQueueBundle\Entity\Job;
-use Oro\Bundle\MessageQueueBundle\Job\JobManager;
 use Oro\Component\MessageQueue\Client\Message;
 use Oro\Component\MessageQueue\Client\MessagePriority;
 use Oro\Component\MessageQueue\Client\MessageProducerInterface;
-use Oro\Component\MessageQueue\Job\JobRunner;
 
 class AsyncWriter implements
     ItemWriterInterface,
     ClosableInterface,
     StepExecutionAwareInterface
 {
-    private const VARIANTS_BATCH_SIZE = 25;
+    use CacheProviderTrait;
 
-    /** @var JobRunner */
-    private $jobRunner;
+    private const VARIANTS_BATCH_SIZE = 25;
 
     /** @var MessageProducerInterface * */
     private $messageProducer;
@@ -34,35 +34,21 @@ class AsyncWriter implements
     private $stepExecution;
 
     /** @var int */
-    private $key = 0;
-
-    /** @var int */
     private $size = 0;
-
-    /** @var CacheProvider */
-    private $cacheProvider;
 
     /** @var DoctrineHelper */
     private $doctrineHelper;
 
-    /** @var JobManager */
-    private $jobManager;
-
     public function __construct(
-        JobRunner $jobRunner,
         MessageProducerInterface $messageProducer,
-        DoctrineHelper $doctrineHelper,
-        JobManager $jobManager
+        DoctrineHelper $doctrineHelper
     ) {
-        $this->jobRunner = $jobRunner;
         $this->messageProducer = $messageProducer;
         $this->doctrineHelper = $doctrineHelper;
-        $this->jobManager = $jobManager;
     }
 
     public function initialize()
     {
-        $this->key = 1;
         $this->size = 0;
     }
 
@@ -78,49 +64,15 @@ class AsyncWriter implements
             $newSize
         );
         $this->size = $newSize;
-
         $this->stepExecution->setWriteCount($this->size);
 
-        $jobRunner = $this->jobRunner->getJobRunnerForChildJob($this->getRootJob());
-
-        try {
-            /** @var Job $child */
-            $child = $jobRunner->createDelayed(
-                $jobName,
-                function (JobRunner $jobRunner, Job $child): Job {
-                    return $child;
-                }
-            );
-
-            $child->setData(['items' => $items]);
-            $this->jobManager->saveJob($child);
-            $this->doctrineHelper->getEntityManager($child)->clear();
-
-            $this->messageProducer->send(
-                Topics::IMPORT_PRODUCTS,
-                new Message(
-                    [
-                        'integrationId' => $channelId,
-                        'jobId' => $child->getId(),
-                        'connector' => 'product',
-                        'connector_parameters' => ['incremented_read' => true],
-                    ],
-                    MessagePriority::HIGH
-                )
-            );
-
-            if ($this->messageProducer instanceof BufferedMessageProducer
-                && $this->messageProducer->isBufferingEnabled()) {
-                $this->messageProducer->flushBuffer();
-            }
-        } finally {
-            $this->key++;
-        }
+        $jobId = $this->insertJob($jobName);
+        $this->createFieldsChanges($jobId, $items, 'items');
+        $this->sendMessage($channelId, $jobId, true);
     }
 
     public function flush()
     {
-        $this->key = 1;
         $this->size = 0;
 
         $variants = $this->cacheProvider->fetch('product_variants') ?? [];
@@ -130,71 +82,72 @@ class AsyncWriter implements
 
         $channelId = $this->stepExecution->getJobExecution()->getExecutionContext()->get('channel');
 
-        $jobRunner = $this->jobRunner->getJobRunnerForChildJob($this->getRootJob());
+        $chunks = array_chunk($variants, self::VARIANTS_BATCH_SIZE, true);
 
-        try {
-            $chunks = array_chunk($variants, self::VARIANTS_BATCH_SIZE, true);
+        foreach ($chunks as $key => $chunk) {
+            $jobName = sprintf(
+                'oro_integration:sync_integration:%s:variants:%s-%s',
+                $channelId,
+                self::VARIANTS_BATCH_SIZE * $key + 1,
+                self::VARIANTS_BATCH_SIZE * $key + count($chunk)
+            );
 
-            foreach ($chunks as $key => $chunk) {
-                $jobName = sprintf(
-                    'oro_integration:sync_integration:%s:variants:%s-%s',
-                    $channelId,
-                    self::VARIANTS_BATCH_SIZE * $key + 1,
-                    self::VARIANTS_BATCH_SIZE * $key + count($chunk)
-                );
-
-                /** @var Job $child */
-                $child = $jobRunner->createDelayed(
-                    $jobName,
-                    function (JobRunner $jobRunner, Job $child): Job {
-                        return $child;
-                    }
-                );
-
-                $child->setData(['variants' => $chunk]);
-                $this->jobManager->saveJob($child);
-                $this->doctrineHelper->getEntityManager($child)->clear();
-
-                $this->messageProducer->send(
-                    Topics::IMPORT_PRODUCTS,
-                    new Message(
-                        [
-                            'integrationId' => $channelId,
-                            'jobId' => $child->getId(),
-                            'connector' => 'product',
-                            'connector_parameters' => ['incremented_read' => false],
-                        ],
-                        MessagePriority::HIGH
-                    )
-                );
-
-                if ($this->messageProducer instanceof BufferedMessageProducer
-                    && $this->messageProducer->isBufferingEnabled()) {
-                    $this->messageProducer->flushBuffer();
-                }
-            }
-        } finally {
+            $jobId = $this->insertJob($jobName);
+            $this->createFieldsChanges($jobId, $chunk, 'variants');
+            $this->sendMessage($channelId, $jobId);
         }
     }
 
-    private function getRootJob(): Job
+    private function createFieldsChanges(int $jobId, array &$data, string $key): void
+    {
+        $em = $this->doctrineHelper->getEntityManager(FieldsChanges::class);
+        $fieldsChanges = $em
+            ->getRepository(FieldsChanges::class)
+            ->findOneBy(['entityId' => $jobId, 'entityClass' => Job::class]);
+        if (!$fieldsChanges) {
+            $fieldsChanges = new FieldsChanges([]);
+            $fieldsChanges->setEntityClass(Job::class);
+            $fieldsChanges->setEntityId($jobId);
+        }
+        $fieldsChanges->setChangedFields([$key => $data]);
+        $em->persist($fieldsChanges);
+        $em->flush($fieldsChanges);
+        $em->clear(FieldsChanges::class);
+    }
+
+    private function sendMessage(int $channelId, int $jobId, bool $incrementedRead = false): void
+    {
+        $this->messageProducer->send(
+            Topics::IMPORT_PRODUCTS,
+            new Message(
+                [
+                    'integrationId' => $channelId,
+                    'jobId' => $jobId,
+                    'connector' => 'product',
+                    'connector_parameters' => ['incremented_read' => $incrementedRead],
+                ],
+                MessagePriority::HIGH
+            )
+        );
+
+        if ($this->messageProducer instanceof BufferedMessageProducer
+            && $this->messageProducer->isBufferingEnabled()) {
+            $this->messageProducer->flushBuffer();
+        }
+    }
+
+    private function getRootJob(): ?int
     {
         $rootJobId = $this->stepExecution->getJobExecution()->getExecutionContext()->get('rootJobId') ?? null;
         if (!$rootJobId) {
             throw new \InvalidArgumentException('Root job id is empty');
         }
 
-        $rootJob = $this->doctrineHelper->getEntityManager(Job::class)->getReference(Job::class, $rootJobId);
-        if (!$rootJob) {
-            throw new \InvalidArgumentException('Root job is empty');
-        }
-
-        return $rootJob;
+        return $rootJobId;
     }
 
     public function close()
     {
-        $this->key = 1;
         $this->size = 0;
     }
 
@@ -203,8 +156,46 @@ class AsyncWriter implements
         $this->stepExecution = $stepExecution;
     }
 
-    public function setCacheProvider(CacheProvider $cacheProvider): void
+    private function insertJob(string $jobName): ?int
     {
-        $this->cacheProvider = $cacheProvider;
+        $em = $this->doctrineHelper->getEntityManager(Job::class);
+        $tableName = $em->getClassMetadata(Job::class)->getTableName();
+        $connection = $em->getConnection();
+
+        $qb = $connection->createQueryBuilder();
+        $qb
+            ->insert($tableName)
+            ->values([
+                'name' => ':name',
+                'status' => ':status',
+                'interrupted' => ':interrupted',
+                'created_at' => ':createdAt',
+                'root_job_id' => ':rootJob',
+            ])
+            ->setParameters([
+                'name' => $jobName,
+                'status' => Job::STATUS_NEW,
+                'interrupted' => false,
+                'unique' => false,
+                'createdAt' => new \DateTime(),
+                'rootJob' => $this->getRootJob(),
+            ], [
+                'name' => Types::STRING,
+                'status' => Types::STRING,
+                'interrupted' => Types::BOOLEAN,
+                'unique' => Types::BOOLEAN,
+                'createdAt' => Types::DATETIME_MUTABLE,
+                'rootJob' => Types::INTEGER,
+            ]);
+
+        if ($connection->getDatabasePlatform() instanceof MySqlPlatform) {
+            $qb->setValue('`unique`', ':unique');
+        } else {
+            $qb->setValue('"unique"', ':unique');
+        }
+
+        $qb->execute();
+
+        return $connection->lastInsertId();
     }
 }

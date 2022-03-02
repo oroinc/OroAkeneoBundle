@@ -91,6 +91,7 @@ return (new \PhpCsFixer\Config())
             'ternary_operator_spaces' => false,
             'phpdoc_no_useless_inheritdoc' => false,
             'class_definition' => false,
+            'string_length_to_empty' => false,
         ]
     )
     ->setRiskyAllowed(true);

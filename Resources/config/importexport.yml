@@ -210,6 +210,7 @@ services:
       - '@oro_integration.provider.connector_context_mediator'
     calls:
       - [ setSchemaUpdateFilter, [ '@oro_akeneo.placeholder.schema_update_filter' ] ]
+      - [ setCacheProvider, [ '@oro_akeneo.importexport.cache' ] ]
     tags:
       - { name: oro_integration.connector, type: product, channel_type: oro_akeneo }
 
@@ -312,10 +313,8 @@ services:
   oro_akeneo.importexport.writer.async_product:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\AsyncWriter'
     arguments:
-      - '@oro_message_queue.job.runner'
       - '@oro_message_queue.message_producer'
       - '@oro_entity.doctrine_helper'
-      - '@oro_message_queue.job.manager'
     calls:
       - [ setCacheProvider, [ '@oro_akeneo.importexport.cache' ] ]
 
@@ -337,11 +336,14 @@ services:
       - '@oro_importexport.context_registry'
     calls:
       - [ setAkeneoFileManager, [ '@oro_akeneo.integration.akeneo_file_manager' ] ]
+      - [ setCacheProvider, [ '@oro_akeneo.importexport.cache' ] ]
 
   oro_akeneo.importexport.reader.price:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Reader\ProductPriceReader'
     arguments:
       - '@oro_importexport.context_registry'
+    calls:
+      - [ setCacheProvider, [ '@oro_akeneo.importexport.cache' ] ]
 
   oro_akeneo.importexport.reader.product_image:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Reader\ProductImageReader'
@@ -350,11 +352,14 @@ services:
     calls:
       - [ setDoctrineHelper, [ '@oro_entity.doctrine_helper' ] ]
       - [ setAkeneoFileManager, [ '@oro_akeneo.integration.akeneo_file_manager' ] ]
+      - [ setCacheProvider, [ '@oro_akeneo.importexport.cache' ] ]
 
   oro_akeneo.importexport.reader.product_variant:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Reader\ProductVariantReader'
     arguments:
       - '@oro_importexport.context_registry'
+    calls:
+      - [ setCacheProvider, [ '@oro_akeneo.importexport.cache' ] ]
 
   oro_akeneo.importexport.reader.category_parent:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Reader\CategoryParentReader'

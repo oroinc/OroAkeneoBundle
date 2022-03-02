@@ -79,7 +79,7 @@ class ValidateConnectionController extends AbstractController
                     $akeneoCurrencies = $transport->getMergedCurrencies();
                     $akeneoLocales = $transport->getLocales();
             }
-        } catch (ClientExceptionInterface|ExceptionInterface $e) {
+        } catch (ClientExceptionInterface | ExceptionInterface $e) {
             $success = false;
             $message = $e->getMessage();
         } catch (\Exception $e) {
