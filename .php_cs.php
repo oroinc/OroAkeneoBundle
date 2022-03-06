@@ -1,17 +1,18 @@
 <?php
 
-$finder = PhpCsFixer\Finder::create()
+$finder = \PhpCsFixer\Finder::create()
     ->in(__DIR__);
 
-return PhpCsFixer\Config::create()
+return (new \PhpCsFixer\Config())
     ->setFinder($finder)
     ->setRules(
         [
             // generic PSRs
             '@PSR1' => true,
             '@PSR2' => true,
-            'psr0' => true,
-            'psr4' => true,
+            '@PSR12' => true,
+            '@PSR12:risky' => true,
+            'psr_autoloading' => true,
 
             // imports
             'ordered_imports' => true,
@@ -39,11 +40,14 @@ return PhpCsFixer\Config::create()
             'escape_implicit_backslashes' => false,
 
             // PHP
-            '@PHP71Migration' => true,
-            '@PHP71Migration:risky' => true,
+            '@PHP74Migration' => true,
+            '@PHP74Migration:risky' => true,
+            '@PHP80Migration' => true,
+            '@PHP80Migration:risky' => true,
 
+            'use_arrow_functions' => false,
+            'get_class_to_class_keyword' => false,
             'void_return' => false,
-            'visibility_required' => false,
             'list_syntax' => ['syntax' => 'long'],
             'declare_strict_types' => false,
 
@@ -64,11 +68,11 @@ return PhpCsFixer\Config::create()
             '@Symfony:risky' => true,
             'phpdoc_types_order' => false,
             'phpdoc_separation' => false,
-            'phpdoc_inline_tag' => false,
+            'visibility_required' => ['elements' => ['property', 'method']],
+            'types_spaces' => false,
             'native_function_invocation' => false,
             'concat_space' => ['spacing' => 'one'],
             'single_space_after_construct' => false,
-            'trailing_comma_in_multiline_array' => false,
             'self_accessor' => false,
             'yoda_style' => false,
             'phpdoc_summary' => false,
@@ -87,6 +91,7 @@ return PhpCsFixer\Config::create()
             'ternary_operator_spaces' => false,
             'phpdoc_no_useless_inheritdoc' => false,
             'class_definition' => false,
+            'string_length_to_empty' => false,
         ]
     )
     ->setRiskyAllowed(true);

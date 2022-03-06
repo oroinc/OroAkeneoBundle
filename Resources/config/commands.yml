@@ -1,0 +1,9 @@
+services:
+    _defaults:
+        public: false
+
+    Oro\Bundle\AkeneoBundle\Command\CleanupCommand:
+        arguments:
+            - '@oro_entity.doctrine_helper'
+        tags:
+            - { name: console.command }

@@ -22,6 +22,7 @@ class OroAkeneoExtension extends Extension
     public function load(array $configs, ContainerBuilder $container)
     {
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader->load('commands.yml');
         $loader->load('integration.yml');
         $loader->load('controllers.yml');
         $loader->load('importexport.yml');
