@@ -356,6 +356,9 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
     private function saveFrontendConfig(string $className, string $fieldName): void
     {
         $provider = $this->configManager->getProvider('frontend');
+        if (!$provider) {
+            return;
+        }
         $config = $provider->getConfig($className, $fieldName);
         $config->set('is_displayable', false);
         $config->set('is_editable', false);
