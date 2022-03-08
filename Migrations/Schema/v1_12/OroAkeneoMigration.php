@@ -43,7 +43,6 @@ class OroAkeneoMigration implements Migration, ExtendExtensionAwareInterface
                 'notnull' => false,
                 'oro_options' => [
                     'extend' => [
-                        'origin' => ExtendScope::OWNER_CUSTOM,
                         'owner' => ExtendScope::OWNER_CUSTOM,
                         'state' => ExtendScope::STATE_NEW,
                         'is_serialized' => false,

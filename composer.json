@@ -19,6 +19,6 @@
     },
     "require": {
         "oro/commerce": "5.0.*",
-        "akeneo/api-php-client-ee": "5.* || 6.*"
+        "akeneo/api-php-client": "8.*"
     }
 }

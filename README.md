@@ -16,13 +16,13 @@ With this extension, you will be able to sync the following data from Akeneo to 
 
 ## Compatibility
 
-| Connector | Status | OroCommerce |    Akeneo      | Build |
-|-----------|--------|-------------|----------------|-------|
-|    1.6    |  EOL   |     1.6     | 2.3, 3.2, 4.0* |       |
-|    3.1    |  EOL   |     3.1     | 2.3, 3.2, 4.0* |       |
-|    4.1    |  2021  |     4.1     | 2.3, 3.2, 4.0* | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=4.1)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
-|    4.2    |  2022  |     4.2     | 3.2, 4.0, 5.0  | [![Build Status](https://travis-ci.org/oroinc/OroAkeneoBundle.svg?branch=4.2)](https://travis-ci.org/oroinc/OroAkeneoBundle) |
-|    5.0    |  WIP   |     5.0     | 4.0, 5.0       |       |
+| Connector | Status | OroCommerce |    Akeneo      |
+|-----------|--------|-------------|----------------|
+|    1.6    |  EOL   |     1.6     | 2.3, 3.2, 4.0* |
+|    3.1    |  EOL   |     3.1     | 2.3, 3.2, 4.0* |
+|    4.1    |  EOL   |     4.1     | 2.3, 3.2, 4.0* |
+|    4.2    |  2022  |     4.2     | 3.2, 4.0, 5.0  |
+|    5.0    |  2023  |     5.0     | 5.0+           |
 
 ** Akeneo supported using older client versions, new features are not available.**
 
@@ -31,11 +31,7 @@ With this extension, you will be able to sync the following data from Akeneo to 
 1. Add composer package
 
 ```
-# Akeneo 4.0
-composer require "oro/commerce-akeneo:4.2.*" "akeneo/api-php-client-ee:5.*"
-
-# Akeneo 5.0
-composer require "oro/commerce-akeneo:4.2.*" "akeneo/api-php-client-ee:6.*"
+composer require "oro/commerce-akeneo:5.0.*"
 ```
 
 2. Follow [Setup Guide](https://doc.oroinc.com/backend/setup/upgrade-to-new-version)

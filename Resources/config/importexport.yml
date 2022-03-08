@@ -319,7 +319,8 @@ services:
       - [ setCacheProvider, [ '@oro_akeneo.importexport.cache' ] ]
 
   oro_akeneo.importexport.cache:
-    class: Doctrine\Common\Cache\ArrayCache
+    parent: oro_cache.array_cache
+    public: false
     calls:
       - [ setNamespace, [ 'oro_akeneo' ] ]
 
