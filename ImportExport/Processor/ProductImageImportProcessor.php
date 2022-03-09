@@ -38,7 +38,7 @@ class ProductImageImportProcessor extends StepExecutionAwareImportProcessor impl
             $this->context->setValue('itemData', $image);
 
             /** @var ProductImage $object */
-            $object = $this->serializer->deserialize(
+            $object = $this->serializer->denormalize(
                 $image,
                 $this->getEntityName(),
                 '',

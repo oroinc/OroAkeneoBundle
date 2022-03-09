@@ -141,17 +141,14 @@ services:
     arguments:
       - '@oro_akeneo.event_listener.doctrine_tag.decorator.inner'
 
-#  oro_akeneo.event_listener.import_export_tags_subscriber.decorator:
-#    class: Oro\Bundle\AkeneoBundle\EventListener\ImportExportTagsSubscriberDecorator
-#    decorates: oro_tag.event_listener.import_export_tags_subscriber
-#    decoration_priority: -255
-#    public: true
-#    arguments:
-#      - '@oro_akeneo.event_listener.import_export_tags_subscriber.decorator.inner'
-#
-#  oro_akeneo.tag_import.manager:
-#    alias: oro_tag.tag_import.manager
-#    public: true
+  oro_akeneo.event_listener.import_export_tags_subscriber.decorator:
+    class: Oro\Bundle\AkeneoBundle\EventListener\ImportExportTagsSubscriberDecorator
+    decorates: oro_tag.event_listener.import_export_tags_subscriber
+    decoration_priority: -255
+    public: true
+    arguments:
+      - '@oro_akeneo.event_listener.import_export_tags_subscriber.decorator.inner'
+      - '@oro_tag.tag_import.manager'
 
   oro_akeneo.event_listener.load_class_metadata:
     class: Oro\Bundle\AkeneoBundle\EventListener\LoadClassMetadataListener

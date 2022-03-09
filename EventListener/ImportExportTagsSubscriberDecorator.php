@@ -13,24 +13,30 @@ use Oro\Bundle\ImportExportBundle\Event\StrategyEvent;
 use Oro\Bundle\TagBundle\EventListener\ImportExportTagsSubscriber;
 use Oro\Bundle\TagBundle\Manager\TagImportManager;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Contracts\Service\ServiceSubscriberInterface;
 
 /**
  * Tags lazy processing
  */
 class ImportExportTagsSubscriberDecorator implements
     AdditionalOptionalListenerInterface,
-    EventSubscriberInterface,
-    ServiceSubscriberInterface
+    EventSubscriberInterface
 {
     use AdditionalOptionalListenerTrait;
 
     /** @var ImportExportTagsSubscriber */
     protected $innerSubscriber;
 
-    public function __construct(ImportExportTagsSubscriber $innerSubscriber)
+    public function __construct(ImportExportTagsSubscriber $innerSubscriber, TagImportManager $tagImportManager)
     {
         $this->innerSubscriber = $innerSubscriber;
+
+        \Closure::bind(
+            function (TagImportManager $tagImportManager) {
+                $this->tagImportManager = $tagImportManager;
+            },
+            $this->innerSubscriber,
+            $this->innerSubscriber
+        )($tagImportManager);
     }
 
     /**
@@ -120,12 +126,5 @@ class ImportExportTagsSubscriberDecorator implements
         }
 
         $this->innerSubscriber->addTagsIntoFixtures($event);
-    }
-
-    public static function getSubscribedServices()
-    {
-        return [
-            'oro_tag.tag_import.manager' => TagImportManager::class,
-        ];
     }
 }
