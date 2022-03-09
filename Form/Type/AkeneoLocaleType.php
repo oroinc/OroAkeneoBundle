@@ -12,6 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Intl\Locales;
 use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -47,14 +48,15 @@ class AkeneoLocaleType extends AbstractType implements LoggerAwareInterface
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $this->codes = $options['parent_data'];
+        $this->codes = $options['parent_data'] ?? [];
 
         $builder
             ->add(
                 'code',
                 ChoiceType::class,
                 [
-                    'choices' => $this->codes,
+                    'choices' => array_combine($this->codes, $this->codes),
+                    'choice_label' => function ($choice) { return Locales::getName($choice); },
                     'label' => false,
                     'constraints' => [
                         new NotBlank(),
@@ -104,7 +106,8 @@ class AkeneoLocaleType extends AbstractType implements LoggerAwareInterface
                 'code',
                 ChoiceType::class,
                 [
-                    'choices' => $this->codes,
+                    'choices' => array_combine($this->codes, $this->codes),
+                    'choice_label' => function ($choice) { return Locales::getName($choice); },
                 ]
             );
     }
@@ -120,7 +123,8 @@ class AkeneoLocaleType extends AbstractType implements LoggerAwareInterface
                     'code',
                     ChoiceType::class,
                     [
-                        'choices' => $this->codes,
+                        'choices' => array_combine($this->codes, $this->codes),
+                        'choice_label' => function ($choice) { return Locales::getName($choice); },
                     ]
                 );
 

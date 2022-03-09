@@ -17,7 +17,7 @@ use Oro\Bundle\GaufretteBundle\FileManager;
 use Oro\Bundle\IntegrationBundle\Entity\Transport;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Intl\Languages;
+use Symfony\Component\Intl\Locales;
 
 class AkeneoTransport implements AkeneoTransportInterface
 {
@@ -131,7 +131,7 @@ class AkeneoTransport implements AkeneoTransportInterface
                 continue;
             }
 
-            $localeName = Languages::getName($locale['code']);
+            $localeName = Locales::getName($locale['code']);
             $locales[$localeName ?: $locale['code']] = $locale['code'];
         }
 
