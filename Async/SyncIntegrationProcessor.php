@@ -4,6 +4,7 @@ namespace Oro\Bundle\AkeneoBundle\Async;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use Oro\Bundle\AkeneoBundle\Integration\AkeneoChannel;
 use Oro\Bundle\IntegrationBundle\Async\Topics;
 use Oro\Bundle\IntegrationBundle\Authentication\Token\IntegrationTokenAwareTrait;
 use Oro\Bundle\IntegrationBundle\Entity\Channel as Integration;
@@ -117,8 +118,9 @@ class SyncIntegrationProcessor implements MessageProcessorInterface, ContainerAw
                     $processor->getLoggerStrategy()->setLogger($this->logger);
                 }
                 $connectorParameters = $body['connector_parameters'];
-                $connectorParameters['rootJobId'] = $job->getRootJob()->getId();
-
+                if ($integration->getType() === AkeneoChannel::TYPE) {
+                    $connectorParameters['rootJobId'] = $job->getRootJob()->getId();
+                }
                 return $processor->process(
                     $integration,
                     $body['connector'],
