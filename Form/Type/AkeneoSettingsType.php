@@ -249,6 +249,15 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 ]
             )
             ->add(
+                'configurableProductFilter',
+                TextareaType::class,
+                [
+                    'required'    => false,
+                    'label'       => 'oro.akeneo.integration.settings.akeneo_configurable_product_filter.label',
+                    'constraints' => [new JsonConstraint()],
+                ]
+            )
+            ->add(
                 'priceList',
                 PriceListSelectType::class,
                 [

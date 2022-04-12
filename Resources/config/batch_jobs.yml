@@ -92,9 +92,23 @@ connector:
             reader: oro_akeneo.importexport.reader.price
             processor: oro_akeneo.importexport.processor.import.product_price
             writer: oro_pricing.importexport.writer.product_price
-        import_variants:
+
+    akeneo_configurable_product_import:
+      title: "Configurable Product import from Akeneo"
+      type:  import
+      steps:
+        api:
           title: import
           class: Oro\Bundle\BatchBundle\Step\ItemStep
+          services:
+            reader: oro_akeneo.integration.connector.configurable_product
+            processor: oro_akeneo.importexport.processor.async
+            writer: oro_akeneo.importexport.writer.configurable_async_product
+          parameters:
+            batch_size: 25
+        import_variants:
+          title: import
+          class: Oro\Bundle\AkeneoBundle\ImportExport\Step\ItemStep
           services:
             reader: oro_akeneo.importexport.reader.product_variant
             processor: oro_akeneo.importexport.processor.import.product_variant

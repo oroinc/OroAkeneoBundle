@@ -53,6 +53,7 @@ class ValidateConnectionController extends AbstractController
             $akeneoSettings->setPassword($akeneoSettingsEntity->getPassword());
         }
 
+        /** @var \Oro\Bundle\CurrencyBundle\Provider\CurrencyListProviderInterface */
         $currencyConfig = $this->container->get('oro_currency.config.currency');
 
         $akeneoChannelNames = [];
@@ -94,7 +95,7 @@ class ValidateConnectionController extends AbstractController
                 'akeneoLocales' => $akeneoLocales,
                 'success' => $success,
                 'message' => $this->get('translator')->trans($message),
-                'currencyList' => $currencyConfig->getCurrencies(),
+                'currencyList' => $currencyConfig->getCurrencyList(),
             ]
         );
     }
