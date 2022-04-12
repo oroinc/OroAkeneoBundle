@@ -47,7 +47,7 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
      */
     public function getMigrationVersion()
     {
-        return 'v1_15';
+        return 'v1_16';
     }
 
     /**
@@ -113,6 +113,7 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
         $table->addColumn('akeneo_active_channel', 'string', ['notnull' => false, 'length' => 255]);
         $table->addColumn('akeneo_acl_voter_enabled', 'boolean', ['notnull' => false]);
         $table->addColumn('akeneo_product_filter', 'text', ['notnull' => false]);
+        $table->addColumn('akeneo_conf_product_filter', 'text', ['notnull' => false]);
         $table->addColumn('akeneo_attributes_list', 'text', ['notnull' => false]);
         $table->addColumn('rootcategory_id', 'integer', ['notnull' => false]);
         $table->addColumn('pricelist_id', 'integer', ['notnull' => false]);

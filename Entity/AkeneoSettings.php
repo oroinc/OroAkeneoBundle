@@ -92,6 +92,12 @@ class AkeneoSettings extends Transport
     /**
      * @var string
      *
+     * @ORM\Column(name="akeneo_conf_product_filter", type="text", nullable=true)
+     */
+    protected $configurableProductFilter;
+    /**
+     * @var string
+     *
      * @ORM\Column(type="string", name="akeneo_url", length=100)
      */
     private $url;
@@ -271,6 +277,26 @@ class AkeneoSettings extends Transport
     public function setProductFilter($productFilter)
     {
         $this->productFilter = $productFilter;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getConfigurableProductFilter()
+    {
+        return $this->configurableProductFilter;
+    }
+
+    /**
+     * @param string $configurableProductFilter
+     *
+     * @return self
+     */
+    public function setConfigurableProductFilter($configurableProductFilter)
+    {
+        $this->configurableProductFilter = $configurableProductFilter;
 
         return $this;
     }

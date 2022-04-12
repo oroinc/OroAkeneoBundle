@@ -15,10 +15,12 @@ class ChannelTypeExtension extends AbstractTypeExtension
      * @var array
      */
     protected $connectorsOrder = [
+        'brand',
         'category',
         'attribute',
         'attribute_family',
         'product',
+        'configurable_product',
     ];
 
     /**
