@@ -81,11 +81,6 @@ class ProductConnector extends AbstractConnector implements ConnectorInterface, 
             return new \ArrayIterator();
         }
 
-        $variants = $this->cacheProvider->fetch('akeneo')['variants'] ?? [];
-        if ($variants) {
-            return new \ArrayIterator();
-        }
-
         $iterator = new \AppendIterator();
         $iterator->append($this->transport->getProducts(self::PAGE_SIZE));
         $iterator->append($this->transport->getProductModels(self::PAGE_SIZE));
