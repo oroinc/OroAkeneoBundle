@@ -113,7 +113,7 @@ class ValidateConnectionController extends AbstractController
                 'akeneoLocales' => $akeneoLocales,
                 'success' => $success,
                 'message' => $message,
-                'currencyList' => $this->currencyProvider->getCurrencies(),
+                'currencyList' => $this->currencyProvider->getCurrencyList(),
             ]
         );
     }
