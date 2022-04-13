@@ -86,6 +86,16 @@ class ProductConnector extends AbstractConnector implements ConnectorInterface, 
             return new \ArrayIterator();
         }
 
+        $executionContext = $this->stepExecution
+            ->getJobExecution()
+            ->getExecutionContext();
+
+        $force = $executionContext->get('force');
+
+        if (is_null($force)) {
+            return new \ArrayIterator();
+        }
+
         $iterator = new \AppendIterator();
         $iterator->append($this->transport->getProducts(self::PAGE_SIZE));
         $iterator->append($this->transport->getProductModels(self::PAGE_SIZE));
