@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\AkeneoBundle\Integration\Api;
 
-//namespace Akeneo\Pim\ApiClient\Api;
+// namespace Akeneo\Pim\ApiClient\Api;
 
 use Akeneo\Pim\ApiClient\Client\ResourceClientInterface;
 
