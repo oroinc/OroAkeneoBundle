@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Oro\Bundle\AkeneoBundle\Integration\Api;
 
-//namespace Akeneo\PimEnterprise\ApiClient\Api;
+// namespace Akeneo\PimEnterprise\ApiClient\Api;
 
 use Akeneo\Pim\ApiClient\Exception\HttpException;
 

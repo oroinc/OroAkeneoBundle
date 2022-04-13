@@ -38,6 +38,9 @@ oro:
         akeneo_product_filter:
           label: 'Product Filter'
           tooltip: 'This field enables you to apply filters to sync only the products you want. As this filter is passed via API request, it must be filled in JSON format. Details on the format and filter options available for the products can be found in the <a target="_blank" href="https://api.akeneo.com/documentation/filter.html#filters">Filters section of the Akeneo PIM documentation</a>'
+        akeneo_configurable_product_filter:
+          label: 'Configurable Product Filter'
+          tooltip: 'This field enables you to apply filters to sync only the configurable products you want. As this filter is passed via API request, it must be filled in JSON format. Details on the format and filter options available for the products can be found in the <a target="_blank" href="https://api.akeneo.com/documentation/filter.html#filters">Filters section of the Akeneo PIM documentation</a>'
         akeneo_attribute_list:
           label: 'Attribute Filter'
           tooltip: 'This field enables you to apply filters to sync only the attributes you want. Values must be attribute code, separated with a semi-colon. IMPORTANT: if not defined before to save the integration, all attributes will be imported.'
@@ -84,6 +87,8 @@ oro:
         label: Category connector
       product:
         label: Product connector
+      configurable_product:
+        label: Configurable product connector
       attribute_family:
         label: Attribute family connector
       attribute:
