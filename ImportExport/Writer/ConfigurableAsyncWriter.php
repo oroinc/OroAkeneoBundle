@@ -180,22 +180,22 @@ class ConfigurableAsyncWriter implements
         $rootJobId = $this->getRootJob();
 
         $hasRootJob = $connection
-            ->executeStatement(
+            ->executeQuery(
                 'SELECT 1 FROM oro_message_queue_job WHERE id = :id LIMIT 1;',
                 ['id' => $rootJobId],
                 ['id' => Types::INTEGER]
-            );
+            )->fetchColumn();
 
         if (!$hasRootJob) {
             throw new \InvalidArgumentException(sprintf('Root job "%d" missing', $rootJobId));
         }
 
         $childJob = $connection
-            ->executeStatement(
+            ->executeQuery(
                 'SELECT id FROM oro_message_queue_job WHERE root_job_id = :rootJob and name = :name LIMIT 1;',
                 ['rootJob' => $rootJobId, 'name' => $jobName],
                 ['rootJob' => Types::INTEGER, 'name' => Types::STRING]
-            );
+            )->fetchColumn();
 
         if ($childJob) {
             return $childJob;
