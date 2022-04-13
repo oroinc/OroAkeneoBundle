@@ -25,9 +25,9 @@ class SimpleContextAggregator extends BaseAggregator
                     $context,
                     $this->contextRegistry->getByStepExecution($stepExecution)
                 );
-                //CUSTOMIZATION START
+                // CUSTOMIZATION START
                 $context->addErrors($stepExecution->getErrors());
-                //CUSTOMIZATION END
+                // CUSTOMIZATION END
             }
         }
 

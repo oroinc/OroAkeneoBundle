@@ -2,8 +2,8 @@
 
 namespace Oro\Bundle\AkeneoBundle\Validator;
 
+use Doctrine\ORM\PersistentCollection;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
-use Oro\Bundle\ProductBundle\Entity\Product;
 use Oro\Bundle\ProductBundle\Validator\Constraints\ConfigurableProductAccessorTrait;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -40,17 +40,14 @@ class UniqueProductVariantLinksValidator extends ConstraintValidator
             return;
         }
         if (count($product->getVariantFields()) === 0) {
-            return null;
+            return;
         }
 
-        $uow = $this->doctrineHelper->getEntityManagerForClass(Product::class)->getUnitOfWork();
-        $collections = array_merge($uow->getScheduledCollectionUpdates(), $uow->getScheduledCollectionDeletions());
-        if (
-            !in_array($value->getVariantLinks(), $collections)
-            && !in_array($value->getParentVariantLinks(), $collections)
-            && empty($uow->getEntityChangeSet($value)['variantFields'])
-        ) {
-            return;
+        $variantLinks = $value->getVariantLinks();
+        if ($variantLinks instanceof PersistentCollection) {
+            if ($variantLinks->isInitialized() && !$variantLinks->isDirty()) {
+                return;
+            }
         }
 
         $this->validator->validate($value, $constraint);

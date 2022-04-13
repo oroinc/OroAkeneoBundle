@@ -9,7 +9,6 @@ use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Types\Types;
 use Oro\Bundle\AkeneoBundle\Async\Topics;
 use Oro\Bundle\AkeneoBundle\EventListener\AdditionalOptionalListenerManager;
-use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\IntegrationBundle\Entity\FieldsChanges;
 use Oro\Bundle\MessageQueueBundle\Client\BufferedMessageProducer;
@@ -19,19 +18,17 @@ use Oro\Component\MessageQueue\Client\Message;
 use Oro\Component\MessageQueue\Client\MessagePriority;
 use Oro\Component\MessageQueue\Client\MessageProducerInterface;
 
-class AsyncWriter implements
+class ConfigurableAsyncWriter implements
     ItemWriterInterface,
-    ClosableInterface,
     StepExecutionAwareInterface
 {
+    private const VARIANTS_BATCH_SIZE = 25;
+
     /** @var MessageProducerInterface * */
     private $messageProducer;
 
     /** @var StepExecution */
     private $stepExecution;
-
-    /** @var int */
-    private $size = 0;
 
     /** @var DoctrineHelper */
     private $doctrineHelper;
@@ -41,6 +38,8 @@ class AsyncWriter implements
 
     /** @var AdditionalOptionalListenerManager */
     private $additionalOptionalListenerManager;
+
+    private $variants = [];
 
     public function __construct(
         MessageProducerInterface $messageProducer,
@@ -56,7 +55,7 @@ class AsyncWriter implements
 
     public function initialize()
     {
-        $this->size = 0;
+        $this->variants = [];
 
         $this->additionalOptionalListenerManager->disableListeners();
         $this->optionalListenerManager->disableListeners($this->optionalListenerManager->getListeners());
@@ -64,21 +63,56 @@ class AsyncWriter implements
 
     public function write(array $items)
     {
+        foreach ($items as $item) {
+            $sku = $item['sku'];
+
+            if (!empty($item['family_variant'])) {
+                if (isset($item['parent'], $this->variants[$sku])) {
+                    $parent = $item['parent'];
+                    foreach (array_keys($this->variants[$sku]) as $sku) {
+                        $this->variants[$parent][$sku] = ['parent' => $parent, 'variant' => $sku];
+                    }
+                }
+
+                return;
+            }
+
+            if (empty($item['parent'])) {
+                return;
+            }
+
+            $parent = $item['parent'];
+
+            $this->variants[$parent][$sku] = ['parent' => $parent, 'variant' => $sku];
+        }
+    }
+
+    public function close()
+    {
+        $this->variants = [];
+
+        $this->optionalListenerManager->enableListeners($this->optionalListenerManager->getListeners());
+        $this->additionalOptionalListenerManager->enableListeners();
+    }
+
+    public function flush()
+    {
         $channelId = $this->stepExecution->getJobExecution()->getExecutionContext()->get('channel');
 
-        $newSize = $this->size + count($items);
-        $jobName = sprintf(
-            'oro_integration:sync_integration:%s:products:%s-%s',
-            $channelId,
-            $this->size + 1,
-            $newSize
-        );
-        $this->size = $newSize;
-        $this->stepExecution->setWriteCount($this->size);
+        $chunks = array_chunk($this->variants, self::VARIANTS_BATCH_SIZE, true);
 
-        $jobId = $this->insertJob($jobName);
-        if ($jobId && $this->createFieldsChanges($jobId, $items, 'items')) {
-            $this->sendMessage($channelId, $jobId, true);
+        foreach ($chunks as $key => $chunk) {
+            $jobName = sprintf(
+                'oro_integration:sync_integration:%s:variants:%s-%s',
+                $channelId,
+                self::VARIANTS_BATCH_SIZE * $key + 1,
+                self::VARIANTS_BATCH_SIZE * $key + count($chunk)
+            );
+
+            $jobId = $this->insertJob($jobName);
+            if ($jobId && $this->createFieldsChanges($jobId, $chunk, 'variants')) {
+                $this->sendMessage($channelId, $jobId);
+            }
         }
     }
 
@@ -111,7 +145,7 @@ class AsyncWriter implements
                 [
                     'integrationId' => $channelId,
                     'jobId' => $jobId,
-                    'connector' => 'product',
+                    'connector' => 'configurable_product',
                     'connector_parameters' => ['incremented_read' => $incrementedRead],
                 ],
                 MessagePriority::HIGH
@@ -132,14 +166,6 @@ class AsyncWriter implements
         }
 
         return (int)$rootJobId;
-    }
-
-    public function close()
-    {
-        $this->size = 0;
-
-        $this->optionalListenerManager->enableListeners($this->optionalListenerManager->getListeners());
-        $this->additionalOptionalListenerManager->enableListeners();
     }
 
     public function setStepExecution(StepExecution $stepExecution)
