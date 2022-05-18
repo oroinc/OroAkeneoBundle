@@ -278,8 +278,8 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
 
         $attributeConfig->set('field_name', $fieldName);
         $attributeConfig->set('is_attribute', true);
-        $attributeConfig->set('is_global', false);
-        $attributeConfig->set('organization_id', $this->getOrganizationId());
+        $attributeConfig->set('is_global', true);
+        $attributeConfig->remove('organization_id');
         $this->configManager->persist($attributeConfig);
 
         parent::setAttributeData($fieldConfigModel);
@@ -313,26 +313,6 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
         $importExportConfig->set('fallback_field', $fieldType);
         $this->configManager->persist($extendConfig);
         $this->configManager->persist($importExportConfig);
-    }
-
-    private function getOrganizationId(): ?int
-    {
-        if (!$this->organizationId) {
-            $channelId = $this->stepExecution->getJobExecution()->getExecutionContext()->get('channel');
-            if (!$channelId) {
-                return null;
-            }
-
-            /** @var Channel $channel */
-            $channel = $this->doctrineHelper->getEntity(Channel::class, $channelId);
-            if (!$channel) {
-                return null;
-            }
-
-            $this->organizationId = $channel->getOrganization()->getId();
-        }
-
-        return $this->organizationId;
     }
 
     private function saveDatagridConfig(string $className, string $fieldName): void
