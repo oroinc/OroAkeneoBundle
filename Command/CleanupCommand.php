@@ -17,7 +17,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class CleanupCommand extends Command implements CronCommandInterface
 {
     /** @var string */
-    protected static $defaultName = 'oro:akeneo:cleanup';
+    protected static $defaultName = 'oro:cron:akeneo:cleanup';
 
     /** @var DoctrineHelper */
     private $doctrineHelper;
