@@ -74,11 +74,11 @@ class ConfigurableAsyncWriter implements
                     }
                 }
 
-                return;
+                continue;
             }
 
             if (empty($item['parent'])) {
-                return;
+                continue;
             }
 
             $parent = $item['parent'];
