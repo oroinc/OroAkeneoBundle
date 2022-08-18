@@ -89,6 +89,8 @@ class AsyncWriter implements
             ->getRepository(FieldsChanges::class)
             ->findOneBy(['entityId' => $jobId, 'entityClass' => Job::class]);
         if ($fieldsChanges) {
+            $em->clear(FieldsChanges::class);
+
             return false;
         }
 
