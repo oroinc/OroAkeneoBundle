@@ -89,7 +89,7 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
             $variantSkus
         );
 
-        $variantSkusUppercase = array_combine($variantSkusUppercase, $variantSkusUppercase);
+        $variantSkusUppercase = array_combine($variantSkusUppercase, $items);
         foreach ($parentProduct->getVariantLinks() as $variantLink) {
             $variantProduct = $variantLink->getProduct();
             if (!$variantSkusUppercase) {
@@ -110,12 +110,14 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
                 continue;
             }
 
-            $variantProduct->setStatus(Product::STATUS_ENABLED);
+            $variantItem = $variantSkusUppercase[$variantProduct->getSkuUppercase()];
+            $status = empty($variantItem['enabled']) ? Product::STATUS_DISABLED : Product::STATUS_ENABLED;
+            $variantProduct->setStatus($status);
 
             unset($variantSkusUppercase[$variantProduct->getSkuUppercase()]);
         }
 
-        foreach ($variantSkusUppercase as $variantSku) {
+        foreach ($variantSkusUppercase as $variantSku => $variantItem) {
             $variantProduct = $productRepository->findOneBySku($variantSku);
             if (!$variantProduct instanceof Product) {
                 $context->incrementErrorEntriesCount();
@@ -139,7 +141,8 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
             $variantProduct->addParentVariantLink($variantLink);
             $parentProduct->addVariantLink($variantLink);
 
-            $variantProduct->setStatus(Product::STATUS_ENABLED);
+            $status = empty($variantItem['enabled']) ? Product::STATUS_DISABLED : Product::STATUS_ENABLED;
+            $variantProduct->setStatus($status);
 
             $context->incrementAddCount();
 
