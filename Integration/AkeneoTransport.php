@@ -238,14 +238,17 @@ class AkeneoTransport implements AkeneoTransportInterface
         );
     }
 
-    public function getProductsList(int $pageSize): iterable
+    public function getProductsList(int $pageSize, ?string $family = null): iterable
     {
-        $this->initAttributesList();
-
+        $attributeMapping = $this->getAttributeMapping();
         $queryParams = [
             'scope' => $this->transportEntity->getAkeneoActiveChannel(),
-            'search' => $this->akeneoSearchBuilder->getFilters($this->transportEntity->getProductFilter()),
-            'attributes' => key($this->attributes),
+            'search' => $this->akeneoSearchBuilder->getFilters(
+                $family ?
+                json_encode(['family' => [['operator' => 'IN', 'value' => [$family]]]]) :
+                $this->transportEntity->getProductFilter()
+            ),
+            'attributes' => $attributeMapping['sku'] ?? reset($attributeMapping),
         ];
 
         if ($this->transportEntity->getSyncProducts() === SyncProductsDataProvider::PUBLISHED) {
@@ -253,7 +256,7 @@ class AkeneoTransport implements AkeneoTransportInterface
                 $this->client->getPublishedProductApi()->all($pageSize, $queryParams),
                 $this->client,
                 $this->logger,
-                $this->getAttributeMapping()
+                $attributeMapping
             );
         }
 
@@ -261,7 +264,7 @@ class AkeneoTransport implements AkeneoTransportInterface
             $this->client->getProductApi()->all($pageSize, $queryParams),
             $this->client,
             $this->logger,
-            $this->getAttributeMapping()
+            $attributeMapping
         );
     }
 
@@ -292,19 +295,18 @@ class AkeneoTransport implements AkeneoTransportInterface
 
     public function getProductModelsList(int $pageSize): iterable
     {
-        $this->initAttributesList();
-
+        $attributeMapping = $this->getAttributeMapping();
         $queryParams = [
             'scope' => $this->transportEntity->getAkeneoActiveChannel(),
             'search' => $this->akeneoSearchBuilder->getFilters($this->transportEntity->getConfigurableProductFilter()),
-            'attributes' => key($this->attributes),
+            'attributes' => $attributeMapping['sku'] ?? reset($attributeMapping),
         ];
 
         return new ConfigurableProductIterator(
             $this->client->getProductModelApi()->all($pageSize, $queryParams),
             $this->client,
             $this->logger,
-            $this->getAttributeMapping()
+            $attributeMapping
         );
     }
 

@@ -41,6 +41,10 @@ class ConfigurableAsyncWriter implements
 
     private $variants = [];
 
+    private $origins = [];
+
+    private $models = [];
+
     public function __construct(
         MessageProducerInterface $messageProducer,
         DoctrineHelper $doctrineHelper,
@@ -56,6 +60,8 @@ class ConfigurableAsyncWriter implements
     public function initialize()
     {
         $this->variants = [];
+        $this->origins = [];
+        $this->models = [];
 
         $this->additionalOptionalListenerManager->disableListeners();
         $this->optionalListenerManager->disableListeners($this->optionalListenerManager->getListeners());
@@ -64,32 +70,41 @@ class ConfigurableAsyncWriter implements
     public function write(array $items)
     {
         foreach ($items as $item) {
+            $origin = $item['origin'];
             $sku = $item['sku'];
 
-            if (!empty($item['family_variant'])) {
-                if (isset($item['parent'], $this->variants[$sku])) {
-                    $parent = $item['parent'];
-                    foreach (array_keys($this->variants[$sku]) as $sku) {
-                        $this->variants[$parent][$sku] = ['parent' => $parent, 'variant' => $sku];
-                    }
+            if (isset($item['family_variant'])) {
+                $this->origins[$origin] = $sku;
+
+                if (isset($item['parent'])) {
+                    $this->models[$origin] = $item['parent'];
                 }
 
                 continue;
             }
 
-            if (empty($item['parent'])) {
+            if (!isset($item['parent'])) {
                 continue;
             }
 
             $parent = $item['parent'];
+            if (!array_key_exists($parent, $this->origins)) {
+                continue;
+            }
 
-            $this->variants[$parent][$sku] = ['parent' => $parent, 'variant' => $sku];
+            $this->variants[$parent][$origin] = [
+                'parent' => $this->origins[$parent] ?? $parent,
+                'variant' => $sku,
+                'enabled' => $item['enabled'] ?? false,
+            ];
         }
     }
 
     public function close()
     {
         $this->variants = [];
+        $this->origins = [];
+        $this->models = [];
 
         $this->optionalListenerManager->enableListeners($this->optionalListenerManager->getListeners());
         $this->additionalOptionalListenerManager->enableListeners();
@@ -97,6 +112,15 @@ class ConfigurableAsyncWriter implements
 
     public function flush()
     {
+        foreach ($this->models as $levelTwo => $levelOne) {
+            if (array_key_exists($levelTwo, $this->variants)) {
+                foreach ($this->variants[$levelTwo] as $sku => $item) {
+                    $item['parent'] = $this->origins[$levelOne] ?? $levelOne;
+                    $this->variants[$levelOne][$sku] = $item;
+                }
+            }
+        }
+
         $channelId = $this->stepExecution->getJobExecution()->getExecutionContext()->get('channel');
 
         $chunks = array_chunk($this->variants, self::VARIANTS_BATCH_SIZE, true);
