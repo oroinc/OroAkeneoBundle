@@ -10,19 +10,15 @@ class ConfigurableProductIterator extends AbstractIterator
 {
     private $attributeMapping = [];
 
-    private $familyVariants = [];
-
     public function __construct(
         ResourceCursorInterface $resourceCursor,
         AkeneoPimClientInterface $client,
         LoggerInterface $logger,
-        array $attributeMapping = [],
-        array $familyVariants = []
+        array $attributeMapping = []
     ) {
         parent::__construct($resourceCursor, $client, $logger);
 
         $this->attributeMapping = $attributeMapping;
-        $this->familyVariants = $familyVariants;
     }
 
     public function doCurrent()
