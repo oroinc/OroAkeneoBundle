@@ -20,8 +20,6 @@ class JsonValidator extends ConstraintValidator
     }
 
     /**
-     * @param $string
-     *
      * @return bool
      */
     private function isJSON($string)

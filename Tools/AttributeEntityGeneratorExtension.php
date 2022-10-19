@@ -70,10 +70,13 @@ class AttributeEntityGeneratorExtension extends AbstractEntityGeneratorExtension
         }
 
         $getMethodBody = $getMethodBody ? $getMethodBody .= 'return null;' : $initialGetMethodBody;
+        if ($getMethodBody) {
+            $class->addMethod($getMethodName)->addBody($getMethodBody);
+        }
         $setMethodBody = $setMethodBody ? $setMethodBody .= 'return $this;' : $initialSetMethodBody;
-
-        $class->addMethod($getMethodName)->addBody($getMethodBody);
-        $class->addMethod($setMethodName)->addBody($setMethodBody)->addParameter('value');
+        if ($setMethodBody) {
+            $class->addMethod($setMethodName)->addBody($setMethodBody)->addParameter('value');
+        }
     }
 
     private function generateRelationDefaultMethods(string $attributeName, array $fields, ClassGenerator $class): void

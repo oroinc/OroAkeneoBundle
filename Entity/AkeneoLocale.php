@@ -53,9 +53,6 @@ class AkeneoLocale
         return $this->code;
     }
 
-    /**
-     * @return AkeneoLocale
-     */
     public function setCode(string $code): self
     {
         $this->code = $code;
@@ -93,9 +90,6 @@ class AkeneoLocale
         return $this->akeneoSettings;
     }
 
-    /**
-     * @return AkeneoLocale
-     */
     public function setAkeneoSettings(AkeneoSettings $akeneoSettings = null): self
     {
         $this->akeneoSettings = $akeneoSettings;
