@@ -93,17 +93,6 @@ services:
     tags:
       - { name: doctrine.event_subscriber }
 
-  oro_akeneo.strategy.import.helper:
-    class: 'Oro\Bundle\AkeneoBundle\ImportExport\Strategy\ImportStrategyHelper'
-    parent: oro_importexport.strategy.import.helper
-    calls:
-      - [setDoctrineHelper, ['@oro_entity.doctrine_helper']]
-
-  oro_akeneo.strategy.import.helper_log:
-    class: 'Oro\Bundle\AkeneoBundle\ImportExport\Strategy\ImportLogStrategyHelper'
-    parent: oro_importexport.strategy.import.helper
-    decorates: oro_importexport.strategy.import.helper
-
   oro_akeneo.async.sync_integration_processor:
     class: 'Oro\Bundle\AkeneoBundle\Async\SyncIntegrationProcessor'
     decorates: oro_integration.async.sync_integration_processor

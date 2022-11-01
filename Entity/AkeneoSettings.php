@@ -643,7 +643,7 @@ class AkeneoSettings extends Transport
         return $this->tokenExpiryDateTime;
     }
 
-    public function setTokenExpiryDateTime(DateTime $tokenExpiryDateTime): self
+    public function setTokenExpiryDateTime(\DateTime $tokenExpiryDateTime): self
     {
         $this->tokenExpiryDateTime = $tokenExpiryDateTime;
 
