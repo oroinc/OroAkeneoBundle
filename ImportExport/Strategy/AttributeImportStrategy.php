@@ -13,6 +13,8 @@ use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
  */
 class AttributeImportStrategy extends EntityFieldImportStrategy
 {
+    use StrategyValidationTrait;
+
     /**
      * @var FieldHelper
      */

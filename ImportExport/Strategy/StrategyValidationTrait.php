@@ -92,7 +92,20 @@ trait StrategyValidationTrait
         $validationErrors = $this->strategyHelper->validateEntity($entity, null, ['import_field_type_akeneo']);
         if ($validationErrors) {
             $this->context->incrementErrorEntriesCount();
-            $this->strategyHelper->addValidationErrors($validationErrors, $this->context);
+            foreach ($validationErrors as $validationError) {
+                $this->context->addError(
+                    $this->translator->trans(
+                        'oro.akeneo.error',
+                        [
+                            '%error%' => $validationError,
+                            '%item%' => json_encode(
+                                $context->getValue('rawItemData'),
+                                \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
+                            ),
+                        ]
+                    )
+                );
+            }
 
             return null;
         }
