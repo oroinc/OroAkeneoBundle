@@ -90,4 +90,23 @@ class AttributeImportStrategy extends EntityFieldImportStrategy
 
         return $entity;
     }
+
+    protected function addErrors($errors)
+    {
+        $this->context->incrementErrorEntriesCount();
+        foreach ((array)$errors as $validationError) {
+            $this->context->addError(
+                $this->translator->trans(
+                    'oro.akeneo.error',
+                    [
+                        '%error%' => $validationError,
+                        '%item%' => json_encode(
+                            $this->context->getValue('rawItemData'),
+                            \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
+                        ),
+                    ]
+                )
+            );
+        }
+    }
 }

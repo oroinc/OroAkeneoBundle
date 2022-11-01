@@ -27,7 +27,9 @@ trait StrategyValidationTrait
 
         $this->cachedEntities = [];
         $this->processingEntity = null;
-        $this->relatedEntityStateHelper->clear();
+        if (property_exists($this, 'relatedEntityStateHelper') && $this->relatedEntityStateHelper) {
+            $this->relatedEntityStateHelper->clear();
+        }
 
         $source = $entity;
         if (!$entity = $this->validateBeforeProcess($entity)) {
@@ -62,14 +64,30 @@ trait StrategyValidationTrait
 
     protected function processValidationErrors($entity, array $validationErrors)
     {
-        parent::processValidationErrors($entity, $validationErrors);
+        $this->context->incrementErrorEntriesCount();
+        foreach ($validationErrors as $validationError) {
+            $this->context->addError(
+                $this->translator->trans(
+                    'oro.akeneo.error',
+                    [
+                        '%error%' => $validationError,
+                        '%item%' => json_encode(
+                            $context->getValue('rawItemData'),
+                            \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
+                        ),
+                    ]
+                )
+            );
+        }
 
         $this->invalidateEntity($entity);
     }
 
     protected function invalidateEntity($entity)
     {
-        $this->relatedEntityStateHelper->revertRelations();
+        if (property_exists($this, 'relatedEntityStateHelper') && $this->relatedEntityStateHelper) {
+            $this->relatedEntityStateHelper->revertRelations();
+        }
 
         if (!$entity) {
             return;
