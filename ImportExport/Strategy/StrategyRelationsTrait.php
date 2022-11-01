@@ -22,7 +22,6 @@ trait StrategyRelationsTrait
      * @param object $entity
      *
      * @see \Oro\Bundle\ImportExportBundle\Strategy\Import\ImportStrategyHelper::importEntity
-     * @see \Oro\Bundle\AkeneoBundle\ImportExport\Strategy\ImportStrategyHelper::importEntity
      * @see \Oro\Bundle\ImportExportBundle\Strategy\Import\ConfigurableAddOrReplaceStrategy::updateRelations
      */
     protected function updateRelations($entity, array $itemData = null)

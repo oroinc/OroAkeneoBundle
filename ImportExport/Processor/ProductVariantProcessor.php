@@ -70,14 +70,22 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
         $parentProduct = $productRepository->findOneBySku($parentSku);
         if (!$parentProduct instanceof Product) {
             $context->incrementErrorEntriesCount();
-            $errorMessages = [
+            $context->addError(
                 $this->translator->trans(
-                    'oro.akeneo.validator.product_by_sku.not_found',
-                    ['%sku%' => $parentSku],
-                    'validators'
-                ),
-            ];
-            $this->strategyHelper->addValidationErrors($errorMessages, $context);
+                    'oro.akeneo.error',
+                    [
+                        '%error%' => $this->translator->trans(
+                            'oro.akeneo.validator.product_by_sku.not_found',
+                            ['%sku%' => $parentSku],
+                            'validators'
+                        ),
+                        '%item%' => json_encode(
+                            $context->getValue('rawItemData'),
+                            \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
+                        ),
+                    ]
+                )
+            );
 
             return null;
         }
@@ -121,15 +129,22 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
             $variantProduct = $productRepository->findOneBySku($variantSku);
             if (!$variantProduct instanceof Product) {
                 $context->incrementErrorEntriesCount();
-
-                $errorMessages = [
+                $context->addError(
                     $this->translator->trans(
-                        'oro.akeneo.validator.product_by_sku.not_found',
-                        ['%sku%' => $variantSku],
-                        'validators'
-                    ),
-                ];
-                $this->strategyHelper->addValidationErrors($errorMessages, $context);
+                        'oro.akeneo.error',
+                        [
+                            '%error%' => $this->translator->trans(
+                                'oro.akeneo.validator.product_by_sku.not_found',
+                                ['%sku%' => $variantSku],
+                                'validators'
+                            ),
+                            '%item%' => json_encode(
+                                $context->getValue('rawItemData'),
+                                \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
+                            ),
+                        ]
+                    )
+                );
 
                 continue;
             }
@@ -152,7 +167,20 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
         $validationErrors = $this->strategyHelper->validateEntity($parentProduct);
         if ($validationErrors) {
             $context->incrementErrorEntriesCount();
-            $this->strategyHelper->addValidationErrors($validationErrors, $context);
+            foreach ($validationErrors as $validationError) {
+                $context->addError(
+                    $this->translator->trans(
+                        'oro.akeneo.error',
+                        [
+                            '%error%' => $validationError,
+                            '%item%' => json_encode(
+                                $context->getValue('rawItemData'),
+                                \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
+                            ),
+                        ]
+                    )
+                );
+            }
 
             $objectManager->clear();
 
@@ -170,14 +198,22 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
             $parentProduct->setStatus(Product::STATUS_DISABLED);
 
             $context->incrementErrorEntriesCount();
-            $errorMessages = [
+            $context->addError(
                 $this->translator->trans(
-                    'oro.akeneo.validator.product_variants.empty',
-                    ['%sku%' => $parentSku],
-                    'validators'
-                ),
-            ];
-            $this->strategyHelper->addValidationErrors($errorMessages, $context);
+                    'oro.akeneo.error',
+                    [
+                        '%error%' => $this->translator->trans(
+                            'oro.akeneo.validator.product_variants.empty',
+                            ['%sku%' => $parentSku],
+                            'validators'
+                        ),
+                        '%item%' => json_encode(
+                            $context->getValue('rawItemData'),
+                            \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
+                        ),
+                    ]
+                )
+            );
         }
 
         $context->incrementUpdateCount();

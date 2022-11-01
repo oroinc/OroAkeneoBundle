@@ -60,6 +60,8 @@ class CleanupCommand extends Command implements CronCommandInterface
         ));
 
         $output->writeln('<info>Fields changes cleanup complete</info>');
+
+        return 0;
     }
 
     private function deleteRecords(): int
