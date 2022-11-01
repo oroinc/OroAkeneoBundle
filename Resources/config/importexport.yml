@@ -97,7 +97,7 @@ services:
     public: true
     arguments:
       - '@doctrine'
-      - '@oro_akeneo.strategy.import.helper'
+      - '@oro_importexport.strategy.import.helper'
       - '@oro_importexport.context_registry'
       - '@translator'
 
