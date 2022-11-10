@@ -97,7 +97,7 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
             $variantSkus
         );
 
-        $variantSkusUppercase = array_combine($variantSkusUppercase, $items);
+        $variantSkusUppercase = array_combine($variantSkusUppercase, $variantSkusUppercase);
         foreach ($parentProduct->getVariantLinks() as $variantLink) {
             $variantProduct = $variantLink->getProduct();
             if (!$variantSkusUppercase) {
@@ -118,14 +118,10 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
                 continue;
             }
 
-            $variantItem = $variantSkusUppercase[$variantProduct->getSkuUppercase()];
-            $status = empty($variantItem['enabled']) ? Product::STATUS_DISABLED : Product::STATUS_ENABLED;
-            $variantProduct->setStatus($status);
-
             unset($variantSkusUppercase[$variantProduct->getSkuUppercase()]);
         }
 
-        foreach ($variantSkusUppercase as $variantSku => $variantItem) {
+        foreach ($variantSkusUppercase as $variantSku) {
             $variantProduct = $productRepository->findOneBySku($variantSku);
             if (!$variantProduct instanceof Product) {
                 $context->incrementErrorEntriesCount();
@@ -155,9 +151,6 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
 
             $variantProduct->addParentVariantLink($variantLink);
             $parentProduct->addVariantLink($variantLink);
-
-            $status = empty($variantItem['enabled']) ? Product::STATUS_DISABLED : Product::STATUS_ENABLED;
-            $variantProduct->setStatus($status);
 
             $context->incrementAddCount();
 
@@ -190,6 +183,18 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
             }
 
             $parentProduct->setStatus(Product::STATUS_DISABLED);
+            foreach ($parentProduct->getVariantLinks() as $variantLink) {
+                $variantProduct = $variantLink->getProduct();
+                if ($variantProduct instanceof Product) {
+                    $variantProduct->setStatus(Product::STATUS_DISABLED);
+                }
+            }
+            foreach ($variantSkusUppercase as $variantSku) {
+                $variantProduct = $productRepository->findOneBySku($variantSku);
+                if ($variantProduct instanceof Product) {
+                    $variantProduct->setStatus(Product::STATUS_DISABLED);
+                }
+            }
 
             return $parentProduct;
         }
@@ -214,9 +219,20 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
                     ]
                 )
             );
+
+            return $parentProduct;
         }
 
         $context->incrementUpdateCount();
+        $parentProduct->setStatus(Product::STATUS_ENABLED);
+
+        foreach ($items as $item) {
+            if (!empty($item['parent_disabled'])) {
+                $parentProduct->setStatus(Product::STATUS_DISABLED);
+            }
+
+            break;
+        }
 
         return $parentProduct;
     }

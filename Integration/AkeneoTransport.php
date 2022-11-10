@@ -238,17 +238,21 @@ class AkeneoTransport implements AkeneoTransportInterface
         );
     }
 
-    public function getProductsList(int $pageSize, ?string $family = null): iterable
+    public function getProductsList(int $pageSize, int $sinceLastNDays = null): iterable
     {
-        $attributeMapping = $this->getAttributeMapping();
+        $this->initAttributesList();
+
+        $filters = [
+            'parent' => [['operator' => 'NOT EMPTY']],
+            'family' => [['operator' => 'NOT EMPTY']],
+        ];
+        if ($sinceLastNDays) {
+            $filters['updated'] = [['operator' => 'SINCE LAST N DAYS', 'value' => $sinceLastNDays]];
+        }
         $queryParams = [
             'scope' => $this->transportEntity->getAkeneoActiveChannel(),
-            'search' => $this->akeneoSearchBuilder->getFilters(
-                $family ?
-                json_encode(['family' => [['operator' => 'IN', 'value' => [$family]]]]) :
-                $this->transportEntity->getProductFilter()
-            ),
-            'attributes' => $attributeMapping['sku'] ?? reset($attributeMapping),
+            'search' => $this->akeneoSearchBuilder->getFilters(json_encode($filters)),
+            'attributes' => array_key_first($this->attributes),
         ];
 
         if ($this->transportEntity->getSyncProducts() === SyncProductsDataProvider::PUBLISHED) {
@@ -256,7 +260,7 @@ class AkeneoTransport implements AkeneoTransportInterface
                 $this->client->getPublishedProductApi()->all($pageSize, $queryParams),
                 $this->client,
                 $this->logger,
-                $attributeMapping
+                $this->getAttributeMapping()
             );
         }
 
@@ -264,7 +268,7 @@ class AkeneoTransport implements AkeneoTransportInterface
             $this->client->getProductApi()->all($pageSize, $queryParams),
             $this->client,
             $this->logger,
-            $attributeMapping
+            $this->getAttributeMapping()
         );
     }
 
@@ -293,20 +297,27 @@ class AkeneoTransport implements AkeneoTransportInterface
         );
     }
 
-    public function getProductModelsList(int $pageSize): iterable
+    public function getProductModelsList(int $pageSize, int $sinceLastNDays = null): iterable
     {
-        $attributeMapping = $this->getAttributeMapping();
+        $this->initAttributesList();
+
+        $filters = [
+            'family' => [['operator' => 'NOT EMPTY']],
+        ];
+        if ($sinceLastNDays) {
+            $filters['updated'] = [['operator' => 'SINCE LAST N DAYS', 'value' => $sinceLastNDays]];
+        }
         $queryParams = [
             'scope' => $this->transportEntity->getAkeneoActiveChannel(),
-            'search' => $this->akeneoSearchBuilder->getFilters($this->transportEntity->getConfigurableProductFilter()),
-            'attributes' => $attributeMapping['sku'] ?? reset($attributeMapping),
+            'search' => $this->akeneoSearchBuilder->getFilters(json_encode($filters)),
+            'attributes' => array_key_first($this->attributes),
         ];
 
         return new ConfigurableProductIterator(
             $this->client->getProductModelApi()->all($pageSize, $queryParams),
             $this->client,
             $this->logger,
-            $attributeMapping
+            $this->getAttributeMapping()
         );
     }
 

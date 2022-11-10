@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\AkeneoBundle\Integration\Connector;
 
+use Doctrine\Common\Cache\CacheProvider;
 use Oro\Bundle\AkeneoBundle\Integration\AkeneoTransport;
 use Oro\Bundle\AkeneoBundle\Placeholder\SchemaUpdateFilter;
 use Oro\Bundle\AkeneoBundle\Tools\CacheProviderTrait;
@@ -25,6 +26,14 @@ class ConfigurableProductConnector extends AbstractConnector implements Connecto
 
     /** @var SchemaUpdateFilter */
     protected $schemaUpdateFilter;
+
+    /** @var CacheProvider */
+    private $cache;
+
+    public function setCache(CacheProvider $cache): void
+    {
+        $this->cache = $cache;
+    }
 
     public function getLabel(): string
     {
@@ -63,21 +72,26 @@ class ConfigurableProductConnector extends AbstractConnector implements Connecto
             return new \ArrayIterator();
         }
 
+        $this->cacheProvider->save('akeneo_variant_levels', $this->channel->getTransport()->getAkeneoVariantLevels());
+
+        $now = time();
+        $this->cacheProvider->save('time', $now);
+
+        $sinceLastNDays = 0;
+        $time = $this->cache->fetch('time', null);
+        if ($time) {
+            $nowDate = new \DateTime();
+            $nowDate->setTimestamp($now);
+            $lastDate = new \DateTime();
+            $lastDate->setTimestamp($time);
+            $interval = $lastDate->diff($nowDate);
+            $sinceLastNDays = (int)$interval->format('%a') ?: 1;
+        }
+
         $iterator = new \AppendIterator();
-        $iterator->append($this->transport->getProductModelsList(self::PAGE_SIZE));
+        $iterator->append($this->transport->getProductModelsList(self::PAGE_SIZE, $sinceLastNDays));
+        $iterator->append($this->transport->getProductsList(self::PAGE_SIZE, $sinceLastNDays));
 
-        $processed = [];
-
-        return new \CallbackFilterIterator(
-            $iterator,
-            function ($current, $key, $iterator) use (&$processed) {
-                if (isset($current['family_variant'], $current['family']) && empty($processed[$current['family']])) {
-                    $iterator->append($this->transport->getProductsList(self::PAGE_SIZE, $current['family']));
-                    $processed[$current['family']] = true;
-                }
-
-                return true;
-            }
-        );
+        return $iterator;
     }
 }

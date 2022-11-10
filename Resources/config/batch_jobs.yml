@@ -70,7 +70,7 @@ connector:
             processor: oro_akeneo.importexport.processor.async
             writer: oro_akeneo.importexport.writer.async_product
           parameters:
-            batch_size: 25
+            batch_size: 100
         import:
           title: import
           class: Oro\Bundle\AkeneoBundle\ImportExport\Step\ItemStep
@@ -105,7 +105,7 @@ connector:
             processor: oro_akeneo.importexport.processor.async
             writer: oro_akeneo.importexport.writer.configurable_async_product
           parameters:
-            batch_size: 25
+            batch_size: 100
         import_variants:
           title: import
           class: Oro\Bundle\AkeneoBundle\ImportExport\Step\ItemStep
