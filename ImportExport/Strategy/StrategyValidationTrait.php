@@ -72,7 +72,7 @@ trait StrategyValidationTrait
                     [
                         '%error%' => $validationError,
                         '%item%' => json_encode(
-                            $context->getValue('rawItemData'),
+                            $this->context->getValue('rawItemData'),
                             \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
                         ),
                     ]
@@ -117,7 +117,7 @@ trait StrategyValidationTrait
                         [
                             '%error%' => $validationError,
                             '%item%' => json_encode(
-                                $context->getValue('rawItemData'),
+                                $this->context->getValue('rawItemData'),
                                 \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
                             ),
                         ]
