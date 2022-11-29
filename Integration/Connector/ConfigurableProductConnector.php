@@ -85,7 +85,7 @@ class ConfigurableProductConnector extends AbstractConnector implements Connecto
             $lastDate = new \DateTime();
             $lastDate->setTimestamp($time);
             $interval = $lastDate->diff($nowDate);
-            $sinceLastNDays = (int)$interval->format('%a') ?: 1;
+            $sinceLastNDays = ((int)$interval->format('%a') ?: 0) + 1;
         }
 
         $iterator = new \AppendIterator();

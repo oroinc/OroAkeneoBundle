@@ -393,5 +393,6 @@ services:
 
   oro_akeneo.configurable_cache:
     parent: oro.cache.abstract
+    public: true
     calls:
         - [ setNamespace, [ 'oro_akeneo_configurable_cache' ] ]

@@ -9,7 +9,6 @@ class AkeneoSearchBuilder
      */
     private $requiredOptionKeys = [
         'operator',
-        'value',
     ];
 
     /**
@@ -33,7 +32,7 @@ class AkeneoSearchBuilder
                         ->addFilter(
                             $filterName,
                             $option['operator'],
-                            $option['value'],
+                            $option['value'] ?? null,
                             array_merge(
                                 isset($option['scope']) ? ['scope' => $option['scope']] : [],
                                 isset($option['locale']) ? ['locale' => $option['locale']] : [],
