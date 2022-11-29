@@ -385,8 +385,3 @@ services:
     class: 'Oro\Bundle\AkeneoBundle\EventListener\DeletedAttributeRelationListener'
     decorates: oro_serialized_fields.event_listener.deleted_attribute_relation_serialized
     parent: oro_serialized_fields.event_listener.deleted_attribute_relation_serialized
-
-  oro_akeneo.entity_config.importexport_field_configuration:
-    class: Oro\Bundle\AkeneoBundle\EntityConfig\ImportexportFieldConfiguration
-    tags:
-      - oro_entity_config.validation.entity_config
