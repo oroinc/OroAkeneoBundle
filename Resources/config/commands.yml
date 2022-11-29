@@ -7,9 +7,3 @@ services:
             - '@oro_entity.doctrine_helper'
         tags:
             - { name: console.command }
-
-    Oro\Bundle\AkeneoBundle\Command\CacheClearCommand:
-        arguments:
-            - '@oro_akeneo.configurable_cache'
-        tags:
-            - { name: console.command }

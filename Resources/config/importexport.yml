@@ -224,7 +224,6 @@ services:
     calls:
       - [ setSchemaUpdateFilter, [ '@oro_akeneo.placeholder.schema_update_filter' ] ]
       - [ setCacheProvider, [ '@oro_akeneo.importexport.cache' ] ]
-      - [ setCache, [ '@oro_akeneo.configurable_cache' ] ]
     tags:
       - { name: oro_integration.connector, type: configurable_product, channel_type: oro_akeneo }
 
@@ -328,7 +327,6 @@ services:
       - '@oro_akeneo.event_listener.additional_optional_listeners_manager'
     calls:
       - [ setCacheProvider, [ '@oro_akeneo.importexport.cache' ] ]
-      - [ setCache, [ '@oro_akeneo.configurable_cache' ] ]
 
   oro_akeneo.importexport.cache:
     class: Doctrine\Common\Cache\ArrayCache

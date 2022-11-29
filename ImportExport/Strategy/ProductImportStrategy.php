@@ -88,24 +88,6 @@ class ProductImportStrategy extends ProductStrategy implements ExistingEntityAwa
         return parent::afterProcessEntity($entity);
     }
 
-    protected function validateAndUpdateContext($entity)
-    {
-        $validationErrors = $this->strategyHelper->validateEntity($entity);
-        if ($validationErrors) {
-            $this->processValidationErrors($entity, $validationErrors);
-
-            /** @var Product $entity */
-            $entity = $this->findExistingEntity($entity);
-            $entity->setStatus(Product::STATUS_DISABLED);
-
-            return $entity;
-        }
-
-        $this->updateContextCounters($entity);
-
-        return $entity;
-    }
-
     protected function populateOwner(Product $entity)
     {
     }
