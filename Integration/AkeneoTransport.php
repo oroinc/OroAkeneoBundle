@@ -242,13 +242,8 @@ class AkeneoTransport implements AkeneoTransportInterface
     {
         $this->initAttributesList();
 
-        $filters = [
-            'parent' => [['operator' => 'NOT EMPTY']],
-            'family' => [['operator' => 'NOT EMPTY']],
-        ];
         $queryParams = [
             'scope' => $this->transportEntity->getAkeneoActiveChannel(),
-            'search' => $this->akeneoSearchBuilder->getFilters(json_encode($filters)),
             'attributes' => array_key_first($this->attributes),
         ];
 
@@ -298,12 +293,8 @@ class AkeneoTransport implements AkeneoTransportInterface
     {
         $this->initAttributesList();
 
-        $filters = [
-            'family' => [['operator' => 'NOT EMPTY']],
-        ];
         $queryParams = [
             'scope' => $this->transportEntity->getAkeneoActiveChannel(),
-            'search' => $this->akeneoSearchBuilder->getFilters(json_encode($filters)),
             'attributes' => array_key_first($this->attributes),
         ];
 

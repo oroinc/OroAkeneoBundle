@@ -112,15 +112,17 @@ class ConfigurableAsyncWriter implements
             return;
         }
 
-        $this->variants = array_intersect_key($this->variants, $this->configurable);
-
+        $akeneoVariantLevels = $this->cacheProvider->fetch('akeneo_variant_levels') ?: AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_BOTH;
         foreach ($this->models as $levelTwo => $levelOne) {
             if (array_key_exists($levelTwo, $this->variants)) {
                 foreach ($this->variants[$levelTwo] as $sku => $item) {
                     $item['parent'] = $this->origins[$levelOne] ?? $levelOne;
                     $this->variants[$levelOne][$sku] = $item;
 
-                    $akeneoVariantLevels = $this->cacheProvider->fetch('akeneo_variant_levels');
+                    if (array_key_exists($levelTwo, $this->configurable)) {
+                        $this->configurable[$levelOne] = true;
+                    }
+
                     $this->variants[$levelOne][$sku]['parent_disabled'] = $akeneoVariantLevels === AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_SECOND_ONLY;
                     $this->variants[$levelTwo][$sku]['parent_disabled'] = $akeneoVariantLevels === AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_FIRST_ONLY;
                 }
@@ -128,6 +130,8 @@ class ConfigurableAsyncWriter implements
         }
 
         $channelId = $this->stepExecution->getJobExecution()->getExecutionContext()->get('channel');
+
+        $this->variants = array_intersect_key($this->variants, $this->configurable);
 
         $chunks = array_chunk($this->variants, self::VARIANTS_BATCH_SIZE, true);
 
