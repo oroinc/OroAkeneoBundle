@@ -92,12 +92,8 @@ class ConfigurableAsyncWriter implements
             }
 
             $parent = $item['parent'];
-            if (!array_key_exists($parent, $this->origins)) {
-                continue;
-            }
-
             $this->variants[$parent][$origin] = [
-                'parent' => $this->origins[$parent] ?? $parent,
+                'parent' => $this->origins[$parent] ?: $parent,
                 'variant' => $sku,
             ];
         }
