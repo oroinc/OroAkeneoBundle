@@ -16,7 +16,7 @@ use Symfony\Component\Translation\TranslatorInterface;
 class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareInterface
 {
     /** @var ManagerRegistry */
-    private $registry;
+    protected $registry;
 
     /** @var ImportStrategyHelper */
     private $strategyHelper;
@@ -64,10 +64,8 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
         $context->setValue('itemData', ['configurable' => $parentSku, 'variants' => $variantSkus]);
 
         $objectManager = $this->registry->getManagerForClass(Product::class);
-        /** @var ProductRepository $productRepository */
-        $productRepository = $objectManager->getRepository(Product::class);
 
-        $parentProduct = $productRepository->findOneBySku($parentSku);
+        $parentProduct = $this->findProduct($parentSku);
         if (!$parentProduct instanceof Product) {
             $context->incrementErrorEntriesCount();
             $context->addError(
@@ -122,7 +120,7 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
         }
 
         foreach ($variantSkusUppercase as $variantSku) {
-            $variantProduct = $productRepository->findOneBySku($variantSku);
+            $variantProduct = $this->findProduct($variantSku);
             if (!$variantProduct instanceof Product) {
                 $context->incrementErrorEntriesCount();
                 $context->addError(
@@ -177,7 +175,7 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
 
             $objectManager->clear();
 
-            $parentProduct = $productRepository->findOneBySku($parentSku);
+            $parentProduct = $this->findProduct($parentSku);
             if (!$parentProduct instanceof Product) {
                 return null;
             }
@@ -190,7 +188,7 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
                 }
             }
             foreach ($variantSkusUppercase as $variantSku) {
-                $variantProduct = $productRepository->findOneBySku($variantSku);
+                $variantProduct = $this->findProduct($variantSku);
                 if ($variantProduct instanceof Product) {
                     $variantProduct->setStatus(Product::STATUS_DISABLED);
                 }
@@ -235,5 +233,14 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
         }
 
         return $parentProduct;
+    }
+
+    protected function findProduct(string $sku): ?Product
+    {
+        $objectManager = $this->registry->getManagerForClass(Product::class);
+        /** @var ProductRepository $productRepository */
+        $productRepository = $objectManager->getRepository(Product::class);
+
+        return $productRepository->findOneBySku($sku);
     }
 }
