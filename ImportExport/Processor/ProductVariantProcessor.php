@@ -100,7 +100,6 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
             $variantProduct = $variantLink->getProduct();
             if (!$variantSkusUppercase) {
                 $parentProduct->removeVariantLink($variantLink);
-                $variantProduct->setStatus(Product::STATUS_DISABLED);
                 $objectManager->remove($variantLink);
                 $context->incrementDeleteCount();
 
@@ -109,7 +108,6 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
 
             if (!array_key_exists($variantProduct->getSkuUppercase(), $variantSkusUppercase)) {
                 $parentProduct->removeVariantLink($variantLink);
-                $variantProduct->setStatus(Product::STATUS_DISABLED);
                 $objectManager->remove($variantLink);
                 $context->incrementDeleteCount();
 
@@ -181,18 +179,6 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
             }
 
             $parentProduct->setStatus(Product::STATUS_DISABLED);
-            foreach ($parentProduct->getVariantLinks() as $variantLink) {
-                $variantProduct = $variantLink->getProduct();
-                if ($variantProduct instanceof Product) {
-                    $variantProduct->setStatus(Product::STATUS_DISABLED);
-                }
-            }
-            foreach ($variantSkusUppercase as $variantSku) {
-                $variantProduct = $this->findProduct($variantSku);
-                if ($variantProduct instanceof Product) {
-                    $variantProduct->setStatus(Product::STATUS_DISABLED);
-                }
-            }
 
             return $parentProduct;
         }
