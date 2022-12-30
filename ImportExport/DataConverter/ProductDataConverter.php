@@ -100,18 +100,6 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     {
         $importedRecord['status'] = empty($importedRecord['enabled']) ?
             Product::STATUS_DISABLED : Product::STATUS_ENABLED;
-
-        if (!empty($importedRecord['family_variant'])) {
-            $importedRecord['status'] = Product::STATUS_DISABLED;
-
-            return;
-        }
-
-        if (!empty($importedRecord['parent'])) {
-            $importedRecord['status'] = Product::STATUS_DISABLED;
-
-            return;
-        }
     }
 
     private function setPrimaryUnitPrecision(array &$importedRecord): void
@@ -182,22 +170,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
             return;
         }
 
-        $importedRecord['status'] = Product::STATUS_ENABLED;
         $importedRecord['variantFields'] = implode(',', $variantFields);
-
-        if ($isTwoLevelFamilyVariant) {
-            $allowSecondProductOnly = $this->getTransport()->getAkeneoVariantLevels() ===
-                AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_SECOND_ONLY;
-            if ($isFirstLevelProduct && $allowSecondProductOnly) {
-                $importedRecord['status'] = Product::STATUS_DISABLED;
-            }
-
-            $allowFirstProductOnly = $this->getTransport()->getAkeneoVariantLevels() ===
-                AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_FIRST_ONLY;
-            if ($isSecondLevelProduct && $allowFirstProductOnly) {
-                $importedRecord['status'] = Product::STATUS_DISABLED;
-            }
-        }
     }
 
     private function processValues(array &$importedRecord)

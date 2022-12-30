@@ -51,9 +51,9 @@ interface AkeneoTransportInterface extends TransportInterface
      */
     public function getProductModels(int $pageSize);
 
-    public function getProductsList(int $pageSize, ?string $family = null): iterable;
+    public function getProductsList(int $pageSize, int $sinceLastNDays = null): iterable;
 
-    public function getProductModelsList(int $pageSize): iterable;
+    public function getProductModelsList(int $pageSize, int $sinceLastNDays = null): iterable;
 
     /**
      * @return \Iterator

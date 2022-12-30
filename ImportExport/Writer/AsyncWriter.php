@@ -6,9 +6,9 @@ use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Types\Types;
 use Oro\Bundle\AkeneoBundle\Async\Topics;
 use Oro\Bundle\AkeneoBundle\EventListener\AdditionalOptionalListenerManager;
+use Oro\Bundle\AkeneoBundle\Tools\CacheProviderTrait;
 use Oro\Bundle\BatchBundle\Entity\StepExecution;
 use Oro\Bundle\BatchBundle\Item\ItemWriterInterface;
-use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\BatchBundle\Step\StepExecutionAwareInterface;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\IntegrationBundle\Entity\FieldsChanges;
@@ -21,9 +21,10 @@ use Oro\Component\MessageQueue\Client\MessageProducerInterface;
 
 class AsyncWriter implements
     ItemWriterInterface,
-    ClosableInterface,
     StepExecutionAwareInterface
 {
+    use CacheProviderTrait;
+
     /** @var MessageProducerInterface * */
     private $messageProducer;
 
@@ -41,6 +42,8 @@ class AsyncWriter implements
 
     /** @var AdditionalOptionalListenerManager */
     private $additionalOptionalListenerManager;
+
+    private $configurable = [];
 
     public function __construct(
         MessageProducerInterface $messageProducer,
@@ -75,6 +78,13 @@ class AsyncWriter implements
         );
         $this->size = $newSize;
         $this->stepExecution->setWriteCount($this->size);
+
+        foreach ($items as $item) {
+            $this->configurable[$item['identifier'] ?? $item['code']] = true;
+            if (!empty($item['parent'])) {
+                $this->configurable[$item['parent']] = true;
+            }
+        }
 
         $jobId = $this->insertJob($jobName);
         if ($jobId && $this->createFieldsChanges($jobId, $items, 'items')) {
@@ -136,8 +146,13 @@ class AsyncWriter implements
         return (int)$rootJobId;
     }
 
-    public function close()
+    public function flush()
     {
+        if ($this->configurable) {
+            $this->cacheProvider->save('akeneo_configurable', $this->configurable);
+        }
+
+        $this->configurable = [];
         $this->size = 0;
 
         $this->optionalListenerManager->enableListeners($this->optionalListenerManager->getListeners());
