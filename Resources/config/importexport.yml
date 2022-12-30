@@ -315,6 +315,8 @@ services:
       - '@oro_entity.doctrine_helper'
       - '@oro_platform.optional_listeners.manager'
       - '@oro_akeneo.event_listener.additional_optional_listeners_manager'
+    calls:
+      - [ setCacheProvider, [ '@oro_akeneo.importexport.cache' ] ]
 
   oro_akeneo.importexport.writer.configurable_async_product:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\Writer\ConfigurableAsyncWriter'
@@ -323,6 +325,8 @@ services:
       - '@oro_entity.doctrine_helper'
       - '@oro_platform.optional_listeners.manager'
       - '@oro_akeneo.event_listener.additional_optional_listeners_manager'
+    calls:
+      - [ setCacheProvider, [ '@oro_akeneo.importexport.cache' ] ]
 
   oro_akeneo.importexport.cache:
     class: Doctrine\Common\Cache\ArrayCache

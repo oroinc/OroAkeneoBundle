@@ -39,7 +39,6 @@ class ConfigurableProductIterator extends AbstractIterator
             'parent' => $item['parent'] ?? null,
             'family_variant' => $item['family_variant'] ?? null,
             'family' => $item['family'] ?? null,
-            'enabled' => $item['enabled'] ?? false,
         ];
     }
 }

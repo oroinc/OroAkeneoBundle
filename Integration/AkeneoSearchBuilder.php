@@ -9,7 +9,6 @@ class AkeneoSearchBuilder
      */
     private $requiredOptionKeys = [
         'operator',
-        'value',
     ];
 
     /**
@@ -33,7 +32,7 @@ class AkeneoSearchBuilder
                         ->addFilter(
                             $filterName,
                             $option['operator'],
-                            $option['value'],
+                            $option['value'] ?? null,
                             array_merge(
                                 isset($option['scope']) ? ['scope' => $option['scope']] : [],
                                 isset($option['locale']) ? ['locale' => $option['locale']] : [],
@@ -47,9 +46,6 @@ class AkeneoSearchBuilder
         return $searchBuilder->getFilters();
     }
 
-    /**
-     * @param $string
-     */
     public function isJSON($string): bool
     {
         return is_string($string) && is_array(json_decode($string, true)) && (\JSON_ERROR_NONE == json_last_error());

@@ -63,21 +63,12 @@ class ConfigurableProductConnector extends AbstractConnector implements Connecto
             return new \ArrayIterator();
         }
 
+        $this->cacheProvider->save('akeneo_variant_levels', $this->channel->getTransport()->getAkeneoVariantLevels());
+
         $iterator = new \AppendIterator();
         $iterator->append($this->transport->getProductModelsList(self::PAGE_SIZE));
+        $iterator->append($this->transport->getProductsList(self::PAGE_SIZE));
 
-        $processed = [];
-
-        return new \CallbackFilterIterator(
-            $iterator,
-            function ($current, $key, $iterator) use (&$processed) {
-                if (isset($current['family_variant'], $current['family']) && empty($processed[$current['family']])) {
-                    $iterator->append($this->transport->getProductsList(self::PAGE_SIZE, $current['family']));
-                    $processed[$current['family']] = true;
-                }
-
-                return true;
-            }
-        );
+        return $iterator;
     }
 }

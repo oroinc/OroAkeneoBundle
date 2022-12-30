@@ -16,7 +16,7 @@ use Symfony\Component\Translation\TranslatorInterface;
 class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareInterface
 {
     /** @var ManagerRegistry */
-    private $registry;
+    protected $registry;
 
     /** @var ImportStrategyHelper */
     private $strategyHelper;
@@ -64,10 +64,8 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
         $context->setValue('itemData', ['configurable' => $parentSku, 'variants' => $variantSkus]);
 
         $objectManager = $this->registry->getManagerForClass(Product::class);
-        /** @var ProductRepository $productRepository */
-        $productRepository = $objectManager->getRepository(Product::class);
 
-        $parentProduct = $productRepository->findOneBySku($parentSku);
+        $parentProduct = $this->findProduct($parentSku);
         if (!$parentProduct instanceof Product) {
             $context->incrementErrorEntriesCount();
             $context->addError(
@@ -97,12 +95,11 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
             $variantSkus
         );
 
-        $variantSkusUppercase = array_combine($variantSkusUppercase, $items);
+        $variantSkusUppercase = array_combine($variantSkusUppercase, $variantSkusUppercase);
         foreach ($parentProduct->getVariantLinks() as $variantLink) {
             $variantProduct = $variantLink->getProduct();
             if (!$variantSkusUppercase) {
                 $parentProduct->removeVariantLink($variantLink);
-                $variantProduct->setStatus(Product::STATUS_DISABLED);
                 $objectManager->remove($variantLink);
                 $context->incrementDeleteCount();
 
@@ -111,22 +108,17 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
 
             if (!array_key_exists($variantProduct->getSkuUppercase(), $variantSkusUppercase)) {
                 $parentProduct->removeVariantLink($variantLink);
-                $variantProduct->setStatus(Product::STATUS_DISABLED);
                 $objectManager->remove($variantLink);
                 $context->incrementDeleteCount();
 
                 continue;
             }
 
-            $variantItem = $variantSkusUppercase[$variantProduct->getSkuUppercase()];
-            $status = empty($variantItem['enabled']) ? Product::STATUS_DISABLED : Product::STATUS_ENABLED;
-            $variantProduct->setStatus($status);
-
             unset($variantSkusUppercase[$variantProduct->getSkuUppercase()]);
         }
 
-        foreach ($variantSkusUppercase as $variantSku => $variantItem) {
-            $variantProduct = $productRepository->findOneBySku($variantSku);
+        foreach ($variantSkusUppercase as $variantSku) {
+            $variantProduct = $this->findProduct($variantSku);
             if (!$variantProduct instanceof Product) {
                 $context->incrementErrorEntriesCount();
                 $context->addError(
@@ -156,9 +148,6 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
             $variantProduct->addParentVariantLink($variantLink);
             $parentProduct->addVariantLink($variantLink);
 
-            $status = empty($variantItem['enabled']) ? Product::STATUS_DISABLED : Product::STATUS_ENABLED;
-            $variantProduct->setStatus($status);
-
             $context->incrementAddCount();
 
             $objectManager->persist($variantLink);
@@ -184,7 +173,7 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
 
             $objectManager->clear();
 
-            $parentProduct = $productRepository->findOneBySku($parentSku);
+            $parentProduct = $this->findProduct($parentSku);
             if (!$parentProduct instanceof Product) {
                 return null;
             }
@@ -214,10 +203,30 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
                     ]
                 )
             );
+
+            return $parentProduct;
         }
 
         $context->incrementUpdateCount();
+        $parentProduct->setStatus(Product::STATUS_ENABLED);
+
+        foreach ($items as $item) {
+            if (!empty($item['parent_disabled'])) {
+                $parentProduct->setStatus(Product::STATUS_DISABLED);
+            }
+
+            break;
+        }
 
         return $parentProduct;
+    }
+
+    protected function findProduct(string $sku): ?Product
+    {
+        $objectManager = $this->registry->getManagerForClass(Product::class);
+        /** @var ProductRepository $productRepository */
+        $productRepository = $objectManager->getRepository(Product::class);
+
+        return $productRepository->findOneBySku($sku);
     }
 }

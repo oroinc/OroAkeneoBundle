@@ -36,6 +36,20 @@ class ProductImportStrategy extends ProductStrategy implements ExistingEntityAwa
         parent::close();
     }
 
+    protected function beforeProcessEntity($entity)
+    {
+        /** @var Product $entity */
+        if ($entity->isConfigurable()) {
+            /** @var Product $existingProduct */
+            $existingProduct = $this->findExistingEntity($entity);
+            if ($existingProduct) {
+                $entity->setStatus($existingProduct->getStatus());
+            }
+        }
+
+        return parent::beforeProcessEntity($entity);
+    }
+
     protected function afterProcessEntity($entity)
     {
         if ($entity instanceof Product && $entity->getCategory() && !$entity->getCategory()->getId()) {

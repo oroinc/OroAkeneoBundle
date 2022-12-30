@@ -8,7 +8,9 @@ use Akeneo\Bundle\BatchBundle\Step\StepExecutionAwareInterface;
 use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Types\Types;
 use Oro\Bundle\AkeneoBundle\Async\Topics;
+use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\EventListener\AdditionalOptionalListenerManager;
+use Oro\Bundle\AkeneoBundle\Tools\CacheProviderTrait;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\IntegrationBundle\Entity\FieldsChanges;
 use Oro\Bundle\MessageQueueBundle\Client\BufferedMessageProducer;
@@ -22,6 +24,8 @@ class ConfigurableAsyncWriter implements
     ItemWriterInterface,
     StepExecutionAwareInterface
 {
+    use CacheProviderTrait;
+
     private const VARIANTS_BATCH_SIZE = 25;
 
     /** @var MessageProducerInterface * */
@@ -45,6 +49,8 @@ class ConfigurableAsyncWriter implements
 
     private $models = [];
 
+    private $configurable = [];
+
     public function __construct(
         MessageProducerInterface $messageProducer,
         DoctrineHelper $doctrineHelper,
@@ -59,12 +65,10 @@ class ConfigurableAsyncWriter implements
 
     public function initialize()
     {
-        $this->variants = [];
-        $this->origins = [];
-        $this->models = [];
-
         $this->additionalOptionalListenerManager->disableListeners();
         $this->optionalListenerManager->disableListeners($this->optionalListenerManager->getListeners());
+
+        $this->configurable = $this->cacheProvider->fetch('akeneo_configurable') ?: [];
     }
 
     public function write(array $items)
@@ -88,40 +92,42 @@ class ConfigurableAsyncWriter implements
             }
 
             $parent = $item['parent'];
-            if (!array_key_exists($parent, $this->origins)) {
-                continue;
-            }
-
             $this->variants[$parent][$origin] = [
-                'parent' => $this->origins[$parent] ?? $parent,
+                'parent' => $this->origins[$parent] ?: $parent,
                 'variant' => $sku,
-                'enabled' => $item['enabled'] ?? false,
             ];
         }
     }
 
-    public function close()
-    {
-        $this->variants = [];
-        $this->origins = [];
-        $this->models = [];
-
-        $this->optionalListenerManager->enableListeners($this->optionalListenerManager->getListeners());
-        $this->additionalOptionalListenerManager->enableListeners();
-    }
-
     public function flush()
     {
+        $this->optionalListenerManager->enableListeners($this->optionalListenerManager->getListeners());
+        $this->additionalOptionalListenerManager->enableListeners();
+
+        if (!$this->variants) {
+            return;
+        }
+
+        $akeneoVariantLevels = $this->cacheProvider->fetch('akeneo_variant_levels') ?: AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_BOTH;
         foreach ($this->models as $levelTwo => $levelOne) {
             if (array_key_exists($levelTwo, $this->variants)) {
                 foreach ($this->variants[$levelTwo] as $sku => $item) {
                     $item['parent'] = $this->origins[$levelOne] ?? $levelOne;
                     $this->variants[$levelOne][$sku] = $item;
+
+                    if (array_key_exists($levelTwo, $this->configurable)) {
+                        $this->configurable[$levelOne] = true;
+                    }
+
+                    $this->variants[$levelOne][$sku]['parent_disabled'] = $akeneoVariantLevels === AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_SECOND_ONLY;
+                    $this->variants[$levelTwo][$sku]['parent_disabled'] = $akeneoVariantLevels === AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_FIRST_ONLY;
                 }
             }
         }
 
         $channelId = $this->stepExecution->getJobExecution()->getExecutionContext()->get('channel');
+
+        $this->variants = array_intersect_key($this->variants, $this->configurable);
 
         $chunks = array_chunk($this->variants, self::VARIANTS_BATCH_SIZE, true);
 
@@ -138,6 +144,10 @@ class ConfigurableAsyncWriter implements
                 $this->sendMessage($channelId, $jobId);
             }
         }
+
+        $this->variants = [];
+        $this->origins = [];
+        $this->models = [];
     }
 
     private function createFieldsChanges(int $jobId, array &$data, string $key): bool
