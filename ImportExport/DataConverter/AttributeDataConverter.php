@@ -113,6 +113,8 @@ class AttributeDataConverter extends EntityFieldDataConverter
         $defaultLocale = $transport->getMappedAkeneoLocale($defaultLocalization->getLanguageCode());
 
         foreach ($importedRecord['options'] as $key => &$option) {
+            $optionKey = sprintf('enum.enum_options.%d.priority', $key);
+            $importedRecord[$optionKey] = $option['sort_order'];
             $optionKey = sprintf('enum.enum_options.%d.id', $key);
             $importedRecord[$optionKey] = Generator::generateLabel($option['code']);
             $optionKey = sprintf('enum.enum_options.%d.label', $key);
