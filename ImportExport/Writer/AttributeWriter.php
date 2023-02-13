@@ -274,12 +274,13 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
             $attributeConfig->set('sortable', $type->isSortable($fieldConfigModel));
             $attributeConfig->set('visible', false);
             $attributeConfig->set('enabled', false);
+
+            $attributeConfig->set('is_global', false);
+            $attributeConfig->set('organization_id', $this->getOrganizationId());
         }
 
         $attributeConfig->set('field_name', $fieldName);
         $attributeConfig->set('is_attribute', true);
-        $attributeConfig->set('is_global', false);
-        $attributeConfig->set('organization_id', $this->getOrganizationId());
         $this->configManager->persist($attributeConfig);
 
         parent::setAttributeData($fieldConfigModel);

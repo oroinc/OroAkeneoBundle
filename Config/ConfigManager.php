@@ -32,4 +32,32 @@ class ConfigManager extends BaseManager implements ChangesAwareInterface
 
         return false;
     }
+
+    protected function getDiff($values, $originalValues)
+    {
+        $diff = [];
+        if (empty($originalValues)) {
+            foreach ($values as $code => $value) {
+                $diff[$code] = [null, $value];
+            }
+        } else {
+            foreach ($originalValues as $code => $originalValue) {
+                if (array_key_exists($code, $values)) {
+                    $value = $values[$code];
+                    if ($originalValue != $value) {
+                        $diff[$code] = [$originalValue, $value];
+                    }
+                } else {
+                    $diff[$code] = [$originalValue, null];
+                }
+            }
+            foreach ($values as $code => $value) {
+                if (!array_key_exists($code, $originalValues)) {
+                    $diff[$code] = [null, $value];
+                }
+            }
+        }
+
+        return $diff;
+    }
 }
