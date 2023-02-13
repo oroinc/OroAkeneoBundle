@@ -445,5 +445,6 @@ services:
       - '@oro_entity.doctrine_helper'
       - '@oro_akeneo.importexport.strategy.default_owner_helper'
     tags:
+      - { name: kernel.event_listener, event: oro_importexport.strategy.process_after, method: onProcessAfter, priority: 256 }
       - { name: kernel.event_listener, event: oro_importexport.strategy.process_before, method: onProcessBefore, priority: 256 }
       - { name: doctrine.event_listener, event: onClear }
