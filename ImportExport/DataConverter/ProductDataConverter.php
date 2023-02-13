@@ -80,9 +80,9 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
         $this->processValues($importedRecord);
         $this->processSystemValues($importedRecord);
+        $this->setPrimaryUnitPrecision($importedRecord);
         unset($importedRecord['values']);
 
-        $this->setPrimaryUnitPrecision($importedRecord);
         $this->setStatus($importedRecord);
         $this->setCategory($importedRecord);
         $this->setFamilyVariant($importedRecord);
