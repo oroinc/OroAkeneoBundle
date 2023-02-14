@@ -541,6 +541,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
             'unit' => ['code' => $unit],
             'precision' => $precision,
             'sell' => true,
+            'product' => ['sku' => $importedRecord['sku']],
         ];
     }
 

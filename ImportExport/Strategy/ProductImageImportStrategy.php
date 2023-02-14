@@ -4,6 +4,7 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\Strategy;
 
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\ImportExportBundle\Strategy\Import\ConfigurableAddOrReplaceStrategy;
+use Oro\Bundle\IntegrationBundle\Entity\Channel;
 use Oro\Bundle\ProductBundle\Entity\Product;
 use Oro\Bundle\ProductBundle\Entity\ProductImage;
 
@@ -83,31 +84,66 @@ class ProductImageImportStrategy extends ConfigurableAddOrReplaceStrategy implem
 
     protected function findExistingEntity($entity, array $searchContext = [])
     {
-        if ($entity instanceof Product && array_key_exists($entity->getSku(), $this->existingProducts)) {
-            return $this->existingProducts[$entity->getSku()];
-        }
-
-        $entity = parent::findExistingEntity($entity, $searchContext);
-
         if ($entity instanceof Product) {
-            $this->existingProducts[$entity->getSku()] = $entity;
+            if (array_key_exists($entity->getSku(), $this->existingProducts)) {
+                return $this->existingProducts[$entity->getSku()];
+            }
+
+            $entity = $this->doctrineHelper->getEntityRepository($entity)->findByCaseInsensitive(
+                [
+                    'sku' => $entity->getSku(),
+                    'organization' => $entity->getOrganization() ?: $this->getChannel()->getOrganization(),
+                ]
+            );
+            if (is_array($entity)) {
+                $entity = array_shift($entity);
+                if ($entity instanceof Product) {
+                    $this->existingProducts[$entity->getSku()] = $entity;
+
+                    return $entity;
+                }
+
+                return null;
+            }
+
+            return $entity;
         }
 
-        return $entity;
+        return parent::findExistingEntity($entity, $searchContext);
     }
 
     protected function findExistingEntityByIdentityFields($entity, array $searchContext = [])
     {
-        if ($entity instanceof Product && array_key_exists($entity->getSku(), $this->existingProducts)) {
-            return $this->existingProducts[$entity->getSku()];
-        }
-
-        $entity = parent::findExistingEntityByIdentityFields($entity, $searchContext);
-
         if ($entity instanceof Product) {
-            $this->existingProducts[$entity->getSku()] = $entity;
+            if (array_key_exists($entity->getSku(), $this->existingProducts)) {
+                return $this->existingProducts[$entity->getSku()];
+            }
+
+            $entity = $this->doctrineHelper->getEntityRepository($entity)->findByCaseInsensitive(
+                [
+                    'sku' => $entity->getSku(),
+                    'organization' => $entity->getOrganization() ?: $this->getChannel()->getOrganization(),
+                ]
+            );
+            if (is_array($entity)) {
+                $entity = array_shift($entity);
+                if ($entity instanceof Product) {
+                    $this->existingProducts[$entity->getSku()] = $entity;
+
+                    return $entity;
+                }
+
+                return null;
+            }
+
+            return $entity;
         }
 
-        return $entity;
+        return parent::findExistingEntityByIdentityFields($entity, $searchContext);
+    }
+
+    private function getChannel()
+    {
+        return $this->doctrineHelper->getEntityReference(Channel::class, $this->context->getOption('channel'));
     }
 }
