@@ -35,6 +35,16 @@ class OwnerStrategyEventListener
         $this->defaultOwnerHelper->populateChannelOwner($event->getEntity(), $channel);
     }
 
+    public function onProcessAfter(StrategyEvent $event)
+    {
+        $channel = $this->getChannel($event->getContext());
+        if (!$channel) {
+            return;
+        }
+
+        $this->defaultOwnerHelper->populateChannelOwner($event->getEntity(), $channel);
+    }
+
     protected function getChannel(ContextInterface $context)
     {
         if (!$this->channel && $context->getOption('channel')) {
