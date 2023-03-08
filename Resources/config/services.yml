@@ -104,7 +104,7 @@ services:
     calls:
       - [setLogger, ["@logger"]]
 
-  oro_akeneo.async.export_contacts_status_update_processor:
+  oro_akeneo.async.import_product_processor:
     class: 'Oro\Bundle\AkeneoBundle\Async\ImportProductProcessor'
     arguments:
       - '@oro_entity.doctrine_helper'
