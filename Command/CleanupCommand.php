@@ -3,7 +3,8 @@
 namespace Oro\Bundle\AkeneoBundle\Command;
 
 use Oro\Bundle\BatchBundle\ORM\Query\BufferedIdentityQueryResultIterator;
-use Oro\Bundle\CronBundle\Command\CronCommandInterface;
+use Oro\Bundle\CronBundle\Command\CronCommandActivationInterface;
+use Oro\Bundle\CronBundle\Command\CronCommandScheduleDefinitionInterface;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\IntegrationBundle\Entity\FieldsChanges;
 use Oro\Bundle\MessageQueueBundle\Entity\Job;
@@ -14,7 +15,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * Clears old records from oro_integration_fields_changes table before repack.
  */
-class CleanupCommand extends Command implements CronCommandInterface
+class CleanupCommand extends Command implements
+    CronCommandScheduleDefinitionInterface,
+    CronCommandActivationInterface
 {
     /** @var string */
     protected static $defaultName = 'oro:cron:akeneo:cleanup';

@@ -2,18 +2,19 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Reader;
 
-use Oro\Bundle\AkeneoBundle\Tools\CacheProviderTrait;
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareInterface;
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareTrait;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 
-class ProductPriceReader extends IteratorBasedReader
+class ProductPriceReader extends IteratorBasedReader implements MemoryCacheProviderAwareInterface
 {
-    use CacheProviderTrait;
+    use MemoryCacheProviderAwareTrait;
 
     protected function initializeFromContext(ContextInterface $context)
     {
         parent::initializeFromContext($context);
 
-        $items = $this->cacheProvider->fetch('akeneo')['items'] ?? [];
+        $items = $this->memoryCacheProvider->get('akeneo_items') ?? [];
 
         $prices = [];
 

@@ -22,7 +22,7 @@ class StringVariantFieldValueHandler implements ProductVariantFieldValueHandlerI
         $this->doctrineHelper = $doctrineHelper;
     }
 
-    public function getPossibleValues($fieldName)
+    public function getPossibleValues($fieldName): array
     {
         if (array_key_exists($fieldName, $this->cache)) {
             return $this->cache[$fieldName];
@@ -48,17 +48,17 @@ class StringVariantFieldValueHandler implements ProductVariantFieldValueHandlerI
         return $values;
     }
 
-    public function getScalarValue($value)
+    public function getScalarValue($value): mixed
     {
         return (string)$value;
     }
 
-    public function getHumanReadableValue($fieldName, $value)
+    public function getHumanReadableValue($fieldName, $value): mixed
     {
         return (string)$value;
     }
 
-    public function getType()
+    public function getType(): string
     {
         return self::TYPE;
     }

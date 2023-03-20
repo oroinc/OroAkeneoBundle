@@ -5,19 +5,15 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\Processor;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareInterface;
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareTrait;
 use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\ImportExportBundle\Processor\ProcessorInterface;
 use Oro\Bundle\IntegrationBundle\Entity\Channel;
 
-class CategoryParentProcessor implements ProcessorInterface
+class CategoryParentProcessor implements ProcessorInterface, MemoryCacheProviderAwareInterface
 {
-    use CacheProviderAwareProcessor;
-
-    /** @var array */
-    private $processedIds;
-
-    /** @var array */
-    private $codeIds;
+    use MemoryCacheProviderAwareTrait;
 
     /** @var ManagerRegistry */
     private $registry;
@@ -45,7 +41,7 @@ class CategoryParentProcessor implements ProcessorInterface
         $transport = $channel->getTransport();
 
         $akeneoCode = $item->getAkeneoCode();
-        $parentCode = $this->processedIds[$akeneoCode] ?? null;
+        $parentCode = $this->memoryCacheProvider->get('category_parent_' . $akeneoCode) ?? null;
 
         $parent = $item->getParentCategory();
         $rootCategory = $transport->getRootCategory();
@@ -66,7 +62,7 @@ class CategoryParentProcessor implements ProcessorInterface
             return $item;
         }
 
-        $parentId = $this->codeIds[$parentCode] ?? null;
+        $parentId = $this->memoryCacheProvider->get('category_id_' . $parentCode) ?? null;
         if (!$parentId && !$parent) {
             $item->setParentCategory($rootCategory);
 
@@ -103,19 +99,5 @@ class CategoryParentProcessor implements ProcessorInterface
         }
 
         return $item;
-    }
-
-    public function initialize()
-    {
-        $this->processedIds = $this->cacheProvider->fetch('category') ?? [];
-        $this->codeIds = $this->cacheProvider->fetch('category_ids') ?? [];
-    }
-
-    public function flush()
-    {
-        $this->cacheProvider->delete('category');
-        $this->cacheProvider->delete('category_ids');
-        $this->processedIds = null;
-        $this->codeIds = null;
     }
 }

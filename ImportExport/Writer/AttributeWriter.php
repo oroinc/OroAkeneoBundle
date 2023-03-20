@@ -2,11 +2,13 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Writer;
 
-use Doctrine\Common\Cache\CacheProvider;
 use Oro\Bundle\AkeneoBundle\Config\ChangesAwareInterface;
 use Oro\Bundle\AkeneoBundle\Tools\EnumSynchronizer;
 use Oro\Bundle\BatchBundle\Entity\StepExecution;
+use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\BatchBundle\Step\StepExecutionAwareInterface;
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareInterface;
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareTrait;
 use Oro\Bundle\EntityBundle\EntityConfig\DatagridScope;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityConfigBundle\Attribute\AttributeTypeRegistry;
@@ -25,8 +27,10 @@ use Oro\Bundle\TranslationBundle\Manager\TranslationManager;
 /**
  * Import writer for product attributes.
  */
-class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareInterface
+class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareInterface, MemoryCacheProviderAwareInterface, ClosableInterface
 {
+    use MemoryCacheProviderAwareTrait;
+
     const ATTRIBUTE_LABELS_CONTEXT_KEY = 'attributeLabels';
     const MAX_SIZE = 10;
     const MAX_WIDTH = 100;
@@ -44,43 +48,11 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
     /** @var StepExecution */
     private $stepExecution;
 
-    /** @var CacheProvider */
-    private $cacheProvider;
-
-    /** @var array */
-    private $attributeLabels = [];
-
-    /** @var array */
-    private $optionLabels = [];
-
-    /** @var array */
-    private $fieldNameMapping = [];
-
-    /** @var array */
-    private $fieldTypeMapping = [];
-
     /** @var int */
     private $organizationId;
 
-    public function initialize()
+    public function close()
     {
-        $this->attributeLabels = [];
-        $this->optionLabels = [];
-        $this->fieldNameMapping = [];
-        $this->fieldTypeMapping = [];
-    }
-
-    public function flush()
-    {
-        $this->cacheProvider->delete('attribute_attributeLabels');
-        $this->cacheProvider->delete('attribute_optionLabels');
-        $this->cacheProvider->delete('attribute_fieldNameMapping');
-        $this->cacheProvider->delete('attribute_fieldTypeMapping');
-        $this->attributeLabels = null;
-        $this->optionLabels = null;
-        $this->fieldNameMapping = null;
-        $this->fieldTypeMapping = null;
-
         $this->organizationId = null;
     }
 
@@ -102,11 +74,6 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
     public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
     {
         $this->doctrineHelper = $doctrineHelper;
-    }
-
-    public function setCacheProvider(CacheProvider $cacheProvider): void
-    {
-        $this->cacheProvider = $cacheProvider;
     }
 
     public function setStepExecution(StepExecution $stepExecution)
@@ -140,20 +107,16 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
     private function saveAttributeTranslationsFromContext(array $items)
     {
         $provider = $this->configManager->getProvider('entity');
-        $this->attributeLabels = $this->cacheProvider->fetch('attribute_attributeLabels') ?? [];
 
         foreach ($items as $item) {
             $className = $item->getEntity()->getClassName();
             $fieldName = $item->getFieldName();
 
-            if (!isset($this->attributeLabels[$fieldName])) {
-                continue;
-            }
-
             $config = $provider->getConfig($className, $fieldName);
             $labelKey = $config->get('label');
 
-            foreach ($this->attributeLabels[$fieldName] as $locale => $value) {
+            $attributeLabels = $this->memoryCacheProvider->get('attribute_attributeLabels_' . $fieldName) ?? [];
+            foreach ($attributeLabels as $locale => $value) {
                 $this->translationManager->saveTranslation(
                     $labelKey,
                     $value,
@@ -173,15 +136,10 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
     private function saveOptionTranslationsFromContext(array $items)
     {
         $provider = $this->configManager->getProvider('enum');
-        $this->optionLabels = $this->cacheProvider->fetch('attribute_optionLabels') ?? [];
 
         foreach ($items as $item) {
             $className = $item->getEntity()->getClassName();
             $fieldName = $item->getFieldName();
-
-            if (!isset($this->optionLabels[$fieldName])) {
-                continue;
-            }
 
             $enumCode = $provider->getConfig($className, $fieldName)->get('enum_code');
 
@@ -192,8 +150,9 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
             $enumValueClassName = ExtendHelper::buildEnumValueClassName($enumCode);
             $manager = $this->doctrineHelper->getEntityManager($enumValueClassName);
 
+            $optionLabels = $this->memoryCacheProvider->get('attribute_optionLabels_' . $fieldName) ?? [];
             foreach ($this->enumSynchronizer->getEnumOptions($enumValueClassName) as $option) {
-                foreach ($this->optionLabels[$fieldName] as $label) {
+                foreach ($optionLabels as $label) {
                     if ($label['default'] !== $option['label'] || false === is_array($label['translations'])) {
                         continue;
                     }
@@ -244,8 +203,7 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
         $className = $fieldConfigModel->getEntity()->getClassName();
         $fieldName = $fieldConfigModel->getFieldName();
 
-        $this->fieldNameMapping = $this->cacheProvider->fetch('attribute_fieldNameMapping') ?? [];
-        $sourceName = $this->fieldNameMapping[$fieldName] ?? null;
+        $sourceName = $this->memoryCacheProvider->get('attribute_fieldNameMapping_' . $fieldName) ?? null;
         if (!$sourceName) {
             throw new \InvalidArgumentException(sprintf('Unknown source name for "%s::%s"', $className, $fieldName));
         }
@@ -296,15 +254,14 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
 
         $relationKey = ExtendHelper::buildRelationKey(
             Product::class,
-            $fieldConfigModel->getFieldName(),
+            $fieldName,
             RelationType::MANY_TO_MANY,
             LocalizedFallbackValue::class
         );
 
         $extendConfig->set('relation_key', $relationKey);
 
-        $this->fieldTypeMapping = $this->cacheProvider->fetch('attribute_fieldTypeMapping') ?? [];
-        $importedFieldType = $this->fieldTypeMapping[$fieldConfigModel->getFieldName()] ?? null;
+        $importedFieldType = $this->memoryCacheProvider->get('attribute_fieldTypeMapping_' . $fieldName) ?? null;
         $fieldType = $importedFieldType === 'pim_catalog_text' ? 'string' : 'text';
 
         $extendConfig->set('target_title', [$fieldType]);

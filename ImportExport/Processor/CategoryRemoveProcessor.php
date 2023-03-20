@@ -3,18 +3,14 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Processor;
 
 use Doctrine\Persistence\ManagerRegistry;
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareInterface;
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareTrait;
 use Oro\Bundle\CatalogBundle\Entity\Category;
 use Oro\Bundle\ImportExportBundle\Processor\ProcessorInterface;
 
-class CategoryRemoveProcessor implements ProcessorInterface
+class CategoryRemoveProcessor implements ProcessorInterface, MemoryCacheProviderAwareInterface
 {
-    use CacheProviderAwareProcessor;
-
-    /** @var array */
-    private $processedIds;
-
-    /** @var array */
-    private $codeIds;
+    use MemoryCacheProviderAwareTrait;
 
     /** @var ManagerRegistry */
     private $registry;
@@ -26,33 +22,22 @@ class CategoryRemoveProcessor implements ProcessorInterface
 
     public function process($item)
     {
-        if (!$this->processedIds) {
-            return null;
-        }
-
         if (!$item instanceof Category) {
             return null;
         }
 
-        if (array_key_exists($item->getAkeneoCode(), $this->processedIds)) {
-            $this->codeIds[$item->getAkeneoCode()] = $item->getId();
+        $id = $item->getId();
+        $this->memoryCacheProvider->get(
+            'category_id_' . $item->getAkeneoCode(),
+            function () use ($id) {
+                return $id;
+            }
+        );
 
+        if ($this->memoryCacheProvider->get('category_' . $item->getAkeneoCode())) {
             return null;
         }
 
         return $item;
-    }
-
-    public function initialize()
-    {
-        $this->processedIds = $this->cacheProvider->fetch('category') ?? [];
-        $this->codeIds = [];
-    }
-
-    public function flush()
-    {
-        $this->cacheProvider->save('category_ids', $this->codeIds);
-        $this->processedIds = null;
-        $this->codeIds = null;
     }
 }

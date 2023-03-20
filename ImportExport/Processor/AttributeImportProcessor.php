@@ -2,6 +2,8 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Processor;
 
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareInterface;
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareTrait;
 use Oro\Bundle\EntityBundle\Helper\FieldHelper;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityConfigBundle\Entity\FieldConfigModel;
@@ -11,9 +13,9 @@ use Oro\Bundle\IntegrationBundle\ImportExport\Processor\StepExecutionAwareImport
 /**
  * Converts data to import format, processes entity.
  */
-class AttributeImportProcessor extends StepExecutionAwareImportProcessor
+class AttributeImportProcessor extends StepExecutionAwareImportProcessor implements MemoryCacheProviderAwareInterface
 {
-    use CacheProviderAwareProcessor;
+    use MemoryCacheProviderAwareTrait;
 
     /** @var string */
     private $entityConfigModelClassName;
@@ -23,18 +25,6 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
 
     /** @var FieldHelper */
     private $fieldHelper;
-
-    /** @var array */
-    private $attributeLabels = [];
-
-    /** @var array */
-    private $optionLabels = [];
-
-    /** @var array */
-    private $fieldNameMapping = [];
-
-    /** @var array */
-    private $fieldTypeMapping = [];
 
     /**
      * {@inheritdoc}
@@ -48,18 +38,23 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
 
         $object = parent::process($item);
         if ($object instanceof FieldConfigModel) {
-            $this->fieldNameMapping[$object->getFieldName()] = $code;
-            $this->fieldTypeMapping[$object->getFieldName()] = $type;
-            $this->cacheProvider->save('attribute_fieldNameMapping', $this->fieldNameMapping);
-            $this->cacheProvider->save('attribute_fieldTypeMapping', $this->fieldTypeMapping);
+            $this->memoryCacheProvider->get(
+                'attribute_fieldNameMapping_' . $object->getFieldName(),
+                function () use ($code) {
+                    return $code;
+                }
+            );
+            $this->memoryCacheProvider->get(
+                'attribute_fieldTypeMapping_' . $object->getFieldName(),
+                function () use ($type) {
+                    return $type;
+                }
+            );
 
             $itemData = $this->context->getValue('itemData');
 
             $this->updateAttributeLabelTranslationContext($itemData, $object->getFieldName());
-            $this->cacheProvider->save('attribute_attributeLabels', $this->attributeLabels);
-
             $this->updateOptionLabelTranslationContext($itemData, $object->getFieldName());
-            $this->cacheProvider->save('attribute_optionLabels', $this->optionLabels);
         }
 
         return $object;
@@ -74,7 +69,12 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
             return;
         }
 
-        $this->attributeLabels[$fieldName] = $item['translatedLabels'];
+        $this->memoryCacheProvider->get(
+            'attribute_attributeLabels_' . $fieldName,
+            function () use ($item) {
+                return $item['translatedLabels'];
+            }
+        );
     }
 
     /**
@@ -86,36 +86,25 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor
             return;
         }
 
+        $optionLabels = [];
+
         foreach ($item['options'] as $option) {
             if (empty($option['translatedLabels'])) {
                 continue;
             }
 
-            $this->optionLabels[$fieldName][] = [
+            $optionLabels[] = [
                 'default' => $option['defaultLabel'],
                 'translations' => $option['translatedLabels'],
             ];
         }
-    }
 
-    public function initialize()
-    {
-        $this->attributeLabels = [];
-        $this->optionLabels = [];
-        $this->fieldNameMapping = [];
-        $this->fieldTypeMapping = [];
-    }
-
-    public function flush()
-    {
-        $this->cacheProvider->save('attribute_attributeLabels', $this->attributeLabels);
-        $this->cacheProvider->save('attribute_optionLabels', $this->optionLabels);
-        $this->cacheProvider->save('attribute_fieldNameMapping', $this->fieldNameMapping);
-        $this->cacheProvider->save('attribute_fieldTypeMapping', $this->fieldTypeMapping);
-        $this->attributeLabels = null;
-        $this->optionLabels = null;
-        $this->fieldNameMapping = null;
-        $this->fieldTypeMapping = null;
+        $this->memoryCacheProvider->get(
+            'attribute_optionLabels_' . $fieldName,
+            function () use ($optionLabels) {
+                return $optionLabels;
+            }
+        );
     }
 
     public function setFieldHelper(FieldHelper $fieldHelper): void

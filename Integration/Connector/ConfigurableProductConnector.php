@@ -4,7 +4,8 @@ namespace Oro\Bundle\AkeneoBundle\Integration\Connector;
 
 use Oro\Bundle\AkeneoBundle\Integration\AkeneoTransport;
 use Oro\Bundle\AkeneoBundle\Placeholder\SchemaUpdateFilter;
-use Oro\Bundle\AkeneoBundle\Tools\CacheProviderTrait;
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareInterface;
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareTrait;
 use Oro\Bundle\IntegrationBundle\Entity\Channel;
 use Oro\Bundle\IntegrationBundle\Provider\AbstractConnector;
 use Oro\Bundle\IntegrationBundle\Provider\AllowedConnectorInterface;
@@ -15,9 +16,9 @@ use Symfony\Contracts\Cache\CacheInterface;
 /**
  * Integration configurable product connector.
  */
-class ConfigurableProductConnector extends AbstractConnector implements ConnectorInterface, AllowedConnectorInterface
+class ConfigurableProductConnector extends AbstractConnector implements ConnectorInterface, AllowedConnectorInterface, MemoryCacheProviderAwareInterface
 {
-    use CacheProviderTrait;
+    use MemoryCacheProviderAwareTrait;
 
     const PAGE_SIZE = 100;
 
@@ -67,15 +68,25 @@ class ConfigurableProductConnector extends AbstractConnector implements Connecto
 
     protected function getConnectorSource()
     {
-        $variants = $this->cacheProvider->fetch('akeneo')['variants'] ?? [];
+        $variants = $this->memoryCacheProvider->get('akeneo_variants') ?? [];
         if ($variants) {
             return new \ArrayIterator();
         }
 
-        $this->cacheProvider->save('akeneo_variant_levels', $this->channel->getTransport()->getAkeneoVariantLevels());
+        $this->memoryCacheProvider->get(
+            'akeneo_variant_levels',
+            function () {
+                return $this->channel->getTransport()->getAkeneoVariantLevels();
+            }
+        );
 
         $now = time();
-        $this->cacheProvider->save('time', $now);
+        $this->memoryCacheProvider->get(
+            'time',
+            function () use ($now) {
+                return $now;
+            }
+        );
 
         $sinceLastNDays = 0;
         $time = $this->cache->getItem('time')->get() ?: null;

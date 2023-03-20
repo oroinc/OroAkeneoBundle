@@ -3,14 +3,14 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Processor;
 
 use Oro\Bundle\AkeneoBundle\Tools\AttributeFamilyCodeGenerator;
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareInterface;
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareTrait;
 use Oro\Bundle\IntegrationBundle\ImportExport\Processor\StepExecutionAwareImportProcessor;
 
-class AttributeFamilyImportProcessor extends StepExecutionAwareImportProcessor
+class AttributeFamilyImportProcessor extends StepExecutionAwareImportProcessor implements
+    MemoryCacheProviderAwareInterface
 {
-    use CacheProviderAwareProcessor;
-
-    /** @var array */
-    private $processedAttributeFamilies = [];
+    use MemoryCacheProviderAwareTrait;
 
     /**
      * {@inheritdoc}
@@ -19,21 +19,14 @@ class AttributeFamilyImportProcessor extends StepExecutionAwareImportProcessor
     {
         if (!empty($item['code'])) {
             $code = AttributeFamilyCodeGenerator::generate($item['code']);
-            $this->processedAttributeFamilies[$code] = $code;
+            $this->memoryCacheProvider->get(
+                'attribute_family_' . $code,
+                function () use ($code) {
+                    return $code;
+                }
+            );
         }
 
         return parent::process($item);
-    }
-
-    public function initialize()
-    {
-        $this->cacheProvider->delete('attribute_family');
-        $this->processedAttributeFamilies = [];
-    }
-
-    public function flush()
-    {
-        $this->cacheProvider->save('attribute_family', $this->processedAttributeFamilies);
-        $this->processedAttributeFamilies = null;
     }
 }

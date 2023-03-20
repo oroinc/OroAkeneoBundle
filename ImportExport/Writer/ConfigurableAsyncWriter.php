@@ -7,10 +7,12 @@ use Doctrine\DBAL\Types\Types;
 use Oro\Bundle\AkeneoBundle\Async\Topics;
 use Oro\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Oro\Bundle\AkeneoBundle\EventListener\AdditionalOptionalListenerManager;
-use Oro\Bundle\AkeneoBundle\Tools\CacheProviderTrait;
 use Oro\Bundle\BatchBundle\Entity\StepExecution;
 use Oro\Bundle\BatchBundle\Item\ItemWriterInterface;
 use Oro\Bundle\BatchBundle\Step\StepExecutionAwareInterface;
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareInterface;
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareTrait;
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderInterface;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\IntegrationBundle\Entity\FieldsChanges;
 use Oro\Bundle\MessageQueueBundle\Client\BufferedMessageProducer;
@@ -23,9 +25,10 @@ use Symfony\Contracts\Cache\CacheInterface;
 
 class ConfigurableAsyncWriter implements
     ItemWriterInterface,
-    StepExecutionAwareInterface
+    StepExecutionAwareInterface,
+    MemoryCacheProviderAwareInterface
 {
-    use CacheProviderTrait;
+    use MemoryCacheProviderAwareTrait;
 
     private const VARIANTS_BATCH_SIZE = 25;
 
@@ -55,6 +58,14 @@ class ConfigurableAsyncWriter implements
     /** @var CacheInterface */
     private $cache;
 
+    /** @var MemoryCacheProviderInterface|null */
+    private $configurableMemoryCacheProvider;
+
+    public function setConfigurableMemoryCacheProvider(?MemoryCacheProviderInterface $configurableMemoryCacheProvider): void
+    {
+        $this->configurableMemoryCacheProvider = $configurableMemoryCacheProvider;
+    }
+
     public function setCache(CacheInterface $cache): void
     {
         $this->cache = $cache;
@@ -76,8 +87,6 @@ class ConfigurableAsyncWriter implements
     {
         $this->additionalOptionalListenerManager->disableListeners();
         $this->optionalListenerManager->disableListeners($this->optionalListenerManager->getListeners());
-
-        $this->configurable = $this->cacheProvider->fetch('akeneo_configurable') ?: [];
     }
 
     public function write(array $items)
@@ -156,10 +165,11 @@ class ConfigurableAsyncWriter implements
         }
 
         $updated = $this->cache->getItem('time');
-        $updated->set($this->cacheProvider->fetch('time'));
+        $updated->set($this->memoryCacheProvider->get('time'));
+
         $this->cache->save($updated);
 
-        $this->variants = array_intersect_key($this->variants, $this->configurable);
+        $this->variants = array_intersect_key($this->variants, $this->configurableMemoryCacheProvider->get('akeneo_configurable') ?? []);
 
         foreach ($this->models as $levelTwo => $levelOne) {
             if (array_key_exists($levelTwo, $this->variants)) {
@@ -167,7 +177,7 @@ class ConfigurableAsyncWriter implements
                     $item['parent'] = $this->origins[$levelOne] ?? $levelOne;
                     $this->variants[$levelOne][$sku] = $item;
 
-                    $akeneoVariantLevels = $this->cacheProvider->fetch('akeneo_variant_levels');
+                    $akeneoVariantLevels = $this->memoryCacheProvider->get('akeneo_variant_levels') ?? AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_BOTH;
                     $this->variants[$levelOne][$sku]['parent_disabled'] = $akeneoVariantLevels === AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_SECOND_ONLY;
                     $this->variants[$levelTwo][$sku]['parent_disabled'] = $akeneoVariantLevels === AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_FIRST_ONLY;
                 }

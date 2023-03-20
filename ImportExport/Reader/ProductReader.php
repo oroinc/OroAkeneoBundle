@@ -3,12 +3,13 @@
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Reader;
 
 use Oro\Bundle\AkeneoBundle\Integration\AkeneoFileManager;
-use Oro\Bundle\AkeneoBundle\Tools\CacheProviderTrait;
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareInterface;
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareTrait;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 
-class ProductReader extends IteratorBasedReader
+class ProductReader extends IteratorBasedReader implements MemoryCacheProviderAwareInterface
 {
-    use CacheProviderTrait;
+    use MemoryCacheProviderAwareTrait;
 
     /** @var AkeneoFileManager */
     private $akeneoFileManager;
@@ -22,7 +23,7 @@ class ProductReader extends IteratorBasedReader
     {
         parent::initializeFromContext($context);
 
-        $items = $this->cacheProvider->fetch('akeneo')['items'] ?? [];
+        $items = $this->memoryCacheProvider->get('akeneo_items') ?? [];
 
         if (!empty($items)) {
             $this->processFileTypeDownload($items, $context);

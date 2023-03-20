@@ -113,9 +113,13 @@ services:
       - '@logger'
       - '@oro_integration.processor_registry'
     calls:
-      - [ setCacheProvider, [ '@oro_akeneo.importexport.cache' ] ]
+      - [ setMemoryCacheProvider, [ '@oro_akeneo.importexport.cache' ] ]
     tags:
-      - { name: 'oro_message_queue.client.message_processor', topicName: 'oro.integration.akeneo.product' }
+      - { name: 'oro_message_queue.client.message_processor', topicName: !php/const Oro\Bundle\AkeneoBundle\Async\Topics::IMPORT_PRODUCTS }
+
+  Oro\Bundle\AkeneoBundle\Async\Topics:
+      tags:
+          - { name: oro_message_queue.topic }
 
   oro_akeneo.config_manager:
     class: 'Oro\Bundle\AkeneoBundle\Config\ConfigManager'

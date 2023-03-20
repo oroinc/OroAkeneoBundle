@@ -4,14 +4,15 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\Reader;
 
 use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\AkeneoBundle\Integration\AkeneoFileManager;
-use Oro\Bundle\AkeneoBundle\Tools\CacheProviderTrait;
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareInterface;
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareTrait;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 
-class ProductImageReader extends IteratorBasedReader
+class ProductImageReader extends IteratorBasedReader implements MemoryCacheProviderAwareInterface
 {
     use AkeneoIntegrationTrait;
-    use CacheProviderTrait;
+    use MemoryCacheProviderAwareTrait;
 
     /** @var array */
     private $attributesImageFilter = [];
@@ -47,7 +48,7 @@ class ProductImageReader extends IteratorBasedReader
 
         $this->initAttributesImageList();
 
-        $items = $this->cacheProvider->fetch('akeneo')['items'] ?? [];
+        $items = $this->memoryCacheProvider->get('akeneo_items') ?? [];
 
         if (!empty($items)) {
             $this->processImagesDownload($items, $context);
