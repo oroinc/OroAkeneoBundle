@@ -7,8 +7,7 @@ use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareInterface;
 use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareTrait;
 use Oro\Bundle\IntegrationBundle\ImportExport\Processor\StepExecutionAwareImportProcessor;
 
-class AttributeFamilyImportProcessor extends StepExecutionAwareImportProcessor implements
-    MemoryCacheProviderAwareInterface
+class AttributeFamilyImportProcessor extends StepExecutionAwareImportProcessor implements MemoryCacheProviderAwareInterface
 {
     use MemoryCacheProviderAwareTrait;
 

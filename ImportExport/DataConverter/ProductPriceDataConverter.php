@@ -4,9 +4,8 @@ namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
 
 use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
-use Oro\Bundle\PricingBundle\ImportExport\DataConverter\ProductPriceDataConverter as BaseProductPriceDataConverter;
 use Oro\Bundle\PricingBundle\Entity\PriceList;
-
+use Oro\Bundle\PricingBundle\ImportExport\DataConverter\ProductPriceDataConverter as BaseProductPriceDataConverter;
 
 class ProductPriceDataConverter extends BaseProductPriceDataConverter
 {
@@ -70,9 +69,6 @@ class ProductPriceDataConverter extends BaseProductPriceDataConverter
             ->findOneBy(['default' => true]);
     }
 
-    /**
-     * @return int
-     */
     public function getDefaultPriceListId(): int
     {
         return $this->getDefaultPriceList()->getId();

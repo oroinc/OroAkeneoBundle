@@ -8,8 +8,7 @@ use Oro\Bundle\SegmentBundle\Entity\Segment;
 /**
  * Postpone segments updates
  */
-class ProductCollectionVariantReindexMessageSendListenerDecorator extends BaseListener implements
-    AdditionalOptionalListenerInterface
+class ProductCollectionVariantReindexMessageSendListenerDecorator extends BaseListener implements AdditionalOptionalListenerInterface
 {
     use AdditionalOptionalListenerTrait;
 
