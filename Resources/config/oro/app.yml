@@ -8,3 +8,18 @@ knp_gaufrette:
         akeneo:
             adapter: import_files
             alias: akeneo_filesystem
+
+framework:
+    http_client:
+        max_host_connections: 1
+        scoped_clients:
+            akeneo_client:
+                scope: '^(https:\/\/)([\w]+)(\.cloud\.akeneo\.com)'
+                max_duration: 172800
+                timeout: 172800
+                retry_failed: 
+                    max_retries: 2
+                    delay: 1000
+                    multiplier: 3
+                    max_delay: 5000
+                    jitter: 0.3

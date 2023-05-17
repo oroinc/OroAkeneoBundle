@@ -12,9 +12,9 @@ services:
     arguments:
       - "@oro_entity.doctrine_helper"
       - "@oro_akeneo.encoder.crypter"
-      - "@psr18.http_client"
-      - "@psr18.http_client"
-      - "@psr18.http_client"
+      - "@psr18.akeneo_client"
+      - "@psr18.akeneo_client"
+      - "@psr18.akeneo_client"
 
   oro_akeneo.event_subscriber.field_config:
     class: Oro\Bundle\AkeneoBundle\EventSubscriber\FieldConfigSubscriber
