@@ -417,6 +417,16 @@ services:
       - '@oro_entity_config.config_manager'
       - '@oro_config.manager'
 
+  oro_akeneo.importexport.event_listener.import_sluggable_entity:
+    class: 'Oro\Bundle\AkeneoBundle\ImportExport\EventListener\ImportSluggableEntityListener'
+    parent: oro_redirect.event_listener.import_sluggable_entity
+    decorates: oro_redirect.event_listener.import_sluggable_entity
+    calls:
+      - [ setDoctrineHelper, [ '@oro_entity.doctrine_helper' ] ]
+    tags:
+        - { name: kernel.event_listener, event: oro_importexport.strategy.process_before, method: onProcessBefore }
+        - { name: kernel.event_listener, event: oro_importexport.strategy.process_after, method: onProcessAfter }
+
   oro_akeneo.importexport.event_listener.file_normalizer:
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\EventListener\FileNormalizerListener'
     tags:

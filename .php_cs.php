@@ -72,7 +72,7 @@ return (new \PhpCsFixer\Config())
             'types_spaces' => false,
             'native_function_invocation' => false,
             'concat_space' => ['spacing' => 'one'],
-            'single_space_after_construct' => false,
+            'single_space_around_construct' => false,
             'self_accessor' => false,
             'yoda_style' => false,
             'phpdoc_summary' => false,
