@@ -2,7 +2,6 @@
 
 namespace Oro\Bundle\AkeneoBundle\ImportExport\Processor;
 
-use Oro\Bundle\AttachmentBundle\Entity\File;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\IntegrationBundle\ImportExport\Processor\StepExecutionAwareImportProcessor;
 use Oro\Bundle\ProductBundle\Entity\Product;
@@ -78,14 +77,6 @@ class ProductImageImportProcessor extends StepExecutionAwareImportProcessor impl
 
         foreach ($product->getImages() as $image) {
             if (!$image->getImage()) {
-                $product->removeImage($image);
-
-                continue;
-            }
-
-            if (!is_a($image->getImage()->getParentEntityClass(), ProductImage::class, true)) {
-                $image->setImage(new File());
-
                 $product->removeImage($image);
 
                 continue;

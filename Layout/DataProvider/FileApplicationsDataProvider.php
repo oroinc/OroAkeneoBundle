@@ -5,7 +5,7 @@ namespace Oro\Bundle\AkeneoBundle\Layout\DataProvider;
 use Oro\Bundle\AttachmentBundle\Layout\DataProvider\FileApplicationsDataProvider as BaseFileApplicationsDataProvider;
 use Oro\Bundle\EntityConfigBundle\Provider\ConfigProvider;
 
-class FileApplicationsDataProvider
+class FileApplicationsDataProvider extends BaseFileApplicationsDataProvider
 {
     /** @var BaseFileApplicationsDataProvider */
     private $applicationsDataProvider;
@@ -34,6 +34,6 @@ class FileApplicationsDataProvider
 
         $config = $this->configProvider->getConfig($className, $fieldName);
 
-        return $config->get('visible');
+        return $config->get('is_displayable');
     }
 }

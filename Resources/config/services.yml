@@ -176,7 +176,7 @@ services:
     decorates: oro_attachment.layout.data_provider.file_applications
     arguments:
       - '@oro_akeneo.layout.data_provider.file_applications.inner'
-      - '@oro_entity_config.provider.attachment'
+      - '@oro_entity_config.provider.frontend'
 
   oro_akeneo.layout.block_type.attribute_group:
     class: 'Oro\Bundle\AkeneoBundle\Layout\Block\Type\AttributeGroupType'

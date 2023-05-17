@@ -58,19 +58,21 @@ class ProductPriceDataConverter extends BaseProductPriceDataConverter
         ];
     }
 
-    /**
-     * @return PriceList
-     */
-    public function getDefaultPriceList()
+    public function getDefaultPriceList(): ?PriceList
     {
+        $defaultPriceListId = $this->getDefaultPriceListId();
+        if (!$defaultPriceListId) {
+            return null;
+        }
+
         return $this->doctrineHelper
             ->getEntityManagerForClass(PriceList::class)
             ->getRepository(PriceList::class)
-            ->findOneBy(['default' => true]);
+            ->find($defaultPriceListId);
     }
 
-    public function getDefaultPriceListId(): int
+    public function getDefaultPriceListId(): ?int
     {
-        return $this->getDefaultPriceList()->getId();
+        return $this->configManager->get('oro_pricing.default_price_list');
     }
 }
