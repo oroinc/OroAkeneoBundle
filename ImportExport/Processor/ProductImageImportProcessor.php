@@ -82,14 +82,6 @@ class ProductImageImportProcessor extends StepExecutionAwareImportProcessor impl
                 continue;
             }
 
-            if (!is_a($image->getImage()->getParentEntityClass(), ProductImage::class, true)) {
-                $image->setImage(null);
-
-                $product->removeImage($image);
-
-                continue;
-            }
-
             $filename = $image->getImage()->getOriginalFilename();
             if (!in_array($filename, array_keys($images))) {
                 $product->removeImage($image);

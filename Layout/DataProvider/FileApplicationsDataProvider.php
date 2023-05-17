@@ -34,6 +34,6 @@ class FileApplicationsDataProvider extends BaseFileApplicationsDataProvider
 
         $config = $this->configProvider->getConfig($className, $fieldName);
 
-        return $config->get('visible');
+        return $config->get('is_displayable');
     }
 }
