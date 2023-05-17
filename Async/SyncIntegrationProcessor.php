@@ -5,7 +5,7 @@ namespace Oro\Bundle\AkeneoBundle\Async;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\AkeneoBundle\Integration\AkeneoChannel;
-use Oro\Bundle\IntegrationBundle\Async\Topics;
+use Oro\Bundle\IntegrationBundle\Async\Topic\SyncIntegrationTopic;
 use Oro\Bundle\IntegrationBundle\Authentication\Token\IntegrationTokenAwareTrait;
 use Oro\Bundle\IntegrationBundle\Entity\Channel as Integration;
 use Oro\Bundle\IntegrationBundle\Provider\LoggerStrategyAwareInterface;
@@ -56,7 +56,7 @@ class SyncIntegrationProcessor implements MessageProcessorInterface, ContainerAw
 
     public static function getSubscribedTopics()
     {
-        return [Topics::SYNC_INTEGRATION];
+        return [SyncIntegrationTopic::getName()];
     }
 
     public function process(MessageInterface $message, SessionInterface $session)

@@ -275,7 +275,6 @@ services:
     parent: oro_pricing.importexport.data_converter.product_price
     class: 'Oro\Bundle\AkeneoBundle\ImportExport\DataConverter\ProductPriceDataConverter'
     calls:
-      - [ setPriceListProvider, [ '@oro_pricing.provider.price_list_provider' ] ]
       - [ setDoctrineHelper, [ '@oro_entity.doctrine_helper' ] ]
 
   # Import processor Price

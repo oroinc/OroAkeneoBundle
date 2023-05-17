@@ -233,8 +233,11 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
             $attributeConfig->set('visible', false);
             $attributeConfig->set('enabled', false);
 
-            $attributeConfig->set('is_global', false);
-            $attributeConfig->set('organization_id', $this->getOrganizationId());
+            // Differentiate OroCommerce EE from CE
+            if (class_exists('\Oro\Bundle\EntityConfigProBundle\Attribute\AttributeConfigurationProvider')) {
+                $attributeConfig->set('is_global', false);
+                $attributeConfig->set('organization_id', $this->getOrganizationId());
+            }
         }
 
         $attributeConfig->set('field_name', $fieldName);

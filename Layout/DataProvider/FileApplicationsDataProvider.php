@@ -5,7 +5,7 @@ namespace Oro\Bundle\AkeneoBundle\Layout\DataProvider;
 use Oro\Bundle\AttachmentBundle\Layout\DataProvider\FileApplicationsDataProvider as BaseFileApplicationsDataProvider;
 use Oro\Bundle\EntityConfigBundle\Provider\ConfigProvider;
 
-class FileApplicationsDataProvider extends BaseFileApplicationsDataProvider
+class FileApplicationsDataProvider
 {
     /** @var BaseFileApplicationsDataProvider */
     private $applicationsDataProvider;

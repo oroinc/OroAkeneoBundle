@@ -19,9 +19,9 @@ class ConfigManager extends BaseManager implements ChangesAwareInterface
                 $className = $configId->getClassName();
                 if ($configId instanceof FieldConfigId) {
                     $fieldName = $configId->getFieldName();
-                    $model = $this->modelManager->getFieldModel($className, $fieldName);
+                    $model = $this->getModelManager()->getFieldModel($className, $fieldName);
                 } else {
-                    $model = $this->modelManager->getEntityModel($className);
+                    $model = $this->getModelManager()->getEntityModel($className);
                 }
                 $diffData = $this->getDiff($config->getValues(), $model->toArray($scope));
                 if (!empty($diffData)) {

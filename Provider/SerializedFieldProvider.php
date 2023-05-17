@@ -14,8 +14,10 @@ class SerializedFieldProvider extends BaseSerializedFieldProvider
     /** @var ConfigProvider */
     private $configProvider;
 
-    public function __construct(BaseSerializedFieldProvider $serializedFieldProvider, ConfigProvider $configProvider)
-    {
+    public function __construct(
+        BaseSerializedFieldProvider $serializedFieldProvider,
+        ConfigProvider $configProvider
+    ) {
         $this->serializedFieldProvider = $serializedFieldProvider;
         $this->configProvider = $configProvider;
     }
