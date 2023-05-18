@@ -104,8 +104,6 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     {
         $importedRecord['status'] = empty($importedRecord['enabled']) ?
             Product::STATUS_DISABLED : Product::STATUS_ENABLED;
-
-        $importedRecord['status'] = Product::STATUS_ENABLED;
     }
 
     private function setPrimaryUnitPrecision(array &$importedRecord): void
