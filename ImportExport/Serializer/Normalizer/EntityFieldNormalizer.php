@@ -33,6 +33,9 @@ class EntityFieldNormalizer extends BaseEntityFieldNormalizer
             'is_default' => [
                 self::CONFIG_TYPE => self::TYPE_BOOLEAN,
             ],
+            'priority' => [
+                self::CONFIG_TYPE => self::TYPE_INTEGER,
+            ],
         ];
     }
 }
