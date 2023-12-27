@@ -1,5 +1,11 @@
 # Akeneo PIM OroCommerce Connector
 
+## New maintainer
+
+We would like to inform you about the recent transfer of repository maintenance responsibility from OroInc to Creativestyle. This transition aims to enhance the development and support of OroInc projects, providing a seamless experience for users and contributors. 
+
+* [creativestyle/OroAkeneoBundle](https://github.com/creativestyle/OroAkeneoBundle)
+
 ## Short overview
 This extension allows you to connect [OroCommerce Enterprise](https://oroinc.com/b2b-ecommerce/) with [Akeneo PIM Enterprise](https://www.akeneo.com/) and use the latter’s rich capabilities for product information management with your OroCommerce-powered web store. Combine personalized B2B buying experience with compelling product experience to maximize your content marketing ROI and stay ahead of the B2B eCommerce game.
 
