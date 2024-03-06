@@ -62,8 +62,14 @@ trait StrategyRelationsTrait
                 } elseif ($this->fieldHelper->isMultipleRelation($field)) {
                     // multiple relation
                     $relationCollection = $this->getObjectValue($entity, $fieldName);
-                    if ($relationCollection instanceof Collection) {
+                    if (($relationCollection instanceof Collection) && $relationCollection->count()) {
                         $collectionItemData = $this->fieldHelper->getItemData($itemData, $fieldName);
+                        $searchContext = $this->generateSearchContextForRelationsUpdate(
+                            $entity,
+                            $entityName,
+                            $fieldName,
+                            $isPersistRelation
+                        );
                         foreach ($relationCollection as $collectionEntity) {
                             $entityItemData = $this->fieldHelper->getItemData(array_shift($collectionItemData));
                             $existingCollectionEntity = $this->processEntity(
@@ -71,12 +77,7 @@ trait StrategyRelationsTrait
                                 $isFullRelation,
                                 $isPersistRelation,
                                 $entityItemData,
-                                $this->generateSearchContextForRelationsUpdate(
-                                    $entity,
-                                    $entityName,
-                                    $fieldName,
-                                    $isPersistRelation
-                                ),
+                                $searchContext,
                                 true
                             );
 
